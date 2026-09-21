@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="BZVTxjyE1Qpp9EaYy370wq">
+<head data-page-node-id="xZfNahtAlGuwjbQJNFEeUO">
+<meta charset="UTF-8" data-page-node-id="QPaGVdGcdhuAz4YAt1xeJA">
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="S9fCvMjmpfEGzrUxLMTgEp">
+<title>侧边栏输入框提示词对照</title>
+<style>
+  :root { --bg:#f5f5f7; --card:#fff; --ink:#1d1d1f; --sub:#6e6e73; --line:rgba(0,0,0,.09); --blue:#0071e3; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:15px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; }
+  .wrap { max-width:880px; margin:0 auto; padding:28px 18px 60px; }
+  header h1 { font-size:24px; margin:0 0 6px; letter-spacing:-.02em; }
+  header p { color:var(--sub); margin:0 0 18px; font-size:13.5px; }
+  .stats { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 14px; min-width:104px; }
+  .stat b { display:block; font-size:20px; color:var(--blue); letter-spacing:-.02em; }
+  .stat span { font-size:12px; color:var(--sub); }
+  .toolbar { position:sticky; top:0; background:rgba(245,245,247,.88); backdrop-filter:blur(10px);
+             padding:10px 0; margin-bottom:8px; z-index:9; }
+  .toolbar input { width:100%; padding:10px 13px; border-radius:10px; border:1px solid var(--line);
+                   background:var(--card); font:inherit; font-size:14px; outline:none; }
+  .toolbar input:focus { border-color:var(--blue); }
+  section.cat h2 { font-size:16px; margin:26px 0 12px; display:flex; align-items:center; gap:8px; }
+  section.cat h2 .ico { font-size:18px; }
+  section.cat h2 em { font-style:normal; font-size:12px; color:var(--sub); font-weight:400; margin-left:auto; }
+  .cards { display:grid; gap:10px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 15px; }
+  .row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+  .name { font-weight:600; font-size:14px; }
+  .badge { margin-left:auto; font-size:11px; padding:2px 8px; border-radius:99px; background:rgba(0,113,227,.1); color:var(--blue); }
+  .ph { font-size:13px; color:#3a3a3c; background:#f2f2f4; border-radius:8px; padding:9px 11px;
+        border-left:3px solid var(--blue); word-break:break-word; }
+  .ph.form { border-left-color:#c7c7cc; color:var(--sub); font-style:normal; }
+  .chiplabel { font-size:11px; color:var(--sub); margin:9px 0 5px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip, .fld { font-size:12px; padding:4px 9px; border-radius:8px; border:1px solid var(--line); color:#3a3a3c; }
+  .chip { cursor:pointer; }
+  .chip:hover { background:rgba(0,113,227,.08); border-color:var(--blue); color:var(--blue); }
+  .fld { background:#f7f7f9; }
+  .fld.req::after { content:" *"; color:#d70015; }
+  footer { margin-top:36px; color:var(--sub); font-size:12.5px; text-align:center; }
+  .hide { display:none !important; }
+</style>
+</head>
+<body data-page-node-id="Z8XPqNPd53eKLhQ3ETDvh0">
+<div class="wrap" data-page-node-id="rgnynR2xHePheEFr168ULC">
+  <header data-page-node-id="zXmQR8BtU96VuAy2AWyEFP">
+    <h1 data-page-node-id="15fDACYGk6FadAzFaVbmbI">侧边栏输入框提示词对照</h1>
+    <p data-page-node-id="qjwIqoG2DFpuD94ARNET6N">点开技能卡片后，输入框里的「例如：…」占位词，以及下方的可点击示例。共 101 个技能，每条文案互不重复。</p>
+    <div class="stats" data-page-node-id="r7UHMOWhWqjJ3mu8YMHrvI">
+      <div class="stat" data-page-node-id="kaoIgfQXRJvhm9kYc6XGcn"><b data-page-node-id="QyiuJ3sbUfXGLJqJCVF3Pq">101</b><span data-page-node-id="HBXJUTyynL5SA4fIxm0qt0">技能总数</span></div>
+      <div class="stat" data-page-node-id="gbMLYH8nwqBpK9xeTeRvRW"><b data-page-node-id="onPVHzzGuR3kExA3i4Eq09">101</b><span data-page-node-id="bxa4QxWQrk54cCOeD1fcVK">不重复提示词</span></div>
+      <div class="stat" data-page-node-id="j7Yz6Rvbzbx7JrC18ALe1c"><b data-page-node-id="4luidYt087D8pdM2efEybR">17</b><span data-page-node-id="TJF8kkUwBCSobcgujqAftd">表单技能</span></div>
+      <div class="stat" data-page-node-id="a5QYLAQgcoOgqHTmUDrwNR"><b data-page-node-id="UJxjTgWq8WmIH8m9FsHcHT">84</b><span data-page-node-id="AFb6EqNAgs2y2IkDBgJDfH">自由输入技能</span></div>
+    </div>
+    <div class="toolbar" data-page-node-id="DX9Jkvx97osPRGVzgHTLOG"><input id="q" type="search" placeholder="输入技能名或关键词过滤，如：估值 / 尽调 / 净值 / KYC" data-page-node-id="N7wmvA5QNsYkBAzlAiIh2K"></div>
+  </header>
+  <section class="cat" data-page-node-id="KPSZa45TdkVZVLpiqwTqCH">
+<h2 data-page-node-id="WHtHnHeLwdpzq2GyB2nI1i"><span class="ico" data-page-node-id="UU7kWBjTI06m1B5UJOlYZT">📊</span>财务分析<em data-page-node-id="Fz3N1bJiEbnFFzKg7fYegY">24 个技能</em></h2>
+<div class="cards" data-page-node-id="8OwkOsr5jBLYeQJnOhnFOA">
+<article class="card form" data-page-node-id="R4U0UeU8NdREFyzhwXP3uI">
+        <div class="row" data-page-node-id="AVNGP2TCNQH637dXH9GLJB"><span class="name" data-page-node-id="GDpVLcPt4MPpLWkUaoPb4l">💎 DCF估值模型</span><span class="badge form" data-page-node-id="iu6NCS9n5rH9ITErCt4gOY">表单卡</span></div>
+        <div class="ph form" data-page-node-id="6tpvRTUGDGpjL1NF1HEpck">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="59JnM2qGScJnxdhAvSwO5x"><span class="fld req" data-page-node-id="PxFrV1syTnk0K0hVqkoSwG">分析对象</span><span class="fld" data-page-node-id="K6DR3QtJA7aDQCb3kF6oF5">预测期</span><span class="fld" data-page-node-id="VDmNghg4pGKaJDnyHWT3DM">折现率 (WACC)</span><span class="fld" data-page-node-id="Uf08qJRIkM86Dj8uAefbYb">自定义 WACC</span><span class="fld" data-page-node-id="8hloDbMTwdpVAP3TrMLnhy">终值方法</span><span class="fld" data-page-node-id="W6j1GZvF3nghYkaEdwZ9RD">永续增长率</span><span class="fld" data-page-node-id="iZ7nlvQD7JUEFdVZgsBkGy">退出 EV/EBITDA</span></div>
+      </article>
+<article class="card form" data-page-node-id="0Fx60XATn189oUOT1JKM4d">
+        <div class="row" data-page-node-id="OyxJuTkTlmhPtxLp113GUL"><span class="name" data-page-node-id="9UWBQKB3EzWQAH7J9fcCet">🔍 美股可比公司分析</span><span class="badge form" data-page-node-id="U1EkS5bFcvu8zmfmnCx3nY">表单卡</span></div>
+        <div class="ph form" data-page-node-id="VNnNvjAMz5CR3J7sYQauFM">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="dIUwdTfo4mEDKpOSdFEvSz"><span class="fld req" data-page-node-id="7HiQvHTq2DZJ5XHNcniUe5">目标公司</span><span class="fld" data-page-node-id="ao7Tvgobu9hmw16sXB4GGN">可比公司</span><span class="fld" data-page-node-id="NxyPxABBuzSldTzvn8jEv9">分析重点</span><span class="fld" data-page-node-id="7nx3dgY1NnommJiUjXG37j">场景</span></div>
+      </article>
+<article class="card" data-page-node-id="DvQVSeWHHfaYgFqyxehqay">
+        <div class="row" data-page-node-id="oH1CPGBYIAppYSL1C7LkGM"><span class="name" data-page-node-id="qwHmohJBjHIUSYTa1OwiWI">📊 美股三表联动模型</span></div>
+        <div class="ph" data-page-node-id="B0oxiD1mW9cNQEgbS9eqmw">例如：帮我搭一个特斯拉的三表联动模型，预测未来三年…</div>
+        <div class="chiplabel" data-page-node-id="DbRc8FyVL4FciFckca1oeo">试试这样问</div><div class="chips" data-page-node-id="WGnTs1nb9UjmRccvn5Otwb"><span class="chip" data-page-node-id="WVYetJOO23hmoLP5gPmRBC">这份模型的资产负债不平，帮我定位是哪一处勾稽错了</span></div>
+      </article>
+<article class="card" data-page-node-id="nP2Z7AfFZDDDgCMKCYn5yI">
+        <div class="row" data-page-node-id="OwcNxJAbHLl2Fq12bDBipX"><span class="name" data-page-node-id="9f2vA3FkEkuc2TH2zEsU0J">📊 LBO杠杆收购模型</span></div>
+        <div class="ph" data-page-node-id="Rc2cBWID9xVhsi7IhixAK4">例如：假设 60% 杠杆收购一家 50 亿营收的公司，算 IRR 和 MOIC…</div>
+        <div class="chiplabel" data-page-node-id="TCY5STLFgbdvi1wBruFPoz">试试这样问</div><div class="chips" data-page-node-id="pAZhK0geGZDVNHGisOojCW"><span class="chip" data-page-node-id="HAhJSB6pj8nKAbLhHIRydM">测算退出倍数从 8x 降到 6x 时，这笔 LBO 还赚不赚钱</span></div>
+      </article>
+<article class="card" data-page-node-id="Etzh3bebTdjG7satJ7f5ef">
+        <div class="row" data-page-node-id="gYXgRvT5gyf9QqA7eRS8NG"><span class="name" data-page-node-id="0jJfGFlGgHKugDQiUZmi3R">📊 竞争情况分析</span></div>
+        <div class="ph" data-page-node-id="CxWRmXhZKnhaN5WLZW9HT9">例如：分析一下动力电池行业的竞争格局，各家卡位在哪…</div>
+        <div class="chiplabel" data-page-node-id="N0gq5UWBfIcyGybX3AgmYo">试试这样问</div><div class="chips" data-page-node-id="8SH1fezJVRdOaD2mRqaKEQ"><span class="chip" data-page-node-id="rC8VnBAv3VmgJ2oQG5SwLi">对比这三家竞争对手的护城河，谁最抗打</span></div>
+      </article>
+<article class="card" data-page-node-id="JGYxP1yBgPVgPd9CUo9AAI">
+        <div class="row" data-page-node-id="kEeOq9KJSeRa63oMtfBYmd"><span class="name" data-page-node-id="45qyaPF7rB9Sc5Mz0OKBjJ">📊 Excel 数据整理</span></div>
+        <div class="ph" data-page-node-id="hE3ZL2RfxVPefGBCrRaGtG">例如：把这个表里的空值和重复行清掉，金额统一成万元…</div>
+        <div class="chiplabel" data-page-node-id="BbjvmQYt62qXhb2zILbtQc">试试这样问</div><div class="chips" data-page-node-id="iyghYpv2WOf1cZ5XbsjCyX"><span class="chip" data-page-node-id="vY2ljADTuy8lLqa99aqMH3">帮我把这份乱格式的财务数据标准化成规范表格</span></div>
+      </article>
+<article class="card" data-page-node-id="LEoJwP7kV30yJJnBWhEUnv">
+        <div class="row" data-page-node-id="X4eGrDpkHiSECxDH3kxvTr"><span class="name" data-page-node-id="TmdcXwretwTXsdneYfWM6w">📊 Excel 报告制作</span></div>
+        <div class="ph" data-page-node-id="pf1QVKgTzvUGXdRiQAJIg7">例如：把这份财报数据做成带图表的 Excel 分析报告…</div>
+        <div class="chiplabel" data-page-node-id="OnGiYfemtBjyARevN0Na1H">试试这样问</div><div class="chips" data-page-node-id="qp2dDUi45nPBscChhTu5HE"><span class="chip" data-page-node-id="B8AxdDCrBFjAtZn5LTp9Up">生成一个含公式的多年度财务对比表</span></div>
+      </article>
+<article class="card" data-page-node-id="6VhtUywsn69LwflAXi51YZ">
+        <div class="row" data-page-node-id="ryI5pdDYSfcW7XttE1UJ2W"><span class="name" data-page-node-id="NHbzqEmmRgH4bB3UFnCXB2">📊 PPT 报告制作</span></div>
+        <div class="ph" data-page-node-id="lPcMd87ftuwsj5W8t2xaHN">例如：生成一份 15 页的公司业绩发布会 PPT…</div>
+        <div class="chiplabel" data-page-node-id="iUKcDYU668be4ZNtSRbfUx">试试这样问</div><div class="chips" data-page-node-id="8YtyNjkVL8DL7OpNRgH0vl"><span class="chip" data-page-node-id="APFzJhLxX36Qozy3Gw5EEU">把这份调研纪要做成对外的汇报 PPT</span></div>
+      </article>
+<article class="card" data-page-node-id="9WNCPuGQzwyrcgN9ORc23A">
+        <div class="row" data-page-node-id="xBSJ3xUZ7hRSwrxywdmnAI"><span class="name" data-page-node-id="ClBkYo4cfOJq3tXPJjBL8t">📊 Excel 审计检查</span></div>
+        <div class="ph" data-page-node-id="oOB4t8hmLJxRYT3f5tFgG0">例如：帮我查一下这个模型里的 #REF! 和循环引用错误…</div>
+        <div class="chiplabel" data-page-node-id="YeTBWuneOXxYhimmtJhmGV">试试这样问</div><div class="chips" data-page-node-id="4A127ggLMdCFmvnBjVjNBr"><span class="chip" data-page-node-id="oPsP9xYwmk3NzcxaUVAPBn">逐项校验这份表的公式引用和单位是否一致</span></div>
+      </article>
+<article class="card" data-page-node-id="vgAd6EkGPkamR0rr1zIrkz">
+        <div class="row" data-page-node-id="5ghuDUKWD2PZSE8sb1ox4n"><span class="name" data-page-node-id="p3NQ16FpAtb7xmpzU5oD0u">📊 路演材料更新</span></div>
+        <div class="ph" data-page-node-id="T4FobHIslTaT3L7UTShBvJ">例如：把这份路演 PPT 里的 2024 年数据全部更新成 2025 年…</div>
+        <div class="chiplabel" data-page-node-id="LsjjtD54mRmGJdjr35H1U5">试试这样问</div><div class="chips" data-page-node-id="NWi34LUUB2YJovCcWxq5H1"><span class="chip" data-page-node-id="DpAPGbw8iOBcm6darOJrlM">更新这份材料的图表数据，保持原有格式不变</span></div>
+      </article>
+<article class="card" data-page-node-id="8ed89nmPuEEbmFylZIglOm">
+        <div class="row" data-page-node-id="BGxHcxARa8Ys0YFDdvuNaF"><span class="name" data-page-node-id="bBs2itGZxmX98YAsbzGAtp">📊 投行材料审核</span></div>
+        <div class="ph" data-page-node-id="9ai9ZJBe9mZlNICajv9GOt">例如：审一遍这份投行材料，检查数字前后是否一致…</div>
+        <div class="chiplabel" data-page-node-id="tULtFoD5FoAgyMo8DSmEC0">试试这样问</div><div class="chips" data-page-node-id="y74EiBGyJyZAvhhPQJ1Nh5"><span class="chip" data-page-node-id="OBHU2Es6HigS3HPL4iyEnJ">检查这份路演材料的数据口径和格式规范</span></div>
+      </article>
+<article class="card" data-page-node-id="rFfuezDDwIZPZCWopcngGA">
+        <div class="row" data-page-node-id="KFHe2KcYLKceKmEdEJr4b9"><span class="name" data-page-node-id="snhDGgpEk1moqEtyDnVYGM">📊 投行 PPT 模板设计</span></div>
+        <div class="ph" data-page-node-id="ywEZk8lTEnfn2pIISgjkGH">例如：把公司这套 PPT 模板拆成可复用的样式规范…</div>
+        <div class="chiplabel" data-page-node-id="TNtfne32Xfgf86EmsdRlkQ">试试这样问</div><div class="chips" data-page-node-id="5uDGm0oGllsIf5pUNTZrUB"><span class="chip" data-page-node-id="wig72AZ7HSSL6OCFvWpGWG">提取这份模板的版式和配色，做成新报告可套用的模板</span></div>
+      </article>
+<article class="card" data-page-node-id="1uXCGguxFA1cAnnzciN6rf">
+        <div class="row" data-page-node-id="wMlVEBW4dMjIoDNaDEwius"><span class="name" data-page-node-id="1vAAnsqWZIG0CYxLcauc1y">📊 金融技能整理</span></div>
+        <div class="ph" data-page-node-id="77BWqLuH4reqUAPaFRNHfu">例如：把这份尽调流程整理成一个可复用的技能模板…</div>
+        <div class="chiplabel" data-page-node-id="pgdF78cYKyYnL04Q5etoSu">试试这样问</div><div class="chips" data-page-node-id="yZyfYOjsiGpmVrsgRSYl5j"><span class="chip" data-page-node-id="sXvLqoHaFFePfzH0Za1ov1">帮我做一个标准化的财务分析技能包</span></div>
+      </article>
+<article class="card" data-page-node-id="de91AFzHEdBSwzqgPN0iq9">
+        <div class="row" data-page-node-id="NvL99QxJV7llQebqe4ddZh"><span class="name" data-page-node-id="zA5dgOzXG7a8Aaey7BPvkl">📊 财务比率分析</span></div>
+        <div class="ph" data-page-node-id="wAkpgMWLxNEs9QJWstCpIA">例如：算一下贵州茅台近三年的盈利和偿债能力比率…</div>
+        <div class="chiplabel" data-page-node-id="8QlcbiOTAkQVHqBZLQRESC">试试这样问</div><div class="chips" data-page-node-id="Ifx5BaFP4AubTalRYiFChn"><span class="chip" data-page-node-id="XY6ecuaWQjVADTI0Ipy1BB">把这三家公司的四维财务比率拉出来横向比</span></div>
+      </article>
+<article class="card" data-page-node-id="bgagJOe9oMlnoufFwvw2Ap">
+        <div class="row" data-page-node-id="6sCrYOWQucprGAC6cIHFmC"><span class="name" data-page-node-id="cUKj1K1tgVLTCCUNIljr7X">🔬 杜邦分析</span></div>
+        <div class="ph" data-page-node-id="UppZuDSwPxBiJgR53eblqa">例如：用五因素杜邦分解，看招行 ROE 下滑是哪个环节…</div>
+        <div class="chiplabel" data-page-node-id="onHuyyXANmJyYvHqa9Fv9w">试试这样问</div><div class="chips" data-page-node-id="0rW4FFtKX2vawh1VyNvbGA"><span class="chip" data-page-node-id="Z8w5YHbJjajm6QsV7SpQZd">拆一下这家公司 ROE 的驱动因素，哪块在改善</span></div>
+      </article>
+<article class="card" data-page-node-id="5LkE33cDoN9oi9ZPZzDBoJ">
+        <div class="row" data-page-node-id="mftsQEIYhz9LVT41PGEGDu"><span class="name" data-page-node-id="1FbyzGTHJuBxKVY8ovk6Bs">📐 同比分析</span></div>
+        <div class="ph" data-page-node-id="kny4hvFdTSMvFHokOOyrYw">例如：把这份三年利润表做同比标准化，看费用结构变化…</div>
+        <div class="chiplabel" data-page-node-id="8Y0icGbcXdoNklwI5RvCzz">试试这样问</div><div class="chips" data-page-node-id="h2FnZVktx6jqVfGpAkVTA2"><span class="chip" data-page-node-id="E5DMimFSE3An9wS2HFaycf">做资产负债表的结构分析，找出异常科目</span></div>
+      </article>
+<article class="card" data-page-node-id="yPS6LXeFfM1qzEq1OH5T30">
+        <div class="row" data-page-node-id="3AIlIhDlKSlvGxcuGDC8BF"><span class="name" data-page-node-id="lTAIXGurBDFASVfBeSy4FJ">💰 现金流分析</span></div>
+        <div class="ph" data-page-node-id="ql8Y18yyYvGEYy3165GNBh">例如：分析这家公司的经营现金流质量，净利润含金量如何…</div>
+        <div class="chiplabel" data-page-node-id="UGQTJqsseE0RrLLL1FmS8F">试试这样问</div><div class="chips" data-page-node-id="GqkBaxdBdPxFNZDuLCBYVQ"><span class="chip" data-page-node-id="1v7cdhXAbwNmpWhpt9yETl">经营现金流连续为负，帮我找找原因</span></div>
+      </article>
+<article class="card" data-page-node-id="DYYUyiT4u40O1E6McFNaJV">
+        <div class="row" data-page-node-id="cA1hHF2KB97WmE33YfhQbn"><span class="name" data-page-node-id="bDn8tWcYZ3hTNuUChIU8Fz">🎯 敏感性分析</span></div>
+        <div class="ph" data-page-node-id="pzNN8fbjcULAIgkPxUVPel">例如：测一下 WACC 和永续增长率各动 1%，估值差多少…</div>
+        <div class="chiplabel" data-page-node-id="ZWc7uORTu4ZyksF2xCjZRM">试试这样问</div><div class="chips" data-page-node-id="ePchbvf0CGATzQzrqz06yI"><span class="chip" data-page-node-id="t1BfDLClAEV5A9H3cHneHV">找出对这笔估值影响最大的三个假设变量</span></div>
+      </article>
+<article class="card" data-page-node-id="whiAB9rYaDQlsVmdWt5IHD">
+        <div class="row" data-page-node-id="RiQAb9MBALGflHlaGhONrk"><span class="name" data-page-node-id="BEj6OPJZHlBsBVTNWnj6h9">🔮 情景分析</span></div>
+        <div class="ph" data-page-node-id="VtsWAoKYGKiGNQBarGCWub">例如：做乐观、中性、悲观三种情景下的 2026 年收入预测…</div>
+        <div class="chiplabel" data-page-node-id="04FY12lpTYqH4XtElgQSIR">试试这样问</div><div class="chips" data-page-node-id="dsKaiGN60eUUL3CSIsmyhm"><span class="chip" data-page-node-id="1XMCe6qgC1lnaTlBfGE5WD">假设行业增速腰斩，测算这家公司的业绩底线</span></div>
+      </article>
+<article class="card" data-page-node-id="J6LufUJzXXTsUG5qNXtntR">
+        <div class="row" data-page-node-id="iOuikdSBPjPsMCm0eDpY6G"><span class="name" data-page-node-id="SHtWDUDTFg7TTELfzbT3Gk">📊 瀑布图分析</span></div>
+        <div class="ph" data-page-node-id="l1cCbzYfcySU4Pxo2A9FZ5">例如：画一张毛利率变动的归因瀑布图，拆出量价影响…</div>
+        <div class="chiplabel" data-page-node-id="p5VBo9f933A7eFi685GZ86">试试这样问</div><div class="chips" data-page-node-id="zUR38ChLHzskISEmiCqATG"><span class="chip" data-page-node-id="0v3UyNrc0IDihs2cO9wdwH">用瀑布图拆解这家公司利润下滑的原因</span></div>
+      </article>
+<article class="card" data-page-node-id="bflEwQVC5bEvV8TAEtyOLr">
+        <div class="row" data-page-node-id="Wc8GYftdGroGQhQeC7AMyr"><span class="name" data-page-node-id="HjBtBlmZmUoP9PqqqzgWTB">🏆 标杆对比</span></div>
+        <div class="ph" data-page-node-id="cOuAB6J6qHXIT6z2AlsuRH">例如：拿我们公司和行业前三对标，找出效率差距…</div>
+        <div class="chiplabel" data-page-node-id="HnqCHWgRG9emYEeOUhuqZ8">试试这样问</div><div class="chips" data-page-node-id="80NXrTMEZMFe1qqFakxggT"><span class="chip" data-page-node-id="ZjkAf8xZBqllXBOsKrTPmA">对比行业最优实践，看我们的成本还有多少压缩空间</span></div>
+      </article>
+<article class="card" data-page-node-id="xlmuV86Naks0JtRnBrL5fo">
+        <div class="row" data-page-node-id="tDunsTxHEhKnT9lHzPTjYM"><span class="name" data-page-node-id="qgIgTtUQeaEJQFxLUMcIMY">💎 美股DCF估值模型</span></div>
+        <div class="ph" data-page-node-id="PEKHHnR8T0eqPZVpg46oW9">例如：用 10 年期美债收益率做无风险利率，给苹果做 DCF…</div>
+        <div class="chiplabel" data-page-node-id="7mXwUTMPCCTUg5mt4x1y4o">试试这样问</div><div class="chips" data-page-node-id="8rGuv7tnzxHEDnSHHP0B3k"><span class="chip" data-page-node-id="wO1Qk8V3g4NHiLmC2GRsq7">按美国 ERP 和 21% 税率测算英伟达的合理估值</span></div>
+      </article>
+<article class="card form" data-page-node-id="RA0QOyl5Rx1uHTrw35k2dd">
+        <div class="row" data-page-node-id="vGEHmxYIWaZobGCgVG9f5o"><span class="name" data-page-node-id="DdLizFk3jIIQedz1thpDeU">💹 A股DCF估值模型</span><span class="badge form" data-page-node-id="Q8KJ9di8Gw46RyBGgCRKVt">表单卡</span></div>
+        <div class="ph form" data-page-node-id="bPGnN0kGnmZohkmDSxpmey">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="8xmZvFVKjoUSAccMDIaGre"><span class="fld req" data-page-node-id="SoY2zg7wVznykR9JHwZc1U">分析对象</span><span class="fld" data-page-node-id="AG5yPOftYT6VfG24qZJ5ym">预测期</span><span class="fld" data-page-node-id="ox02k99bv5fmHypEfWQPmI">无风险利率</span><span class="fld" data-page-node-id="B0ZmUH6wTJj0M6t4ThbR4M">中国股权风险溢价</span><span class="fld" data-page-node-id="ixEvH7FrFapL6Bhy2XWwyO">所得税率</span><span class="fld" data-page-node-id="sg0mb1WigRqp8BPgNme951">终值方法</span><span class="fld" data-page-node-id="GEYFHBrAxk2HZCQ7n5wi4Z">永续增长率</span><span class="fld" data-page-node-id="loBNMUQmltvLtLEXFIdKKf">退出 EV/EBITDA</span></div>
+      </article>
+<article class="card form" data-page-node-id="o79nargillSGZM4IfW4uOv">
+        <div class="row" data-page-node-id="lehrVYeUNJDh2dXmnKLLLH"><span class="name" data-page-node-id="9ow70TwIeV1iBU4ElagRFA">📊 A股三表联动模型</span><span class="badge form" data-page-node-id="dFJH8qIklUMRARlkEzUIQr">表单卡</span></div>
+        <div class="ph form" data-page-node-id="H6ZY7rdyi2jBjExwJoyQbC">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="KDVUfs9QutR6oazTLJi8WK"><span class="fld req" data-page-node-id="wE1gFzmVyvBBY8Aweyn5XG">建模对象</span><span class="fld" data-page-node-id="74BwRVtfsGE6ouVhLSVLqG">预测年限</span><span class="fld" data-page-node-id="YQdTPLZyQWIniCIUa8shjA">建模驱动</span></div>
+      </article>
+</div>
+</section>
+<section class="cat" data-page-node-id="5WeQtogAN8PFda7mcqZadP">
+<h2 data-page-node-id="E3GbC9pu3kj8YfX60ELt0j"><span class="ico" data-page-node-id="3XuKXHp5tF0b2MRCznyMNB">🏦</span>投资银行<em data-page-node-id="HN36C7QbJU5N0CCtZvTHwD">10 个技能</em></h2>
+<div class="cards" data-page-node-id="3YZ8pl9CeZZkwPN56Uq2n4">
+<article class="card" data-page-node-id="SXDO3DkZkWGdliRhIHHooU">
+        <div class="row" data-page-node-id="VU28JyFZlH84uze5VSaEkH"><span class="name" data-page-node-id="Oi9iEC5XjYqEai0MkZmzIV">🏦 信息备忘录制作</span></div>
+        <div class="ph" data-page-node-id="7okmmRluFanZlkJlyE2JzF">例如：帮我给这家新能源设备公司做一份 CIM…</div>
+        <div class="chiplabel" data-page-node-id="EntTXmjjTzO6yk99DdNrpb">试试这样问</div><div class="chips" data-page-node-id="MFlrueKKMGQbeWL0pcmLMm"><span class="chip" data-page-node-id="eZeVnt3etlzEBmQNttEjcI">做一份并购卖方 CIM，突出订单和产能情况</span></div>
+      </article>
+<article class="card" data-page-node-id="R5s0wWsla9vISVuFtJUT1M">
+        <div class="row" data-page-node-id="uoxMqWFfTMAgMaUYHBSEKG"><span class="name" data-page-node-id="EkvYDJKqagXCZry79VnT57">🏦 项目简介</span></div>
+        <div class="ph" data-page-node-id="akH6Jv6gTtAqj0qoUueAdI">例如：做一页匿名 project teaser，只讲行业和财务概况…</div>
+        <div class="chiplabel" data-page-node-id="yQ5KSy3EEhxUeu1K5BcjkV">试试这样问</div><div class="chips" data-page-node-id="uimvjjyCnVbKROsbrYyxG2"><span class="chip" data-page-node-id="s6Y27L2W9W0wE9oWLj9M0p">把这份公司简介改成隐去名称的 teaser</span></div>
+      </article>
+<article class="card" data-page-node-id="A4Nr5aiAaITKld1DBstMW9">
+        <div class="row" data-page-node-id="UyeSTIQbfTeLtWNjxUPiCw"><span class="name" data-page-node-id="CK3FWL33VVC4y8Cfcs2HCq">🏦 路演材料</span></div>
+        <div class="ph" data-page-node-id="hO4MRO8jR5ADL10FkPFRiE">例如：做一份并购 pitch book 大纲，重点是标的筛选逻辑…</div>
+        <div class="chiplabel" data-page-node-id="56rz1dBXud3HopCslhO3DN">试试这样问</div><div class="chips" data-page-node-id="VcVf1PxeMfFwxbVjV4x3aJ"><span class="chip" data-page-node-id="JWJKbq3kdBIOvGENxWlgQe">给这个融资项目做一份路演材料的框架</span></div>
+      </article>
+<article class="card" data-page-node-id="mMxJTH1UuzBzKJ9clpKDJU">
+        <div class="row" data-page-node-id="iFnj4AmpccWAKC4Mo33aD6"><span class="name" data-page-node-id="BGU4UtWVtDOhtXkadWynVp">🏦 潜在买家名单</span></div>
+        <div class="ph" data-page-node-id="TsiTs9eNAAncRodEfeb8ot">例如：列出这个行业最可能的 20 个战略买家并排序…</div>
+        <div class="chiplabel" data-page-node-id="T21yQLENDNXAzpyLCDgvhJ">试试这样问</div><div class="chips" data-page-node-id="ejxq7w4MkNDImFzIGDgtTX"><span class="chip" data-page-node-id="zWIkjPXdCti7Sg2huaZ2Hm">帮我筛选有实力也有意愿的财务投资人名单</span></div>
+      </article>
+<article class="card" data-page-node-id="HJeWZ0TEgyBUwY6h8McjmL">
+        <div class="row" data-page-node-id="NXRMl84EzmP0ClLDCD3qRz"><span class="name" data-page-node-id="Ulccb8jYF60NVzol9OHFmd">🏦 并购模型</span></div>
+        <div class="ph" data-page-node-id="aTWmqhRSfQVBJxvXRsgf5L">例如：测算收购一家 30 亿营收公司对 EPS 的增厚影响…</div>
+        <div class="chiplabel" data-page-node-id="0bX0EmhQGp2C6rxKG4b8As">试试这样问</div><div class="chips" data-page-node-id="FZW7bwRWepSyUwOo8s4eVe"><span class="chip" data-page-node-id="o1RiB6aGdlicGpEOkXc7aU">这单并购用现金还是换股，对报表更有利</span></div>
+      </article>
+<article class="card" data-page-node-id="d3qR4FrO6hVBl9tFZIfMaJ">
+        <div class="row" data-page-node-id="9KxvrCGnAqF01x1gxJI6Fd"><span class="name" data-page-node-id="UJggYZQhK8SK61xl6mxUE1">🏦 数据包制作</span></div>
+        <div class="ph" data-page-node-id="ce9mYlKaRa0xFhpgCnfeAY">例如：整理目标公司近三年的财务数据包和估值倍数…</div>
+        <div class="chiplabel" data-page-node-id="CroRM26sSCZA5PWDuyMnni">试试这样问</div><div class="chips" data-page-node-id="VXry7undGEEA2Ry5dtbla1"><span class="chip" data-page-node-id="IkooqZM7H0ZWWivyMBtTbB">把这家公司的历史财务和管理层数据汇总成数据包</span></div>
+      </article>
+<article class="card" data-page-node-id="UBjHEAROmG8mGHzBgWJeLF">
+        <div class="row" data-page-node-id="4cRqp84l4sYzHKFafw1niS"><span class="name" data-page-node-id="0wWA3Yoa98MOtofu1kDXXd">🏦 项目跟踪</span></div>
+        <div class="ph" data-page-node-id="Cv1YvYwfkYiAkzUB7siiSU">例如：建一个并购项目跟踪表，列出里程碑和时间节点…</div>
+        <div class="chiplabel" data-page-node-id="IAIuGzHs6hbc1W95mggJtk">试试这样问</div><div class="chips" data-page-node-id="PD7c5UZ1p5spz7cmF4Om58"><span class="chip" data-page-node-id="qGOW39Qop1nhnYdqjNwB1r">帮我更新这个项目目前的推进状态和分工</span></div>
+      </article>
+<article class="card" data-page-node-id="kb6GdxVgzgKFfvhKWnluil">
+        <div class="row" data-page-node-id="U2PeMaB4nwQQ5lzduqi3Hu"><span class="name" data-page-node-id="72FzW3PNvUoI1QAXfaTns4">🏦 交易流程说明</span></div>
+        <div class="ph" data-page-node-id="kRwtGp17Equ4HDjG4ckNDF">例如：起草一封竞拍流程函，说明报价截止时间…</div>
+        <div class="chiplabel" data-page-node-id="UvGarVV7R0UTiureVimGtK">试试这样问</div><div class="chips" data-page-node-id="dBB0y6JzHOtDxSUnyzMTZt"><span class="chip" data-page-node-id="oDcG5sdj5LUog4Iq8tuK2n">写一份买方参与流程的要求说明</span></div>
+      </article>
+<article class="card" data-page-node-id="eSTh0rW0l8I5ZgXhG6m3Jr">
+        <div class="row" data-page-node-id="g8xKajBlH91vqxPBhW1Je9"><span class="name" data-page-node-id="WFXkXzyumP4Qg5JcycJx4s">🏦 分部业务分析</span></div>
+        <div class="ph" data-page-node-id="880KfMUU7JLDwjH2K6wecI">例如：拆一下这家公司的分部业务，按板块分别估值…</div>
+        <div class="chiplabel" data-page-node-id="wpanSjp6SFmxljTgCHF9Mr">试试这样问</div><div class="chips" data-page-node-id="psaX068xNQhLSJGsskMaD3"><span class="chip" data-page-node-id="yJGG75AZ7MK2MIHeIFFEsL">分析各业务板块的收入和利润贡献占比</span></div>
+      </article>
+<article class="card" data-page-node-id="iOKQZwxBjOvD8OSrSTusuK">
+        <div class="row" data-page-node-id="AUVde5ERhVq1bk7Tx83IPN"><span class="name" data-page-node-id="7DST2pI727eVI0LZwlApha">🏦 并购增厚稀释模型</span></div>
+        <div class="ph" data-page-node-id="5Zg3j1bJ1gbM2SAPaVVC13">例如：算一下全现金收购和换股收购，哪种对 EPS 更有利…</div>
+        <div class="chiplabel" data-page-node-id="nkaCB6IgOjQ8Bl96BQkccE">试试这样问</div><div class="chips" data-page-node-id="5lvMfbnPOkS77bLqKOusQK"><span class="chip" data-page-node-id="DfezUxDGPBmA0JlkaMgfgN">这笔并购的增厚稀释测算，含协同效应量化</span></div>
+      </article>
+</div>
+</section>
+<section class="cat" data-page-node-id="XMWzeQH32bb17zN8DC43Eu">
+<h2 data-page-node-id="QR0QQ3lTF0nMCaLJc6naqb"><span class="ico" data-page-node-id="0RslvOuq500DEbRUXE21Vq">💼</span>私募股权<em data-page-node-id="4W7kwEcAcat4IzCG5Av00C">10 个技能</em></h2>
+<div class="cards" data-page-node-id="vFhCYxDSxSabBCZIoS5gUe">
+<article class="card" data-page-node-id="Nw6FiJ57Hn4eaDLOEHUkVc">
+        <div class="row" data-page-node-id="2lbxX9Yw2f3P9ZH92On4Tw"><span class="name" data-page-node-id="NGiLhqGU5UjiHtrvH2qYKZ">💼 项目初步筛选</span></div>
+        <div class="ph" data-page-node-id="FBoT5lxvKcDLMgeVsiZP6H">例如：初筛这个项目，看是否符合我们的投资标准…</div>
+        <div class="chiplabel" data-page-node-id="d7vrBZUkXvT4kqGwADdNEl">试试这样问</div><div class="chips" data-page-node-id="2E4vqPrfdJdB20CGKfU4ED"><span class="chip" data-page-node-id="0b0NpHDajHR5ttl0H6EMso">快速判断这个标的值不值得进入下一轮</span></div>
+      </article>
+<article class="card" data-page-node-id="fOkgJmPZ2PQphb3tiYBweq">
+        <div class="row" data-page-node-id="z0mtab9J1A8ff5FWJIoXlM"><span class="name" data-page-node-id="se9gXWMjIrPpLbk2dm95wD">💼 项目来源拓展</span></div>
+        <div class="ph" data-page-node-id="Eyy3CNmbAGp5R7GzFEkddM">例如：帮我列出工业软件赛道值得接触的 30 家公司…</div>
+        <div class="chiplabel" data-page-node-id="Z2pCKq2COyUAVHrErDFFA8">试试这样问</div><div class="chips" data-page-node-id="UkOZ3jnQ8qIjabHr5DbUyI"><span class="chip" data-page-node-id="tVmUxq2sZSsYMAmuP3ynFN">这个行业还有哪些没被覆盖的优质标的</span></div>
+      </article>
+<article class="card" data-page-node-id="skSHwC87QmsVst2yhKGRYZ">
+        <div class="row" data-page-node-id="pHd8RWipyhyzkwA26XeWQU"><span class="name" data-page-node-id="hHEfUvbSqqBwssTFFbGdiW">💼 投资委员会纪要</span></div>
+        <div class="ph" data-page-node-id="1yr0E4HCAOUrA7A9XEor9B">例如：写一份投委会备忘录，重点讲清风险和退出路径…</div>
+        <div class="chiplabel" data-page-node-id="UWFCF2Cd9Mhs96ps1khyhb">试试这样问</div><div class="chips" data-page-node-id="nha0E7fYi90D1pwkmt0GqI"><span class="chip" data-page-node-id="i0UMWgUewYWgLkj9Qz43Ln">把这轮尽调的结论整理成投委会材料</span></div>
+      </article>
+<article class="card" data-page-node-id="g8TmlUUUJAGuMOu8lKWroa">
+        <div class="row" data-page-node-id="5vJI0xWWLF63FFWTOvV53A"><span class="name" data-page-node-id="EUb70cRE0MGsRZvczF3HeV">💼 尽职调查清单</span></div>
+        <div class="ph" data-page-node-id="DCWLE44hvbUAyyjnZgDxoc">例如：给这个制造业标的做一份完整尽调清单…</div>
+        <div class="chiplabel" data-page-node-id="f1ofCPyt9ep6ffVkZcyTSU">试试这样问</div><div class="chips" data-page-node-id="DjjCr3FetOHynCaTu0eIVX"><span class="chip" data-page-node-id="waPRl4iw3iq3GDUlBZfgoM">按财务、法务、业务三块列尽调要点</span></div>
+      </article>
+<article class="card" data-page-node-id="TonARdKlPxFrvgcIYdEEuU">
+        <div class="row" data-page-node-id="q0joPa1TUzCbyDpplavtkH"><span class="name" data-page-node-id="Crx6S7TQdQbLMZuDmWHBpl">💼 尽调会议准备</span></div>
+        <div class="ph" data-page-node-id="hr5bym3FusZbVUzGZ2FDhd">例如：准备管理层访谈的问题清单，重点是客户集中度…</div>
+        <div class="chiplabel" data-page-node-id="21yse6SHxhoonFwDGq5b1x">试试这样问</div><div class="chips" data-page-node-id="O5k5ExOPN2cvzL5zL0aP8z"><span class="chip" data-page-node-id="xvF6lE2Jf7ENpuWqxFRHa9">设计尽调访谈的问题和团队分工</span></div>
+      </article>
+<article class="card" data-page-node-id="Hii0e0M7uPipUYB4wPTD1D">
+        <div class="row" data-page-node-id="kP1k7BredmSntHs1u89Wdm"><span class="name" data-page-node-id="MAfW00EQAbC7eMLffdiGvM">💼 投后项目监控</span></div>
+        <div class="ph" data-page-node-id="DRvUXHjExExvS4nQk4yDHZ">例如：看一下这个已投项目的 KPI，有没有偏离预算…</div>
+        <div class="chiplabel" data-page-node-id="oiUfeFBXx32Q0dH1iV1Nyg">试试这样问</div><div class="chips" data-page-node-id="DDM87CAPXDu3Re1ifyHvLl"><span class="chip" data-page-node-id="ihtz0SQUEtc57FkLAY3W9K">帮我把已投项目过一遍，标出需要预警的</span></div>
+      </article>
+<article class="card" data-page-node-id="kwKhAPwHWCuTffm7xO3vCi">
+        <div class="row" data-page-node-id="JoBcSDfpMlcQ9CRRG5thyE"><span class="name" data-page-node-id="Yw96fE0mrqCkklELiS3IDG">💼 投资收益分析</span></div>
+        <div class="ph" data-page-node-id="eWYKVleQbPLsUko6SAGbAU">例如：算一下这笔投资 5 年退出时的 IRR 和 MOIC…</div>
+        <div class="chiplabel" data-page-node-id="hW0PREa9GCcoc2daceoE9h">试试这样问</div><div class="chips" data-page-node-id="coFi0rV1VPTcYLUj86jHgG"><span class="chip" data-page-node-id="vz2rGVwR2KUy2fkFmGON8L">测算不同退出时点和估值下的回报分布</span></div>
+      </article>
+<article class="card" data-page-node-id="095TZHcu1vXApaQ9JRxBML">
+        <div class="row" data-page-node-id="JxWqOjT46mqiNeD1xIjIBB"><span class="name" data-page-node-id="iNgkpGc9yuQv4FsbQ0ItEG">💼 单位经济分析</span></div>
+        <div class="ph" data-page-node-id="Mf4IzAegqauvzUAs4SKBms">例如：拆一下这家 SaaS 的 CAC 和 LTV，多久能回本…</div>
+        <div class="chiplabel" data-page-node-id="HgtBvEDHXO52wJOMB4z4JV">试试这样问</div><div class="chips" data-page-node-id="8AsRQi76ZnSg44feJ8P1zi"><span class="chip" data-page-node-id="CnQUW7t76wfzteY30CAnQz">分析单位经济模型，找出盈利拐点</span></div>
+      </article>
+<article class="card" data-page-node-id="9u9WqxnDuJ9FTfR0B4ccv8">
+        <div class="row" data-page-node-id="gTjbJXDt8fieK9ALQjSkwe"><span class="name" data-page-node-id="CnDAoWXT9Z5lqAmxUtp4Y6">💼 价值提升方案</span></div>
+        <div class="ph" data-page-node-id="zzdTnLghGMhx14uLaQBsDb">例如：给这家投后企业做一份 100 天价值提升计划…</div>
+        <div class="chiplabel" data-page-node-id="vK6mGqeTtgFmvLAGvaSu1n">试试这样问</div><div class="chips" data-page-node-id="VgOebWhDG2hPU31avDJ0tH"><span class="chip" data-page-node-id="UFwNA3zLUdnfSWWr4VGTEk">制定运营改善和退出路径的方案</span></div>
+      </article>
+<article class="card" data-page-node-id="oIaVrna6QDSkExGNe13OVw">
+        <div class="row" data-page-node-id="stfym8KB4dvEM7STRoAKLK"><span class="name" data-page-node-id="xk7UpXwY9XuVbcDLqSy3PS">💼 AI 转型评估</span></div>
+        <div class="ph" data-page-node-id="n95gJ41YCezPHD3aEd6Z6M">例如：评估这家公司 AI 落地的就绪度，给个路线图…</div>
+        <div class="chiplabel" data-page-node-id="rr9EyNZpcST9qdsvWrtaAC">试试这样问</div><div class="chips" data-page-node-id="8yk4IyeqAQNuoFkGzBdYFr"><span class="chip" data-page-node-id="ElnGJX4ZvNYnROxovI01jO">分析这家传统企业数字化转型的投入产出</span></div>
+      </article>
+</div>
+</section>
+<section class="cat" data-page-node-id="NtFJXRWe13mFvy941uM94q">
+<h2 data-page-node-id="nCV4endWfsexjviT5AmFSf"><span class="ico" data-page-node-id="K3SyDSxTPfCgbApruP5O35">💰</span>财富管理<em data-page-node-id="70aPfg4delK1P7tPGMADkM">9 个技能</em></h2>
+<div class="cards" data-page-node-id="YdQ6wClM4fawg8QL0mxjs3">
+<article class="card" data-page-node-id="K7mClke2YTo0BxPwu83xXQ">
+        <div class="row" data-page-node-id="SqHHLVjlsXLA3W8pwIsv1O"><span class="name" data-page-node-id="jsKhQBGcYRYPaIPSYI9llY">💰 理财规划方案</span></div>
+        <div class="ph" data-page-node-id="eHHqtF0obthBkM5AqQHY1X">例如：帮我做家庭理财规划，重点考虑教育和退休…</div>
+        <div class="chiplabel" data-page-node-id="TXwhexqOuXyttdj8fPQeAQ">试试这样问</div><div class="chips" data-page-node-id="TynI3Hc7o7G1GtEKCBItUo"><span class="chip" data-page-node-id="6xEFcTWITgeIOkYt9BmWtu">测算 20 年后的养老资金缺口，给配置建议</span></div>
+      </article>
+<article class="card" data-page-node-id="cyiYP1ucpGyQ6fQlzA6mhc">
+        <div class="row" data-page-node-id="ag6KRKiuaBMVSXYEABwm8I"><span class="name" data-page-node-id="A8N03Gj2EJOG664AuwdXnb">💰 投资组合再平衡</span></div>
+        <div class="ph" data-page-node-id="EdapCK7VlXECEKSzfFWFOA">例如：我现在的股债配比偏了，给个再平衡建议…</div>
+        <div class="chiplabel" data-page-node-id="8fGDpnv795G1u9cBeMtFk9">试试这样问</div><div class="chips" data-page-node-id="hBZvCyFU3wpIvpDth5pLVT"><span class="chip" data-page-node-id="R5a8BoviApdOVmZuKvYaTX">测算调仓后的风险敞口变化</span></div>
+      </article>
+<article class="card" data-page-node-id="S9ihcQywH96UjplhDLQAzj">
+        <div class="row" data-page-node-id="loMtulXNcefWAFZ62ZAv7g"><span class="name" data-page-node-id="8wTF0IbLtRR5o5afDERqCs">💰 税损收割</span></div>
+        <div class="ph" data-page-node-id="acyXOdcTzpRlQgXMb8cICi">例如：看看我持仓里哪些亏损可以卖出来抵税…</div>
+        <div class="chiplabel" data-page-node-id="jTix8UPAfP55GE1qvdmGkb">试试这样问</div><div class="chips" data-page-node-id="bxUqZQIQsWTMFFNvIGbfjq"><span class="chip" data-page-node-id="VKrqZbeF8e5PIkfFcswW6b">做一次税损收割，同时避免触发wash sale</span></div>
+      </article>
+<article class="card" data-page-node-id="xayzZ7pRvtcvBAQ8LcaG6H">
+        <div class="row" data-page-node-id="BXuI9JzPBhzLpFsxawHFzj"><span class="name" data-page-node-id="dYwsLGe1OUwDvBnKvs0OLE">💰 客户资产报告</span></div>
+        <div class="ph" data-page-node-id="09buuG4LlHVAG5r6We4U6r">例如：给这位客户做一份季度持仓报告，含业绩归因…</div>
+        <div class="chiplabel" data-page-node-id="QfsATlpg6A4HC7uCPd1Fnf">试试这样问</div><div class="chips" data-page-node-id="pJylWbTM1JmKfKHXI3JKPv"><span class="chip" data-page-node-id="F19tgfZKYEH3FRKQsOV75g">整理客户的资产配置和风险分析</span></div>
+      </article>
+<article class="card" data-page-node-id="hb7SMRwlO2t5Ll19KxtlTf">
+        <div class="row" data-page-node-id="LVPBGDXHKRiwOxUihTVHSy"><span class="name" data-page-node-id="LqFHsQbxGTbuu6BntdjU9H">💰 客户资产回顾</span></div>
+        <div class="ph" data-page-node-id="y8z8McjMlsJqXJ9gUshx3R">例如：做一次年度资产回顾，核对目标进度并调整策略…</div>
+        <div class="chiplabel" data-page-node-id="Ns2X4Xfwsno8vyMu6YUbFD">试试这样问</div><div class="chips" data-page-node-id="uiSLE0mFo3h9V3FTCYbYqX"><span class="chip" data-page-node-id="Xmq08erOusYtiXnDDmFCwM">客户年内目标完成度如何，要不要调策略</span></div>
+      </article>
+<article class="card" data-page-node-id="EM1jMhFfPOgEknvsSkIDFN">
+        <div class="row" data-page-node-id="i23IVQy0iAJhkUSQGXb1c8"><span class="name" data-page-node-id="V39Kchyqajejb7eXr1rg3f">💰 投资建议方案</span></div>
+        <div class="ph" data-page-node-id="7Wu4elGOEi178CwQvFRTT4">例如：给客户写一份投资建议书，含配置比例和产品推荐…</div>
+        <div class="chiplabel" data-page-node-id="cR2DG2KpzLlSp39AJOgmua">试试这样问</div><div class="chips" data-page-node-id="T5z3CmZjQpUGDiCPnxN2We"><span class="chip" data-page-node-id="MfsHfpfPE0BAr2RJGAqw6f">面向客户的产品推荐方案和风险说明</span></div>
+      </article>
+<article class="card" data-page-node-id="UiyWx51ty3RFYtuwjmzwUc">
+        <div class="row" data-page-node-id="E0cNqBFyfzwh6GNMiNFchm"><span class="name" data-page-node-id="g4cXluUjZSFWZBc5fvnLOK">🎯 风险画像</span></div>
+        <div class="ph" data-page-node-id="YiQXG9tP3rN2YHdAPgdPRY">例如：评估这位客户的风险承受能力，匹配合适产品…</div>
+        <div class="chiplabel" data-page-node-id="kPZMj6aKoZYSUyCmOKaPSR">试试这样问</div><div class="chips" data-page-node-id="WB9L225OU9sdVDlzYV4J65"><span class="chip" data-page-node-id="IYBp5hQ5K2v4cmZ5yTkA35">根据问卷结果给客户做风险画像</span></div>
+      </article>
+<article class="card" data-page-node-id="3dMezWBGnUmtGCjzJwLRKt">
+        <div class="row" data-page-node-id="vBtLC04deO7FTEw3O5FZcN"><span class="name" data-page-node-id="uYvzkdAwsPRFd3nq1mwaoG">🎯 目标规划</span></div>
+        <div class="ph" data-page-node-id="JvfLOTtg1lincHsh4uZ3aO">例如：我想 45 岁财务自由，算算需要多少本金和收益…</div>
+        <div class="chiplabel" data-page-node-id="SskugH2MP6PeDJCkHnMAsl">试试这样问</div><div class="chips" data-page-node-id="vpOHxcc2TqgjbbNRZmzcLn"><span class="chip" data-page-node-id="tCetOfV5BRk5khna24SaG2">量化购房、教育这些目标需要的投资路径</span></div>
+      </article>
+<article class="card" data-page-node-id="AW2fON53DgiO9aTp4oOb4j">
+        <div class="row" data-page-node-id="lWYAjhZ6AkTXsx5Ir7nUsu"><span class="name" data-page-node-id="iy8ts29p0YlXncyvLWyVCV">💵 收入策略</span></div>
+        <div class="ph" data-page-node-id="5iTngXndw3Rc0JdZWVzunV">例如：搭一个以股息和债息为主的现金流组合…</div>
+        <div class="chiplabel" data-page-node-id="7EUHu2IYCeDh3G5rD2QE9V">试试这样问</div><div class="chips" data-page-node-id="ldHkxvhpR7LLridzhXLq8B"><span class="chip" data-page-node-id="jcf3QvMKuOV6HvmXyiegJC">想要年化 4-5% 的稳定现金流，怎么配</span></div>
+      </article>
+</div>
+</section>
+<section class="cat" data-page-node-id="DRRf9PRuJYnxVGxMg7lE77">
+<h2 data-page-node-id="yJw6kBRB6jShcvDbW0gCfW"><span class="ico" data-page-node-id="jnMFEeOUEm9ciZMjRsjLEt">📈</span>股票研究<em data-page-node-id="Gi6DxvGvaiwC3wFyadCEYu">33 个技能</em></h2>
+<div class="cards" data-page-node-id="kW33WoPdDazQPv75IOb20G">
+<article class="card form" data-page-node-id="dSH2yBPvBJMa5GGaiZ43ky">
+        <div class="row" data-page-node-id="gR4ZaAb0mEzaWLaP1jbDMj"><span class="name" data-page-node-id="NxuloM1qwAYYPVHrD5USFL">🏭 美股行业分析</span><span class="badge form" data-page-node-id="pQvqxEPU0zksXug2qNZOt7">表单卡</span></div>
+        <div class="ph form" data-page-node-id="GjTuDUONkFBrCNzFnAl9gG">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="cJp1U8kvRgO9sGjLOh2p1W"><span class="fld req" data-page-node-id="8qr23RKXB2O4Va4C5N6FGi">行业</span><span class="fld" data-page-node-id="kiehXqSk9MpFuwAw1bnpK3">分析深度</span><span class="fld" data-page-node-id="f8qYsrbGpyHIawFDfjIjqW">分析角度</span><span class="fld" data-page-node-id="zI8PGHHe6CyYAxlQblfDXc">覆盖范围</span><span class="fld" data-page-node-id="EcSH5Crh4FyQANLABDnsxF">用途</span></div>
+      </article>
+<article class="card" data-page-node-id="kCVCUgtnfhwVHKRYKRuoOc">
+        <div class="row" data-page-node-id="FOiwMhHCmFrehxXlo0g2I8"><span class="name" data-page-node-id="1Hs4xBhsDGhE9G31kNocrl">📈 重要事件日历</span></div>
+        <div class="ph" data-page-node-id="mKYgSnDCnJYSpE8Sl0QHOe">例如：列出我关注的公司未来三个月的催化剂事件…</div>
+        <div class="chiplabel" data-page-node-id="UWGDueFCiF8NsFN0yE6Lph">试试这样问</div><div class="chips" data-page-node-id="neTKCSi9h9fHRovewhIHWh"><span class="chip" data-page-node-id="5JSe5E3GUsfGdQUZXznO0Z">帮我整理覆盖标的的股东大会和分红日期</span></div>
+      </article>
+<article class="card form" data-page-node-id="aarJIooIXZ4T9elaD2XRwB">
+        <div class="row" data-page-node-id="hNmyoz1ig5NXhew59evjJD"><span class="name" data-page-node-id="L5ZGyCa0z14BS0Qjdrfr6k">📈 美股财报分析</span><span class="badge form" data-page-node-id="DpWmiDfwiSyiFHXfZZj7AL">表单卡</span></div>
+        <div class="ph form" data-page-node-id="fVgYKn5ohsaHbdltHNfeTB">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="CGqgsQW98qoIjy8YQms6YA"><span class="fld req" data-page-node-id="IQQl2YOXku0dWhqfjyDwQa">分析对象</span><span class="fld req" data-page-node-id="l8C6ZjGFmOq81hUQ6N2Pul">财报期</span></div>
+      </article>
+<article class="card" data-page-node-id="fWh1nX7sGx3F8JjrlwY6Rp">
+        <div class="row" data-page-node-id="GVafQZoJnTFGkMa1BOu0RK"><span class="name" data-page-node-id="VBCsRai1qPKUwh4KXCdwhr">🔮 美股财报前瞻</span></div>
+        <div class="ph" data-page-node-id="pkrFwV2bpSYB8S7GH4hIhq">例如：财报发布前做前瞻，对比一致预期和关键看点…</div>
+        <div class="chiplabel" data-page-node-id="gsdntK4BJsbqSSjreuhZPh">试试这样问</div><div class="chips" data-page-node-id="qJNceN5L873ArRdHLfUpjb"><span class="chip" data-page-node-id="04022BdmBu6jlYOQtWNyUP">这家公司这季度财报，市场最关注什么</span></div>
+      </article>
+<article class="card" data-page-node-id="I0LBMjdr86y2TrI4TRRB6Z">
+        <div class="row" data-page-node-id="LTLS1bVFQDZveTyGUFor0q"><span class="name" data-page-node-id="KT1JZaj5YgccSlWjWJ7i4f">📈 财报回顾</span></div>
+        <div class="ph" data-page-node-id="6FGc58uAIoOzIAGFla2Cxs">例如：这份财报刚出，帮我拆一下超预期还是低于预期…</div>
+        <div class="chiplabel" data-page-node-id="uu0X03ZYKzw1FqgIF3yBno">试试这样问</div><div class="chips" data-page-node-id="rBxqchp6v0MHC6BDUDEjzM"><span class="chip" data-page-node-id="DEzart9LfKZzreFNSBBLp5">业绩出了，帮我更新投资论点和盈利预测</span></div>
+      </article>
+<article class="card form" data-page-node-id="YdbJzqps2eOwKBqUQXBIrC">
+        <div class="row" data-page-node-id="Asow80Eco29T4NXjRklhP4"><span class="name" data-page-node-id="dum2YjsVP7Z8rycCOk0SNh">🎯 美股选股筛选</span><span class="badge form" data-page-node-id="AGUms9SAxfMG69HtfMmhy6">表单卡</span></div>
+        <div class="ph form" data-page-node-id="cIuDcdJskAo6Z8ksPX0fWH">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="zdcJkM3XWSIL6yHEqJ0Ysf"><span class="fld req" data-page-node-id="ywLaS6Q31r7ARYKJdN44hC">方向</span><span class="fld req" data-page-node-id="bT2ZQb6ik19EUSFfycctp3">市值</span><span class="fld req" data-page-node-id="RaR28uZC39mWwtlSAl4qlj">行业</span><span class="fld req" data-page-node-id="1Cp0Sw1p07asmDANhrInzW">投资风格</span><span class="fld req" data-page-node-id="gSD9QSLFZO8tdf4U1uYvGh">地区</span><span class="fld" data-page-node-id="dQDvQe2PgDsBXNdnYvF8uo">主题</span></div>
+      </article>
+<article class="card" data-page-node-id="QChHJWf4g5Ib5LMlJ3SCC0">
+        <div class="row" data-page-node-id="y8I2sgITH0FYIYQwWXHy0A"><span class="name" data-page-node-id="trq2YNHNBDLBK1CXPcCX72">📋 美股首次覆盖</span></div>
+        <div class="ph" data-page-node-id="9CagfTkHHIlMYPrrSlvYIQ">例如：写一份首次覆盖报告，给出评级和目标价…</div>
+        <div class="chiplabel" data-page-node-id="sZ6D83JmpfzirjKSND9TjY">试试这样问</div><div class="chips" data-page-node-id="flsdMxXSXZnyIxPmZEPDzd"><span class="chip" data-page-node-id="VsqOlmXkbpRrC1AYCkkUdA">帮我完成这家公司的首次覆盖深度报告</span></div>
+      </article>
+<article class="card" data-page-node-id="0I8RXAiArhHucQZTqClmDM">
+        <div class="row" data-page-node-id="j1dyS57eKMcgZILhXWJlXY"><span class="name" data-page-node-id="mbD5tsdQpK9qgHzSNFo0sO">📈 财务模型更新</span></div>
+        <div class="ph" data-page-node-id="YqebF38nB3CHqGFyi1r7Fw">例如：把最新季度实际数更新进模型，调整全年指引…</div>
+        <div class="chiplabel" data-page-node-id="c7EUVkW4sBzng2j23JTrWJ">试试这样问</div><div class="chips" data-page-node-id="SzWedRfvvDHlCXwJACcKzd"><span class="chip" data-page-node-id="9WUmtLbGLSziasQHyiiBzc">管理层下调指引了，帮我测算对模型的影响</span></div>
+      </article>
+<article class="card" data-page-node-id="fGHJx9OdwJRB9YEhnd9UV8">
+        <div class="row" data-page-node-id="0x9FAL2CoxZJG9m8FiE8Hq"><span class="name" data-page-node-id="O3i0znU0tSODr5qUCC6plE">🌅 美股晨会纪要</span></div>
+        <div class="ph" data-page-node-id="hmvQSVmBL3QjaS2LYYN34q">例如：写今天的晨会纪要，重点是隔夜外盘和板块异动…</div>
+        <div class="chiplabel" data-page-node-id="V1yg4hxuc272MmWtcDqksC">试试这样问</div><div class="chips" data-page-node-id="RyiS458XD8AR0P7f2nPIGM"><span class="chip" data-page-node-id="FOLC0twvukOI4rc5bQGBd1">整理今日市场要点和重点关注事件</span></div>
+      </article>
+<article class="card" data-page-node-id="aAHJbA2BtnH5RY3RatqQzm">
+        <div class="row" data-page-node-id="cVf7I6LzCpFxZGmA4OG7H4"><span class="name" data-page-node-id="oAqdSqAXomI7fFZsevaBWk">📝 美股投资逻辑跟踪</span></div>
+        <div class="ph" data-page-node-id="4yknBhcYgaDBrB5mdvSPgV">例如：复盘这笔持仓的投资逻辑，核心假设还成立吗…</div>
+        <div class="chiplabel" data-page-node-id="RFBsd5FpBBv0r15VhdPbwI">试试这样问</div><div class="chips" data-page-node-id="5wXH14OAAqPXRurTIFcjiZ"><span class="chip" data-page-node-id="wd4Qya8EIdjpQ4hj1Ot3Fz">跟踪持仓的核心假设和催化剂进展</span></div>
+      </article>
+<article class="card form" data-page-node-id="MVdRBYgyE1J5RUxQPU2Kyj">
+        <div class="row" data-page-node-id="oI4BeM9K0WyVHxe0pxwwya"><span class="name" data-page-node-id="qz58rGJ5wzkRRtY5bAQr0e">📈 技术面综合分析</span><span class="badge form" data-page-node-id="JbBOB0io6vQulpGsk85Dav">表单卡</span></div>
+        <div class="ph form" data-page-node-id="wmy52hByCflxcnWmmXA2Dx">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="3PVNCK8iSgNowbrYMUzcD4"><span class="fld req" data-page-node-id="DswfNvrmTCzNJCI7gNops6">分析标的</span><span class="fld" data-page-node-id="W9JjWx1r6nI1v9wR48pmME">K线周期</span><span class="fld" data-page-node-id="MNavbubc4VnUFfXDKvMIIn">回溯区间</span><span class="fld" data-page-node-id="8DcTMX2IpgWw7eepF21x8Q">技术指标</span></div>
+      </article>
+<article class="card form" data-page-node-id="V71TRQElaJJbIoPIltNEXE">
+        <div class="row" data-page-node-id="SO5P6xvZ33CsFQRXclBZli"><span class="name" data-page-node-id="aov5ocYORtGQp5SlvGKN9I">📊 多股票横向对比</span><span class="badge form" data-page-node-id="YU4PYoRJKv2BLCwmoPFQzy">表单卡</span></div>
+        <div class="ph form" data-page-node-id="rmgUlEiDvwexIxGHJfIsD8">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="cvyhQ0SUT0Y5F7PV7MHalE"><span class="fld req" data-page-node-id="oT6MItA85v2GT8ThmuBeag">对比标的</span><span class="fld" data-page-node-id="HMkg2Lz5VU93AokccAuNvl">对比维度</span><span class="fld" data-page-node-id="o9DfodUZlFAFGAfPqJYpDp">对比报告期</span></div>
+      </article>
+<article class="card" data-page-node-id="HIJCAd2p8Z3urNKQTElEWV">
+        <div class="row" data-page-node-id="bnglEr5bIDaA4i7F135gKD"><span class="name" data-page-node-id="g7ERFrGF6PJ4m5tz9Y6ASN">💰 股息分析</span></div>
+        <div class="ph" data-page-node-id="sE2lbrz8SQliB6XtFIsrh0">例如：分析长江电力的分红能不能持续，派息率会降吗…</div>
+        <div class="chiplabel" data-page-node-id="FzXBjkz90CfM6aBD9VVK2j">试试这样问</div><div class="chips" data-page-node-id="AlJs0mdu1whNGy0Z57K2HH"><span class="chip" data-page-node-id="wA7sAvLH48mKOQC3uEZMzr">这只票的股息率在什么位置，还值不值得拿</span></div>
+      </article>
+<article class="card" data-page-node-id="QZkXODykfNe8FA4S38CudO">
+        <div class="row" data-page-node-id="tddE8ySNl2aZpCn33MuMHO"><span class="name" data-page-node-id="JHIEWtoXxalnodIhCPtiPl">⭐ 质量评分</span></div>
+        <div class="ph" data-page-node-id="Dv3EfblbUFp9oSycVvlZva">例如：给这几家公司打个质量分，按 ROE 和现金流排序…</div>
+        <div class="chiplabel" data-page-node-id="eTgGSckeiiBbBCYwfKD7rH">试试这样问</div><div class="chips" data-page-node-id="MhUTf5KGcc7FSrMZNo37Kw"><span class="chip" data-page-node-id="EeClJcLtj5SZMDnRDqnvXW">量化评估这家公司的财务质量等级</span></div>
+      </article>
+<article class="card" data-page-node-id="UhlGpXETSEknjpdtbMoOXB">
+        <div class="row" data-page-node-id="RBCa9uytymrxSZ9L5aPYGJ"><span class="name" data-page-node-id="2TCJPgT9b7OH2NKNDPBmh8">🗺️ 估值热力图</span></div>
+        <div class="ph" data-page-node-id="4sMr73SzQ89GzPtNwxszmt">例如：看一下新能源板块的估值分位，哪些还在低位…</div>
+        <div class="chiplabel" data-page-node-id="1GEfY0Mdh2B8CDP5GwAMpY">试试这样问</div><div class="chips" data-page-node-id="Hnry3HX4t4gxvzn0ag5XY0"><span class="chip" data-page-node-id="YwMZubOSlVh05rTlmWGNqe">做一张行业估值热力图，找出洼地</span></div>
+      </article>
+<article class="card" data-page-node-id="26wfMQr1L6coJol397PbGE">
+        <div class="row" data-page-node-id="ClhyXU05v6jYGU58lrqbWr"><span class="name" data-page-node-id="RkNEvZiW5GLsAvFeY2lmsx">👤 内部人交易</span></div>
+        <div class="ph" data-page-node-id="LcWQB57EYbJDCTTxB51asX">例如：查一下这家公司最近有没有高管增持或减持…</div>
+        <div class="chiplabel" data-page-node-id="VNeD3OcOzXXErTbeCFn8rj">试试这样问</div><div class="chips" data-page-node-id="QAP3VBRuuCkFAf6ceBGETF"><span class="chip" data-page-node-id="WIp9IlR8od2V9sL4WUskzv">分析内部人交易信号，是买点还是卖点</span></div>
+      </article>
+<article class="card" data-page-node-id="BCRrCD1tQKQEk9G6uIKPrs">
+        <div class="row" data-page-node-id="485dtAHf8aWUfAbY89ZIOj"><span class="name" data-page-node-id="QZPyPSwCoKqj6C5ItUdpOH">📉 做空分析</span></div>
+        <div class="ph" data-page-node-id="rXnHA97JG7Nf7BE9lwMHdn">例如：看一下这只票的融券余额和做空比率…</div>
+        <div class="chiplabel" data-page-node-id="1IOgqH8ADC4UPJgTBkPudZ">试试这样问</div><div class="chips" data-page-node-id="F2xrbA8NE6Y2c8jZAvAW4G"><span class="chip" data-page-node-id="q4UeBtqXAw6wEEBDgh2bI1">空头压力大不大，有没有逼空可能</span></div>
+      </article>
+<article class="card" data-page-node-id="EefKBFDL1YSPm4qDUU2wgw">
+        <div class="row" data-page-node-id="hFptDBYA1580NCiF8VJFCO"><span class="name" data-page-node-id="DjMyIsxr5HalD2Dxvst60k">🔗 供应链分析</span></div>
+        <div class="ph" data-page-node-id="PcdAucYDEWaBwCWezOopIP">例如：梳理这家公司的上下游，找出卡脖子的环节…</div>
+        <div class="chiplabel" data-page-node-id="6ZDbGVyUkCJ0LrHPsXtx9K">试试这样问</div><div class="chips" data-page-node-id="A48B20jhuCQWnUFTxURlDP"><span class="chip" data-page-node-id="0mmiFLehRB6vF8gRRDCAwc">分析供应链集中度风险，有没有替代方案</span></div>
+      </article>
+<article class="card" data-page-node-id="vdpeHChElGgFVV3e2ts70s">
+        <div class="row" data-page-node-id="DAviFWAiFtSNqUTqBriePi"><span class="name" data-page-node-id="2WNuePjEMG2OXdWhiOEkMK">🌱 ESG评分</span></div>
+        <div class="ph" data-page-node-id="9zVoar4W05MnyWmj2uBTka">例如：给这家公司打个 ESG 分，重点看治理风险…</div>
+        <div class="chiplabel" data-page-node-id="XhJxibtZTardLvyBMEio9J">试试这样问</div><div class="chips" data-page-node-id="IcnGsK7SuGHRIPj0vUBLfG"><span class="chip" data-page-node-id="zty1FyCdTBJiFszH9biZSC">评估这家公司的环保和治理风险敞口</span></div>
+      </article>
+<article class="card" data-page-node-id="MqwVMzdjeRiBp8Abrr1lVU">
+        <div class="row" data-page-node-id="7AXKc8RsrCTaJBrITYnUay"><span class="name" data-page-node-id="DwCYCptPdVx1Za7y9zMAwA">🎯 事件研究</span></div>
+        <div class="ph" data-page-node-id="y6dyybIEcIr1EvbnWT27Zw">例如：算一下定增公告前后 5 天的异常收益率…</div>
+        <div class="chiplabel" data-page-node-id="LEq5neZaxauETCC9NzkSiP">试试这样问</div><div class="chips" data-page-node-id="YSl02PUzLZLncehlv3AkXG"><span class="chip" data-page-node-id="1r2Q4Hx5hbKom5ydAt4rbP">分析这个事件对股价的实际冲击有多大</span></div>
+      </article>
+<article class="card" data-page-node-id="sQzmAviqTKigxGJCSxzW94">
+        <div class="row" data-page-node-id="4qlOfECJGDWRnYB9RsBRSa"><span class="name" data-page-node-id="8hwj5um7BztxYBBGTOBkON">🔄 板块轮动</span></div>
+        <div class="ph" data-page-node-id="FKd5IwTc69p8nQaI29r1IM">例如：现在哪些板块出现轮动信号，资金在往哪走…</div>
+        <div class="chiplabel" data-page-node-id="GJYB0kYeDUFi2PCiqnVy3J">试试这样问</div><div class="chips" data-page-node-id="N71W7AtWoEZATenkdOVtN1"><span class="chip" data-page-node-id="iNqCnuoiRPdpTPy9ftks9F">帮我判断当前的市场风格偏向</span></div>
+      </article>
+<article class="card" data-page-node-id="CW5fvpBjmoR5nMpCNfk3k6">
+        <div class="row" data-page-node-id="5Fk096qHMUMi10iLEPGfz1"><span class="name" data-page-node-id="A2rqPhLVD87AIVeArDUfnU">🔍 财务舞弊识别</span></div>
+        <div class="ph" data-page-node-id="9Sd2WVvuefxssXBsqUSDBu">例如：帮我查这家公司的财务异常指标，有没有造假风险…</div>
+        <div class="chiplabel" data-page-node-id="uLi6fNzCuu22JzjXhipC4A">试试这样问</div><div class="chips" data-page-node-id="81FxL59Kub0uyVKgaCmGm8"><span class="chip" data-page-node-id="8bRjVLrpSPBdz0dAjEJ43b">识别报表里的舞弊信号，重点看应收和存货</span></div>
+      </article>
+<article class="card" data-page-node-id="YOHaMF4sGKmjoAXXkycaid">
+        <div class="row" data-page-node-id="njAPSFBRBv7mR1RiHyxw4r"><span class="name" data-page-node-id="eOPCsDRcSV764i2xsJ7OdI">⚖️ 同业对比</span></div>
+        <div class="ph" data-page-node-id="uXOPpU0srVzqxccHSviFrC">例如：把这三家同行业公司放一起比，谁竞争力最强…</div>
+        <div class="chiplabel" data-page-node-id="fs4Nx9qDrGKMJWTsZB0CA8">试试这样问</div><div class="chips" data-page-node-id="LuQTXw5DlAfA5OBAmymEgk"><span class="chip" data-page-node-id="r6tUPqvWGZ9vi7vIrviplG">同行业横向对标，找出被低估的那家</span></div>
+      </article>
+<article class="card" data-page-node-id="8ydGOtzNId30DBFCU93Cee">
+        <div class="row" data-page-node-id="9YWKuKHl64YEvD4tEP9HIp"><span class="name" data-page-node-id="d3ezMmaJkFskJcG6HDe3xV">📅 财报日历</span></div>
+        <div class="ph" data-page-node-id="BkQvy6yCWQ7T0pa15keFr9">例如：列出我覆盖的公司下个月哪天发财报…</div>
+        <div class="chiplabel" data-page-node-id="aEqqBvtZsQfrY7pCtdXKY9">试试这样问</div><div class="chips" data-page-node-id="XnOq5mD8BtEqUPTWnq0Jof"><span class="chip" data-page-node-id="gpMoc8rwa945oKr1LmqQQG">帮我排一下近期的财报和事件日历</span></div>
+      </article>
+<article class="card" data-page-node-id="obuLY6FQbWccczoyXwMlpE">
+        <div class="row" data-page-node-id="JCFM9AzyVo13lCTsWGj2qA"><span class="name" data-page-node-id="buhf9YAbsuO4UMWgS8904e">📄 公司一页纸</span></div>
+        <div class="ph" data-page-node-id="AmbmAG7nmKEuan91jHnCgh">例如：给这家公司做一页纸摘要，浓缩关键指标…</div>
+        <div class="chiplabel" data-page-node-id="uz7g3e5C3nmY80DqcGQq1g">试试这样问</div><div class="chips" data-page-node-id="QKACwWlcgta0EZYl2Ltz5U"><span class="chip" data-page-node-id="qkJ6K1FrUtk5z2Y11tpBdr">把这家公司的核心投资论点做成一页纸</span></div>
+      </article>
+<article class="card form" data-page-node-id="oeNGLXRFF0WHrBFLuTpiLf">
+        <div class="row" data-page-node-id="e9WV4nlpFqrHiQK9e2m5q5"><span class="name" data-page-node-id="AouUWAMgx4he3RK9uOFGER">📊 A股业绩点评</span><span class="badge form" data-page-node-id="EtGFUv2mCGflmlWuC6BeuG">表单卡</span></div>
+        <div class="ph form" data-page-node-id="PNGtzzWdIYUQojyj0TqLR0">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="GGiVgbcRq0hlNk2iOh5pvt"><span class="fld req" data-page-node-id="OEBSWZBc46o2hlwxCXMNR3">分析对象</span><span class="fld req" data-page-node-id="NGUgEv9xTtlLGARYbKqHfw">报告期</span><span class="fld" data-page-node-id="gpzglz7XjYQNWMsbMb93Sl">分析角度</span></div>
+      </article>
+<article class="card form" data-page-node-id="8luo9ZDCUzFTTL47z83OSs">
+        <div class="row" data-page-node-id="cGWvnmetbXqLMwDfhL1HBA"><span class="name" data-page-node-id="ng4z4gWnyDv1d0UjeLw4iJ">🏭 A股行业深度分析</span><span class="badge form" data-page-node-id="a7efT4SpiaIHliDf2qatSY">表单卡</span></div>
+        <div class="ph form" data-page-node-id="01D7HAtEFstRHwCA539gEK">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="tIPIJyhNUPl97kTNa6DEX2"><span class="fld req" data-page-node-id="eqKZbGaOWFoiOjf6Xu5str">行业/板块</span><span class="fld" data-page-node-id="df7skjoeZ0Sdpx25TELVJk">分析深度</span><span class="fld" data-page-node-id="iIrqFaLNl9QdFnAUFvakME">分析角度</span><span class="fld" data-page-node-id="Y0SxOqfd9g6gxT8wZkqn76">覆盖范围</span><span class="fld" data-page-node-id="UZ7Fv8XwtAEW2g5YLxyufT">用途</span></div>
+      </article>
+<article class="card form" data-page-node-id="cNkAW0Uss1iBITe9uIjF3p">
+        <div class="row" data-page-node-id="bzFFXkyNIqaDrCRH7OihgF"><span class="name" data-page-node-id="8PyMogkrW65EsvLQ30b75T">🔍 A股可比公司分析</span><span class="badge form" data-page-node-id="MEeFxI0sT8DPhevo7EMIB2">表单卡</span></div>
+        <div class="ph form" data-page-node-id="QiC40eg8VBdYuz5FM1FRVH">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="75RacUWKtCg1CGFZBLSt8R"><span class="fld req" data-page-node-id="ReuRfX5Ex8osgBE2SjQVLk">目标公司</span><span class="fld" data-page-node-id="CFuGMTJpHaV5PW8efDA4ig">可比公司</span><span class="fld" data-page-node-id="DIPvBGI7aRmWrRM1ZaCdFi">分析重点</span><span class="fld" data-page-node-id="4cw6AUEkPmAZqqpFI57BB3">场景</span></div>
+      </article>
+<article class="card form" data-page-node-id="cCmh9CFHZBtDQMX3gY86CX">
+        <div class="row" data-page-node-id="fwcHowMKcOogS8mHTZ549k"><span class="name" data-page-node-id="C8jy0z6fzsBV1e3aXoNWFj">📋 A股首次覆盖报告</span><span class="badge form" data-page-node-id="ESfZAsEso3OKo68xUiyL3q">表单卡</span></div>
+        <div class="ph form" data-page-node-id="iywhYga8ZNEIkz1Z5fjQaw">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="7ExOi9cWnYpIyjP6qA5ULH"><span class="fld req" data-page-node-id="MXFrh1QxmG99UVZyecOtBi">覆盖标的</span><span class="fld" data-page-node-id="MnkKwa1KAHsHHPfo0EmvlG">执行任务</span></div>
+      </article>
+<article class="card form" data-page-node-id="imDL6FuKUWEIbxk0TXjtdl">
+        <div class="row" data-page-node-id="BlKCE39EYPyKuMIfyTgi0T"><span class="name" data-page-node-id="z5QrjbdtlCrxTfhPsYhisK">🌅 A股晨会纪要</span><span class="badge form" data-page-node-id="OtFCrqpGIkc7xNFKCjG0tB">表单卡</span></div>
+        <div class="ph form" data-page-node-id="nV9z6fx5EW1i8v6Ug7CE26">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="na1VJHsguZ8GioatSZWg41"><span class="fld" data-page-node-id="vwPEDdnqbGFcpX2P7ITpKP">晨报重点</span><span class="fld" data-page-node-id="zYwu9MoqSDbEassWZLI8ue">关注板块</span></div>
+      </article>
+<article class="card form" data-page-node-id="RcOv70p3ihFo5duCo6xuez">
+        <div class="row" data-page-node-id="qtQmwvykJ2fLlt1InJTAQF"><span class="name" data-page-node-id="Nb1DVHMwzjudug39qsbBsD">🔮 A股业绩前瞻</span><span class="badge form" data-page-node-id="326bjEswQpkCWcRAvg9WFR">表单卡</span></div>
+        <div class="ph form" data-page-node-id="3XRJDCDBYmFPHi2m75eL9K">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="3oo7dLdjmIYnyzXWGW6WrY"><span class="fld req" data-page-node-id="xBrvT7bswewpq7yIguGO1C">分析对象</span><span class="fld" data-page-node-id="ThdJ8BzZ6AnHX6aIaZdp3S">前瞻报告期</span><span class="fld" data-page-node-id="2e1jwyVDT1ada9CQVp8RDg">关注重点</span></div>
+      </article>
+<article class="card form" data-page-node-id="Gkjk5o289xtn89XfVOkMiH">
+        <div class="row" data-page-node-id="oOwjEPTF5LoghZEurV0h2F"><span class="name" data-page-node-id="IBI2ffFE7dmhI8ZfEfsjuB">🎯 A股选股筛选</span><span class="badge form" data-page-node-id="TTZZYtNgaCU0k9RLGGz3pU">表单卡</span></div>
+        <div class="ph form" data-page-node-id="E62kvG0cvmxv2dTpSpHN2G">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="aOM63Nma1KYTc4dWwE3YG6"><span class="fld" data-page-node-id="rRUjC0Ih7fm5jGGF2Egqtk">板块</span><span class="fld" data-page-node-id="JNRCDNKn7F5SiZTNCL7e3s">市值</span><span class="fld req" data-page-node-id="REeBQnYX1wdYy6KnG4EhS3">行业</span><span class="fld" data-page-node-id="dNPWnTjkMK2s57tO4ZfxIr">投资风格</span><span class="fld" data-page-node-id="q1NCzG5B5eugy5EreJ1lLa">主题</span></div>
+      </article>
+<article class="card form" data-page-node-id="gxaGBqJZu6A7EMzmen7Zgc">
+        <div class="row" data-page-node-id="pm2pmrA3aZUsJVd09JZIEs"><span class="name" data-page-node-id="bEPW19EDueFq3anOAsBJrO">📝 A股投资逻辑跟踪</span><span class="badge form" data-page-node-id="ky7LHEaFMdiEfsuJeXR2fQ">表单卡</span></div>
+        <div class="ph form" data-page-node-id="H7Y4ffD2zKbrBAPiWcBYcq">该技能走结构化表单，输入框处会显示为参数选择器</div>
+        <div class="chips" data-page-node-id="1pzh9IEyshoyvRDBa5h7KL"><span class="fld req" data-page-node-id="t10n7AbyLzafcJBcMcrbw0">跟踪标的</span><span class="fld" data-page-node-id="1aVrYgCw9hPlWj7UglDj94">跟踪区间</span><span class="fld" data-page-node-id="zQLwL7rYpOMZPjqKCWQAlA">跟踪重点</span></div>
+      </article>
+</div>
+</section>
+<section class="cat" data-page-node-id="btMYQo1ig4f8W3MCyvLLMV">
+<h2 data-page-node-id="yTVGRPIjpBQQWNelXZujat"><span class="ico" data-page-node-id="5dwQlUCO53ofog2d0qip7W">🏢</span>基金管理<em data-page-node-id="k7vIvu560EaUOKgvPMdsG4">9 个技能</em></h2>
+<div class="cards" data-page-node-id="Anw9n902k8AhZg53SLlYIL">
+<article class="card" data-page-node-id="wjmFO7mBdT247dy0vvrlCd">
+        <div class="row" data-page-node-id="G6DyXLN0r61sM27jtEQh15"><span class="name" data-page-node-id="IFkhjdr1yR0OffWq1zETbP">🏢 应计项目明细</span></div>
+        <div class="ph" data-page-node-id="MOK84qVBTO8sFvjiVULT7R">例如：做一下本月的应计费用表，把预提费用算出来…</div>
+        <div class="chiplabel" data-page-node-id="UVnYM7Re1FNxpV4GNuO2CS">试试这样问</div><div class="chips" data-page-node-id="VVntA7SjfXsVoZHXGzotuG"><span class="chip" data-page-node-id="tTuSlT8lMgAQKE7rAdhVWB">帮我核对预提费用和实际发生的差异</span></div>
+      </article>
+<article class="card" data-page-node-id="vH4VnXmNixl1UApssISN2h">
+        <div class="row" data-page-node-id="mQaxVoQpH6ZtiHJRl53yBn"><span class="name" data-page-node-id="tZ277wPXZCTAPVvtFmqCF9">🏢 总账核对</span></div>
+        <div class="ph" data-page-node-id="3txgk8GYI21JlXWXi2puXF">例如：核对总账和子账，找出对不上的科目…</div>
+        <div class="chiplabel" data-page-node-id="9O8Xrkd1FCCix040A4UHP0">试试这样问</div><div class="chips" data-page-node-id="gYYWMBtumr3BXxufEroSzN"><span class="chip" data-page-node-id="kAGije1AfuwgnEdqZOtgAx">帮我做总账科目核对和差异分析</span></div>
+      </article>
+<article class="card" data-page-node-id="dekkN0Ty77XSj0FDLbc9nt">
+        <div class="row" data-page-node-id="7s5yl7t46BpmnpaW6uAlTL"><span class="name" data-page-node-id="kREkPlV0xrBsauNeNzK91G">🏢 净值核对</span></div>
+        <div class="ph" data-page-node-id="CqkJGO8tNIQPgX03aCydVm">例如：把 NAV 报表和净值包逐项比对，看有没有差异…</div>
+        <div class="chiplabel" data-page-node-id="aiLxM4pQ6fF52Zc0HMHZX1">试试这样问</div><div class="chips" data-page-node-id="xHWAwgAEvPVDgNRcOlvTdF"><span class="chip" data-page-node-id="3xUglk537BfdfZNlPsuKy9">核对这个月的净值，找出偏差来源</span></div>
+      </article>
+<article class="card" data-page-node-id="0AA9Ct2GqAIhSYB6Ta4f9P">
+        <div class="row" data-page-node-id="nhO1b594MwsrGWsKa0EQfV"><span class="name" data-page-node-id="wSicxtq41jxHgtwiYdC31A">🏢 期间结转分析</span></div>
+        <div class="ph" data-page-node-id="UaIYtjlmxEkNRMVxEWvvhF">例如：做一份权益变动滚表，从期初推到期末…</div>
+        <div class="chiplabel" data-page-node-id="j8Y3KYO2MOi5J974wThPg9">试试这样问</div><div class="chips" data-page-node-id="29O6qADQHGadZ8qYtMXDOv"><span class="chip" data-page-node-id="MVAqQ4YLQn72XBSrILkpJq">分析本期权益变动的主要构成</span></div>
+      </article>
+<article class="card" data-page-node-id="iPBwXmUfFmTPhFmMuCwUft">
+        <div class="row" data-page-node-id="XdhHD8YC5pbOaihsawTeIm"><span class="name" data-page-node-id="HCDEUQFQTf343YJuNtD5i8">🏢 差异情况说明</span></div>
+        <div class="ph" data-page-node-id="jkQIlHQPYChI7TjZJHdhDh">例如：解释一下本月管理费比预算高了 15% 的原因…</div>
+        <div class="chiplabel" data-page-node-id="Mxm9ZiNh9MJtOLHIxVdZHA">试试这样问</div><div class="chips" data-page-node-id="naHlEBm1mO1wklu3U3FDDa"><span class="chip" data-page-node-id="mETRjtsP4lyiBj143YAdhD">帮我写财务指标变动的分析说明</span></div>
+      </article>
+<article class="card" data-page-node-id="6D37FJUj8iUNHayBBdPK0U">
+        <div class="row" data-page-node-id="hEwy25QupPHSegexrpvIRI"><span class="name" data-page-node-id="7C0LD95hR9kjyiETdtnfEC">🏢 差异追踪</span></div>
+        <div class="ph" data-page-node-id="o7XDt7gDtOrhEmYuJGrHLx">例如：这笔差异追溯到哪来的，帮我定位根因…</div>
+        <div class="chiplabel" data-page-node-id="Jar5EHnH4DIJAH12jk9oyz">试试这样问</div><div class="chips" data-page-node-id="rSDAu7BxlcAjBgGeA1sFCj"><span class="chip" data-page-node-id="QfHArjSW2jRdPeO2OaLQI1">追踪报表差异，还原数据来源链条</span></div>
+      </article>
+<article class="card" data-page-node-id="wuJmEgFxQoQVBb0m5Edq8Z">
+        <div class="row" data-page-node-id="PQfRiqGoRd6OQ4bTYfJKGE"><span class="name" data-page-node-id="qlwG96wxkIQcLNrc3YlvWL">📊 业绩归因</span></div>
+        <div class="ph" data-page-node-id="4Cvpnz07n8IuSghoU9qtGA">例如：做本季度的 Brinson 归因，看超额收益从哪来…</div>
+        <div class="chiplabel" data-page-node-id="mV1du6fsVH6DGIvI2tq8Gy">试试这样问</div><div class="chips" data-page-node-id="l0N9H1UzORJMtqq9tMocis"><span class="chip" data-page-node-id="US63s7qHhMlSRZwRcT7cSh">拆解组合收益，找出行业和选股的贡献</span></div>
+      </article>
+<article class="card" data-page-node-id="WmohwUd23OyKWBs1XYnE8h">
+        <div class="row" data-page-node-id="OtPqJYSVKj7Y014cuu7EFl"><span class="name" data-page-node-id="Cmv2SPQGRI85N8PDhrQ1kb">💰 费用计算</span></div>
+        <div class="ph" data-page-node-id="lJrLkRcaMAUBvonEfshLyP">例如：算一下管理费和业绩报酬，注意水位线…</div>
+        <div class="chiplabel" data-page-node-id="w06lYv3VJKAKZG1WAsxMDU">试试这样问</div><div class="chips" data-page-node-id="Gn4pFQTqw1qE2mxfjanCoK"><span class="chip" data-page-node-id="n8hT8SV2ZHOpD7Da1nET4G">核对本期费用计提是否准确</span></div>
+      </article>
+<article class="card" data-page-node-id="eyZVBWISDrnOd4tkSSygus">
+        <div class="row" data-page-node-id="DQzkl2QaijCpD5ze3Z7DdH"><span class="name" data-page-node-id="zWDg1SwMDUgP8MK9S1q2BP">📄 投资人报告</span></div>
+        <div class="ph" data-page-node-id="6ggMiBO6my7OotrG1dcST2">例如：生成 LP 季度报告，含业绩和持仓变化…</div>
+        <div class="chiplabel" data-page-node-id="AqCXGuzpQ9wJKgHFFvOBff">试试这样问</div><div class="chips" data-page-node-id="AcFwfgmrJuCNjhVEFq8Ukm"><span class="chip" data-page-node-id="5PTHI6GHkDJmKPkyjXZGa0">帮我准备投资人季度沟通材料</span></div>
+      </article>
+</div>
+</section>
+<section class="cat" data-page-node-id="7kE6TBDKupEL1mrrnRfqQc">
+<h2 data-page-node-id="i1cNfD7irzgRLkKml4GCUc"><span class="ico" data-page-node-id="FkgBkGYZy7P54JGLdN3MmL">📋</span>运营合规<em data-page-node-id="nzFs00vGDcY6IBBC09kpxa">6 个技能</em></h2>
+<div class="cards" data-page-node-id="KFG9uHgpwwdloR1Tka3RHi">
+<article class="card" data-page-node-id="56lBzLMwqeeFFFsNXuOGAq">
+        <div class="row" data-page-node-id="KusSlNetGONAcgOKb75FDU"><span class="name" data-page-node-id="pUgFUNZCXI3lmMAVFbFasM">📋 KYC 文档解析</span></div>
+        <div class="ph" data-page-node-id="wMGqI3qJJGRoatDDGonRX4">例如：解析这份 KYC 材料，提取股东和实控人信息…</div>
+        <div class="chiplabel" data-page-node-id="ffmhIqvQtbTBgOhknEfjmq">试试这样问</div><div class="chips" data-page-node-id="Qw8x9iy0EtVXjc9ckD10Dy"><span class="chip" data-page-node-id="YmrlLSq0BISDz9JFRgULCi">帮我把这份开户资料的关键字段提取出来</span></div>
+      </article>
+<article class="card" data-page-node-id="6fHkunMpJCprFFRTw6qbep">
+        <div class="row" data-page-node-id="wDE7OH5PPlImBSytGZv6Ev"><span class="name" data-page-node-id="HDhHpYl8r79V2l9Yhihu7k">📋 KYC 合规规则</span></div>
+        <div class="ph" data-page-node-id="hW9y0KXDeanTtaGWvagjDV">例如：按我们的 KYC 规则校验这份客户资料…</div>
+        <div class="chiplabel" data-page-node-id="ZTHWPG2ynsgCtxyiMpwpJF">试试这样问</div><div class="chips" data-page-node-id="l36ATLEjCFSc2Dit845aCw"><span class="chip" data-page-node-id="pK5DhCHHgVbNFmDhhS4mIm">检查客户资料还缺哪些合规要素</span></div>
+      </article>
+<article class="card" data-page-node-id="f4xFMiiBzkHUiu8CkD3HyW">
+        <div class="row" data-page-node-id="GN0OfE7oPU0ANFjqDI2k5V"><span class="name" data-page-node-id="GqJG32Ihfe0Xc0UTXqpwfl">⚠️ 风险评估</span></div>
+        <div class="ph" data-page-node-id="67JrGQGXxOm3FOxp3Ie7e5">例如：对当前组合做压力测试，看极端行情下的回撤…</div>
+        <div class="chiplabel" data-page-node-id="YZDLcRyKK0RFyDBA4Q9UKe">试试这样问</div><div class="chips" data-page-node-id="HgwYaHi39EAxLc5UfYEv4Z"><span class="chip" data-page-node-id="LClxITxEc670DdFa88kQVN">识别组合里的主要风险敞口</span></div>
+      </article>
+<article class="card" data-page-node-id="n13GozoFHjiVTnRLyCHRwz">
+        <div class="row" data-page-node-id="72tzEuWJMudErAX5EnFVUr"><span class="name" data-page-node-id="fCl7CAKVU3nHBrMmEYpBsc">✅ 合规检查</span></div>
+        <div class="ph" data-page-node-id="l897JcPuaVP8NF0SMmeBrU">例如：检查这笔投资是否符合监管的投资比例限制…</div>
+        <div class="chiplabel" data-page-node-id="4eYeDnjvPfsM3j98tIRLg5">试试这样问</div><div class="chips" data-page-node-id="TOzGbcyV0jXj4Xl1elSFyD"><span class="chip" data-page-node-id="TcXP7HSxvEJ3DFmjhbKwBt">帮我做一次投资合规性核查</span></div>
+      </article>
+<article class="card" data-page-node-id="yoXHsXPvUDdVhDzy4C4p91">
+        <div class="row" data-page-node-id="2tRwd0M3LM2AqYr0aExlvM"><span class="name" data-page-node-id="8an08Bb8DWMDaKYRM6ezft">🚫 制裁筛查</span></div>
+        <div class="ph" data-page-node-id="y7RS4jtD1xVxxUah7tQUa9">例如：筛一下这份客户名单有没有在制裁名单上…</div>
+        <div class="chiplabel" data-page-node-id="8Cw2XO4SHRnT9a2UmEG6oR">试试这样问</div><div class="chips" data-page-node-id="0tWZGiksxY4EV02NbUHH2x"><span class="chip" data-page-node-id="e4RAfcsf9ZbUlT2YBbYpRd">对交易对手做一次制裁名单筛查</span></div>
+      </article>
+<article class="card" data-page-node-id="jB4bAwuDX7FLlZkSle4XUM">
+        <div class="row" data-page-node-id="KE9DiNOTxcqFWksWcfHUs6"><span class="name" data-page-node-id="Im9HHplW48IK6c8avisJFO">🔎 反洗钱检查</span></div>
+        <div class="ph" data-page-node-id="NMsF6eop5xF3WoUe3Dwozc">例如：查一下这批交易有没有可疑洗钱特征…</div>
+        <div class="chiplabel" data-page-node-id="3ip8LxQAY8Mfk4V2Xbac6p">试试这样问</div><div class="chips" data-page-node-id="rlQTlRqcovfgVEBqfkgn5w"><span class="chip" data-page-node-id="UMSrw4mJ2fYb0tKdJUwVQV">做一次反洗钱监控和可疑交易识别</span></div>
+      </article>
+</div>
+</section>
+
+  <footer data-page-node-id="QnFIVK9kG1n5BUeR2N0JXc">数据源：skill-placeholders.json · 改完需执行 node gen-client.mjs 才在应用里生效</footer>
+</div>
+<script>
+  const q = document.getElementById('q');
+  q.addEventListener('input', () => {
+    const k = q.value.trim().toLowerCase();
+    document.querySelectorAll('section.cat').forEach((sec) => {
+      let shown = 0;
+      sec.querySelectorAll('.card').forEach((c) => {
+        const hit = !k || c.textContent.toLowerCase().includes(k);
+        c.classList.toggle('hide', !hit);
+        if (hit) shown++;
+      });
+      sec.classList.toggle('hide', k && shown === 0);
+    });
+  });
+</script>
+</body>
+</html>

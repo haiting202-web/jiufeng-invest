@@ -1,0 +1,34 @@
+{
+  "name": "dsh-finance-tools",
+  "description": "DSH 金融投研数据工具：东方财富/腾讯/雪球/新浪/凤凰多源行情与财报 API，21 个模型可见工具，零第三方依赖。搜索沿用 DSH 内置 provider。",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haiting202-web/jiufeng-invest.git",
+    "directory": "dsh-finance-tools"
+  },
+  "homepage": "https://github.com/haiting202-web/jiufeng-invest/tree/main/dsh-finance-tools",
+  "bugs": "https://github.com/haiting202-web/jiufeng-invest/issues",
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-tools": "^0.1.1-rc.2 || ^0.1.5-rc.2"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  }
+}

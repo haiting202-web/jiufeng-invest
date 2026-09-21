@@ -1,0 +1,13 @@
+# dsh-finance-tools bundle patch
+# 把 finance-tools 插件行插入 profile 层。
+#
+# 这里**不覆盖 ctx.web 的 searchProvider**：本插件不接管全网搜索，
+# 直接沿用 DSH 内置的搜索 provider（由 @deepseek-ai/dsh-web-search-deepseek
+# 注册，id = deepseek-official，底层是 web_search_20250305）。
+#
+# 注意 DSH 的 provider 选择规则：未配置 searchProvider 时，若存在多个可用
+# provider 会报 WEB_PROVIDER_AMBIGUOUS；只有一个可用 provider 时自动采用。
+# 本插件不注册自己的 provider，所以保持默认即可唯一定位到 deepseek-official。
+- insert:
+    - id: finance-tools
+      name: 'dsh-finance-tools'

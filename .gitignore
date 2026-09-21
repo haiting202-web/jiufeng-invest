@@ -1,0 +1,34 @@
+# 依赖与构建产物
+node_modules/
+dist/
+*.tsbuildinfo
+
+# 运行时状态（各工具脚本会在本地生成，不应提交）
+守卫状态.json
+改名状态.json
+
+# 备份 / 临时文件
+*.bak
+*.bak-*
+*.tmp
+*.log
+_icontest/
+brand-copy-backup-*/
+icon-backup-*/
+skill-backup-*/
+lnk-name-backup-*/
+_migrate-backup-/
+.pnpm-store/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+
+# 本地凭据（切勿提交）
+.credentials.yaml
+.env
+.env.*

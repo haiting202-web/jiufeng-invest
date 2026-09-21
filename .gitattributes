@@ -1,0 +1,15 @@
+# 统一换行符，避免跨平台协作产生噪音 diff
+* text=auto
+
+# Windows 脚本保持 CRLF（PowerShell 5.1 对「UTF-8 BOM + CRLF」最稳，
+# 含中文的 .ps1 若按 GBK 解码会报一堆无关语法错）
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制文件不做任何转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary

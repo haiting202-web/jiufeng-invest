@@ -1,0 +1,27 @@
+{
+  "_说明": "keep 里的 skill 保持常驻（注入模型 catalog）；未列出的全部标为按需（disable-model-invocation: true），你用 /名字 手动调用。改完这个文件后跑 --apply 查看预演。",
+  "_判据": "2026-09-17 修订（左边栏冻结版）：左边栏 7 分类 101 技能 = 用户入口层，已冻结不动，且它自带完整 prompt、不依赖 DSH skill 目录。DSH 的 89 个 skill 中 88 个与侧边栏同名 → 用户到达它们的路径是侧边栏，不需要模型自主匹配。因此 keep 只保留「DSH 独有」+「用户可能绕过侧边栏、直接自由提问时需要的横切原语」。",
+  "_变更记录": [
+    {
+      "date": "2026-09-17",
+      "from": "常驻 28 / 按需 61",
+      "to": "常驻 3 / 按需 86",
+      "reason": "实测 DSH 89 skill 与侧边栏 101 技能重叠 88 个；DSH 正文 = 侧边栏 prompt + ~1100 字模板（88 文件逐字重复）。侧边栏 client.js 直接注入 skill.prompt 纯文本，101 条 prompt 斜杠引用为 0 → 砍 DSH catalog 对左边栏零影响。",
+      "token": "catalog 6,564 → 约 250 tok/轮（省约 6,300）"
+    }
+  ],
+  "generatedAt": "2026-09-17T09:40:00.000Z",
+  "skillsDir": "%USERPROFILE%\\.dsh\\.agent-presets\\ai-finance\\skills",
+  "keep": [
+    "bull-bear-debate",
+    "technical-analysis",
+    "stock-comparison"
+  ],
+  "_keep_理由": {
+    "bull-bear-debate": "89 个里唯一 DSH 独有、侧边栏没有的技能 —— 你的核心资产，必须让模型能自主找到",
+    "technical-analysis": "横切原语：用户自由提问（「帮我看看这票技术面」）时最常触发，不必先点侧边栏",
+    "stock-comparison": "横切原语：同上，「对比一下这两只」类提问"
+  },
+  "_加回常驻的方法": "把 skill 目录名加进上面的 keep 数组即可（例：\"earnings-analysis\"）。目录名 = %USERPROFILE%\\.dsh\\.agent-presets\\ai-finance\\skills\\ 下的文件夹名。",
+  "_代价提醒": "摘出 catalog 的 skill，模型不会再自主使用，必须你用 /名字 调用（/ 补全菜单里仍显示，标注「仅用户」）。"
+}
