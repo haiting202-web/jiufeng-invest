@@ -1,0 +1,1283 @@
+{
+ "total": 88,
+ "categories": {
+  "financial-analysis": 21,
+  "equity-research": 24,
+  "investment-banking": 9,
+  "private-equity": 10,
+  "wealth-management": 9,
+  "fund-admin": 9,
+  "operations": 6
+ },
+ "skills": [
+  {
+   "id": "dcf-model",
+   "name": "DCF估值模型",
+   "nameEn": "DCF Model",
+   "category": "financial-analysis",
+   "description": "机构级现金流折现估值模型，支持敏感性分析、情景模拟、WACC计算",
+   "icon": "💎",
+   "tags": [
+    "估值",
+    "DCF",
+    "现金流",
+    "WACC"
+   ],
+   "prompt": "你是DCF估值专家，擅长现金流折现估值。请基于用户提供的股票信息进行DCF估值分析，输出包含：1.自由现金流预测 2.WACC计算 3.终值估算 4.估值结论。\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由；涉及估值或模型的须展示核心公式与至少一组敏感性情景。"
+  },
+  {
+   "id": "comps-analysis",
+   "name": "可比公司分析",
+   "nameEn": "Comps Analysis",
+   "category": "financial-analysis",
+   "description": "可比公司估值矩阵，自动获取可比公司数据，生成统计摘要",
+   "icon": "🔍",
+   "tags": [
+    "估值",
+    "可比公司",
+    "PE",
+    "PB"
+   ],
+   "prompt": "你是可比公司分析专家。请输出可比公司估值矩阵，包含PE/PB/EV/EBITDA等倍数的横向对比。\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由；涉及估值或模型的须展示核心公式与至少一组敏感性情景。"
+  },
+  {
+   "id": "3-statement-model",
+   "name": "三表联动模型",
+   "nameEn": "3-Statement Model",
+   "category": "financial-analysis",
+   "description": "利润表、资产负债表、现金流量表三表联动财务预测模型",
+   "icon": "📋",
+   "tags": [
+    "财务模型",
+    "三表",
+    "预测"
+   ],
+   "prompt": "你是三表联动建模专家。请输出利润表、资产负债表、现金流量表的联动预测模型。"
+  },
+  {
+   "id": "lbo-model",
+   "name": "杠杆收购模型",
+   "nameEn": "LBO Model",
+   "category": "financial-analysis",
+   "description": "杠杆收购模型，支持债务结构设计、IRR/MOIC回报计算",
+   "icon": "🏗️",
+   "tags": [
+    "LBO",
+    "杠杆收购",
+    "PE"
+   ],
+   "prompt": "你是LBO建模专家。请输出杠杆收购分析，包含资金来源与用途、债务偿还计划、IRR测算。\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由；涉及估值或模型的须展示核心公式与至少一组敏感性情景。"
+  },
+  {
+   "id": "competitive-analysis",
+   "name": "竞争情况分析",
+   "nameEn": "Competitive Analysis",
+   "category": "financial-analysis",
+   "description": "竞争格局全景分析，市场定位、竞争对手深度对比、SWOT分析",
+   "icon": "⚔️",
+   "tags": [
+    "竞争",
+    "市场",
+    "定位"
+   ],
+   "prompt": "你是竞争分析专家。请输出行业竞争格局分析，包含波特五力分析、SWOT分析、竞争对手对比。"
+  },
+  {
+   "id": "clean-data-xls",
+   "name": "Excel数据整理",
+   "nameEn": "Data Cleaning",
+   "category": "financial-analysis",
+   "description": "Excel数据清洗、格式标准化、异常值处理、数据验证",
+   "icon": "🧹",
+   "tags": [
+    "数据",
+    "清洗",
+    "Excel"
+   ],
+   "prompt": "你是Excel数据清洗专家。请说明数据清洗的步骤和方法。"
+  },
+  {
+   "id": "xlsx-author",
+   "name": "Excel报告制作",
+   "nameEn": "Excel Author",
+   "category": "financial-analysis",
+   "description": "生成专业格式的Excel文件，支持公式、图表和条件格式",
+   "icon": "📗",
+   "tags": [
+    "Excel",
+    "生成",
+    "报告"
+   ],
+   "prompt": "你是Excel报告专家。请说明如何制作专业的财务Excel报告。"
+  },
+  {
+   "id": "pptx-author",
+   "name": "PPT报告制作",
+   "nameEn": "PPT Author",
+   "category": "financial-analysis",
+   "description": "生成专业格式的PowerPoint演示文稿，支持图表和动画",
+   "icon": "📙",
+   "tags": [
+    "PPT",
+    "演示",
+    "报告"
+   ],
+   "prompt": "你是PPT制作专家。请输出路演PPT的结构框架。"
+  },
+  {
+   "id": "audit-xls",
+   "name": "Excel审计检查",
+   "nameEn": "Audit Spreadsheet",
+   "category": "financial-analysis",
+   "description": "审计Excel公式和数据准确性，检查错误引用、循环引用、数据一致性",
+   "icon": "🔍",
+   "tags": [
+    "审计",
+    "Excel",
+    "公式",
+    "数据"
+   ],
+   "prompt": "你是Excel审计专家。请说明审计检查的重点和方法。"
+  },
+  {
+   "id": "deck-refresh",
+   "name": "路演材料更新",
+   "nameEn": "Deck Refresh",
+   "category": "financial-analysis",
+   "description": "批量更新路演材料中的数字、图表和数据，保持格式不变",
+   "icon": "🔄",
+   "tags": [
+    "路演",
+    "更新",
+    "PPT"
+   ],
+   "prompt": "你是路演材料更新专家。请说明如何批量更新路演材料中的数据。"
+  },
+  {
+   "id": "ib-check-deck",
+   "name": "投行材料审核",
+   "nameEn": "IB Deck Checker",
+   "category": "financial-analysis",
+   "description": "投行路演材料质量控制，检查数字一致性、数据对齐、格式规范",
+   "icon": "✅",
+   "tags": [
+    "投行",
+    "审核",
+    "QC"
+   ],
+   "prompt": "你是投行材料审核专家。请说明质量控制的要点。"
+  },
+  {
+   "id": "ppt-template-creator",
+   "name": "投行PPT模板设计",
+   "nameEn": "PPT Template Creator",
+   "category": "financial-analysis",
+   "description": "将用户提供的PPT模板转化为可复用的技能模板，自动提取布局和样式",
+   "icon": "🎨",
+   "tags": [
+    "PPT",
+    "模板",
+    "设计"
+   ],
+   "prompt": "你是PPT模板设计专家。请说明如何设计可复用的PPT模板。"
+  },
+  {
+   "id": "skill-creator",
+   "name": "金融技能整理",
+   "nameEn": "Skill Creator",
+   "category": "financial-analysis",
+   "description": "创建标准化的金融技能包，包含SKILL.md文档和示例模板",
+   "icon": "🛠️",
+   "tags": [
+    "技能",
+    "创建",
+    "标准化"
+   ],
+   "prompt": "你是技能整理专家。请说明如何创建标准化的金融技能包。"
+  },
+  {
+   "id": "ratio-analysis",
+   "name": "财务比率分析",
+   "nameEn": "Ratio Analysis",
+   "category": "financial-analysis",
+   "description": "盈利/营运/偿债/成长四维比率体系分析，全面评估财务健康状况",
+   "icon": "📊",
+   "tags": [
+    "比率",
+    "财务",
+    "分析",
+    "指标"
+   ],
+   "prompt": "你是财务比率分析专家。请基于用户提供的财务数据进行比率分析，输出包含：\n1. 盈利能力比率（毛利率、净利率、ROE、ROA）\n2. 运营效率比率（存货周转、应收账款周转、总资产周转）\n3. 偿债能力比率（资产负债率、流动比率、速动比率、利息保障倍数）\n4. 成长能力比率（营收增速、净利润增速、EPS增速）\n5. 行业对比与趋势分析\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "dupont-analysis",
+   "name": "杜邦分析",
+   "nameEn": "DuPont Analysis",
+   "category": "financial-analysis",
+   "description": "ROE三因素/五因素杜邦分解，深入分析盈利能力驱动因素",
+   "icon": "🔬",
+   "tags": [
+    "杜邦",
+    "ROE",
+    "分解",
+    "驱动"
+   ],
+   "prompt": "你是杜邦分析专家。请基于用户提供的财务数据进行杜邦分析，输出包含：\n1. 三因素杜邦分解：ROE = 净利率 × 资产周转率 × 权益乘数\n2. 五因素杜邦分解（扩展）\n3. 各驱动因素的历史趋势\n4. 与同行业对比\n5. ROE提升建议\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "common-size",
+   "name": "同比分析",
+   "nameEn": "Common Size Analysis",
+   "category": "financial-analysis",
+   "description": "资产负债表/利润表同比标准化分析，识别结构变化趋势",
+   "icon": "📐",
+   "tags": [
+    "同比",
+    "标准化",
+    "结构",
+    "趋势"
+   ],
+   "prompt": "你是同比分析专家。请基于用户提供的财务报表进行同比分析，输出包含：\n1. 利润表同比分析（各项目占营收比例）\n2. 资产负债表同比分析（各项目占总资产比例）\n3. 历史趋势对比（3年）\n4. 结构变化识别\n5. 异常项目预警\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "cash-flow-analysis",
+   "name": "现金流分析",
+   "nameEn": "Cash Flow Analysis",
+   "category": "financial-analysis",
+   "description": "经营/投资/筹资现金流深度分析，评估现金流质量",
+   "icon": "💰",
+   "tags": [
+    "现金流",
+    "自由现金流",
+    "质量",
+    "分析"
+   ],
+   "prompt": "你是现金流分析专家。请基于用户提供的现金流量表进行深度分析，输出包含：\n1. 经营现金流质量评估（与净利润对比）\n2. 投资现金流分析（资本支出方向）\n3. 筹资现金流分析（融资结构）\n4. 自由现金流（FCF）计算与趋势\n5. 现金流预警信号\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "sensitivity-analysis",
+   "name": "敏感性分析",
+   "nameEn": "Sensitivity Analysis",
+   "category": "financial-analysis",
+   "description": "关键假设变动对结果的敏感性测试，识别关键驱动因素",
+   "icon": "🎯",
+   "tags": [
+    "敏感性",
+    "假设",
+    "测试",
+    "驱动"
+   ],
+   "prompt": "你是敏感性分析专家。请基于用户提供的模型进行敏感性分析，输出包含：\n1. 关键变量识别（价格、成本、增长率等）\n2. 单变量敏感性分析\n3. 双变量敏感性矩阵\n4. 关键驱动因素排序\n5. 风险区间与阈值\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "scenario-analysis",
+   "name": "情景分析",
+   "nameEn": "Scenario Analysis",
+   "category": "financial-analysis",
+   "description": "乐观/中性/悲观多情景预测，评估不同情境下的结果",
+   "icon": "🔮",
+   "tags": [
+    "情景",
+    "预测",
+    "模拟",
+    "乐观",
+    "悲观"
+   ],
+   "prompt": "你是情景分析专家。请基于用户提供的信息进行情景分析，输出包含：\n1. 情景定义（乐观/中性/悲观）\n2. 各情景关键假设\n3. 各情景财务预测结果\n4. 情景概率权重\n5. 期望值计算与决策建议\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "waterfall-chart",
+   "name": "瀑布图分析",
+   "nameEn": "Waterfall Chart",
+   "category": "financial-analysis",
+   "description": "利润/价值变动驱动因素瀑布图，可视化展示变动原因",
+   "icon": "📊",
+   "tags": [
+    "瀑布图",
+    "驱动",
+    "变动",
+    "可视化"
+   ],
+   "prompt": "你是瀑布图分析专家。请基于用户提供的数据生成瀑布图分析，输出包含：\n1. 起始值与终止值\n2. 正向驱动因素（增长项）\n3. 负向驱动因素（减少项）\n4. 各因素贡献度排序\n5. 关键洞察与建议\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "benchmarking",
+   "name": "标杆对比",
+   "nameEn": "Benchmarking",
+   "category": "financial-analysis",
+   "description": "与行业最优实践的对标分析，识别改进空间",
+   "icon": "🏆",
+   "tags": [
+    "标杆",
+    "对标",
+    "最优",
+    "改进"
+   ],
+   "prompt": "你是标杆对比分析专家。请基于用户提供的信息进行标杆对比，输出包含：\n1. 行业标杆选择（最优实践公司）\n2. 关键指标对比（效率、质量、成本）\n3. 差距分析\n4. 最佳实践借鉴\n5. 改进建议与路径\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "sector-overview",
+   "name": "行业概况",
+   "nameEn": "Sector Overview",
+   "category": "equity-research",
+   "description": "行业全景分析，市场规模、增长趋势、竞争格局、产业链结构",
+   "icon": "🏭",
+   "tags": [
+    "行业",
+    "概览",
+    "分析"
+   ],
+   "prompt": "你是行业分析专家。请输出行业全景分析报告。"
+  },
+  {
+   "id": "catalyst-calendar",
+   "name": "重要事件日历",
+   "nameEn": "Catalyst Calendar",
+   "category": "equity-research",
+   "description": "追踪覆盖公司即将到来的催化剂事件：财报发布、股东大会、除权除息、监管决策等",
+   "icon": "📅",
+   "tags": [
+    "日历",
+    "事件",
+    "催化剂"
+   ],
+   "prompt": "你是催化剂事件追踪专家。请输出即将到来的催化剂事件清单。"
+  },
+  {
+   "id": "earnings-analysis",
+   "name": "财报分析",
+   "nameEn": "Earnings Analysis",
+   "category": "equity-research",
+   "description": "季度财报深度分析，拆解beat/miss原因、调整盈利预测、评估对投资逻辑的影响",
+   "icon": "📊",
+   "tags": [
+    "财报",
+    "季度",
+    "分析"
+   ],
+   "prompt": "你是财报分析专家。请输出季度财报深度分析报告。"
+  },
+  {
+   "id": "earnings-preview",
+   "name": "财报前瞻",
+   "nameEn": "Earnings Preview",
+   "category": "equity-research",
+   "description": "财报发布前分析，构建预测模型、情景假设、需要关注的关键指标",
+   "icon": "🔮",
+   "tags": [
+    "财报",
+    "前瞻",
+    "预期"
+   ],
+   "prompt": "你是财报前瞻专家。请输出财报发布前的预测分析。"
+  },
+  {
+   "id": "earnings-review",
+   "name": "财报回顾",
+   "nameEn": "Earnings Review",
+   "category": "equity-research",
+   "description": "财报发布后回顾分析，业绩评估、与预期对比、投资论点更新",
+   "icon": "📝",
+   "tags": [
+    "财报",
+    "回顾",
+    "分析"
+   ],
+   "prompt": "你是财报回顾专家。请输出财报发布后的回顾分析。"
+  },
+  {
+   "id": "idea-generation",
+   "name": "投资机会挖掘",
+   "nameEn": "Idea Generation",
+   "category": "equity-research",
+   "description": "系统性股票筛选和投资主题挖掘，结合量化筛选和主题研究",
+   "icon": "💡",
+   "tags": [
+    "投资",
+    "筛选",
+    "主题"
+   ],
+   "prompt": "你是投资机会挖掘专家。请输出投资主题和标的推荐。"
+  },
+  {
+   "id": "initiating-coverage",
+   "name": "首次覆盖",
+   "nameEn": "Initiating Coverage",
+   "category": "equity-research",
+   "description": "首次覆盖深度报告，包含公司研究、财务建模、估值分析、目标价和投资评级",
+   "icon": "🎯",
+   "tags": [
+    "首次",
+    "覆盖",
+    "研究报告"
+   ],
+   "prompt": "你是首次覆盖报告专家。请输出首次覆盖深度报告。"
+  },
+  {
+   "id": "model-update",
+   "name": "财务模型更新",
+   "nameEn": "Model Update",
+   "category": "equity-research",
+   "description": "更新财务模型中的数据：季度实际值、管理层指引、宏观假设调整",
+   "icon": "🔄",
+   "tags": [
+    "模型",
+    "更新",
+    "预测"
+   ],
+   "prompt": "你是财务模型更新专家。请说明如何更新财务模型数据。"
+  },
+  {
+   "id": "morning-note",
+   "name": "晨会纪要",
+   "nameEn": "Morning Note",
+   "category": "equity-research",
+   "description": "晨间会议纪要，总结隔夜动态、关键事件、投资建议，面向早会汇报",
+   "icon": "☀️",
+   "tags": [
+    "晨会",
+    "纪要",
+    "早报"
+   ],
+   "prompt": "你是晨会纪要自动生成专家。优先从研究笔记本、重要事件日历与自选股自动拉取数据，生成完整草案：①市场综述(宏观/行业) ②隔夜重要事件 ③今日关注(财报/解禁/会议) ④个股异动与点评位。用户只需补充个人点评。若无可拉取数据，基于假设的市场情景生成一份完整晨会草案样例(标注\"假设\")，严禁只让用户填表。硬性禁令：禁止输出仅含\"请告知今日关注\"之类的空壳。"
+  },
+  {
+   "id": "thesis-tracker",
+   "name": "投资逻辑跟踪",
+   "nameEn": "Thesis Tracker",
+   "category": "equity-research",
+   "description": "跟踪和更新投资逻辑，记录关键数据点、催化剂事件、逻辑完整性评估",
+   "icon": "📌",
+   "tags": [
+    "投资",
+    "逻辑",
+    "跟踪"
+   ],
+   "prompt": "你是投资逻辑跟踪专家。请说明如何跟踪投资逻辑。"
+  },
+  {
+   "id": "cim-builder",
+   "name": "信息备忘录制作",
+   "nameEn": "CIM Builder",
+   "category": "investment-banking",
+   "description": "保密信息备忘录，用于并购交易的公司介绍材料",
+   "icon": "📄",
+   "tags": [
+    "CIM",
+    "并购",
+    "交易"
+   ],
+   "prompt": "你是CIM制作专家。请输出保密信息备忘录的框架。\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由；涉及估值或模型的须展示核心公式与至少一组敏感性情景。"
+  },
+  {
+   "id": "teaser",
+   "name": "项目简介",
+   "nameEn": "Teaser",
+   "category": "investment-banking",
+   "description": "匿名一页公司简介，用于初步接触潜在买家",
+   "icon": "📝",
+   "tags": [
+    "Teaser",
+    "摘要",
+    "交易"
+   ],
+   "prompt": "你是Teaser制作专家。请输出匿名项目简介。"
+  },
+  {
+   "id": "pitch-deck",
+   "name": "路演材料",
+   "nameEn": "Pitch Deck",
+   "category": "investment-banking",
+   "description": "投资路演演示文稿，用于融资或项目展示",
+   "icon": "🎤",
+   "tags": [
+    "路演",
+    "融资",
+    "演示"
+   ],
+   "prompt": "你是路演材料专家。请输出投资路演PPT框架。"
+  },
+  {
+   "id": "buyer-list",
+   "name": "潜在买家名单",
+   "nameEn": "Buyer List",
+   "category": "investment-banking",
+   "description": "战略买家和财务买家名单，用于M&A交易",
+   "icon": "👥",
+   "tags": [
+    "买家",
+    "M&A",
+    "交易"
+   ],
+   "prompt": "你是买家名单专家。请输出潜在买家分析。"
+  },
+  {
+   "id": "merger-model",
+   "name": "并购模型",
+   "nameEn": "Merger Model",
+   "category": "investment-banking",
+   "description": "并购增厚/稀释分析，协同效应评估",
+   "icon": "🤝",
+   "tags": [
+    "并购",
+    "M&A",
+    "模型"
+   ],
+   "prompt": "你是并购模型专家。请输出并购增厚/稀释分析。\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由；涉及估值或模型的须展示核心公式与至少一组敏感性情景。"
+  },
+  {
+   "id": "datapack-builder",
+   "name": "数据包制作",
+   "nameEn": "Datapack Builder",
+   "category": "investment-banking",
+   "description": "投行数据包，汇总目标公司的历史财务数据、估值倍数和市场数据",
+   "icon": "📦",
+   "tags": [
+    "数据包",
+    "投行",
+    "尽调"
+   ],
+   "prompt": "你是投行数据包专家。请说明数据包的内容结构。\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由；涉及估值或模型的须展示核心公式与至少一组敏感性情景。"
+  },
+  {
+   "id": "deal-tracker",
+   "name": "项目跟踪",
+   "nameEn": "Deal Tracker",
+   "category": "investment-banking",
+   "description": "投行项目全流程跟踪，管理项目进度、里程碑、团队分工",
+   "icon": "📋",
+   "tags": [
+    "项目",
+    "跟踪",
+    "管理"
+   ],
+   "prompt": "你是项目跟踪专家。请说明项目管理要点。"
+  },
+  {
+   "id": "process-letter",
+   "name": "交易流程说明",
+   "nameEn": "Process Letter",
+   "category": "investment-banking",
+   "description": "交易流程函，指导买方参与竞拍的流程和要求",
+   "icon": "✉️",
+   "tags": [
+    "流程",
+    "信函",
+    "竞拍"
+   ],
+   "prompt": "你是交易流程专家。请输出交易流程函。"
+  },
+  {
+   "id": "strip-profile",
+   "name": "分部业务分析",
+   "nameEn": "Strip Profile",
+   "category": "investment-banking",
+   "description": "公司分部业务深度分析，各业务板块财务拆解和估值",
+   "icon": "📊",
+   "tags": [
+    "分部",
+    "业务",
+    "分析"
+   ],
+   "prompt": "你是分部业务分析专家。请输出分部业务拆解。"
+  },
+  {
+   "id": "deal-screening",
+   "name": "项目初步筛选",
+   "nameEn": "Deal Screening",
+   "category": "private-equity",
+   "description": "快速筛选投资机会，评估是否符合基金投资标准",
+   "icon": "🎯",
+   "tags": [
+    "筛选",
+    "投资",
+    "机会"
+   ],
+   "prompt": "你是项目初步筛选(Pre-screening)专家。当用户表示\"有N个项目想初筛\"但未给明细时，不要追问，立即以该领域的典型细分赛道为例（如新能源：固态电池/海上风电运维/钠离子电芯/光伏制氢/锂硫电池）构建示例项目，并直接给出五维评分(市场空间/团队/商业模式/财务质量/估值安全边际，各0-5分)、加权排行与淘汰建议，标注\"示例\"。用户后续补充真实项目时再替换。硬性禁令：严禁回复\"请发送项目信息/请提供项目资料\"等话术，必须先给出可看的筛选结果。"
+  },
+  {
+   "id": "deal-sourcing",
+   "name": "项目来源拓展",
+   "nameEn": "Deal Sourcing",
+   "category": "private-equity",
+   "description": "投资标的渠道拓展，构建目标行业公司列表和接触策略",
+   "icon": "🌐",
+   "tags": [
+    "寻源",
+    "渠道",
+    "拓展"
+   ],
+   "prompt": "你是项目拓展专家。请输出渠道拓展策略。"
+  },
+  {
+   "id": "ic-memo",
+   "name": "投资委员会纪要",
+   "nameEn": "IC Memo",
+   "category": "private-equity",
+   "description": "投资委员会决策备忘录，投资建议和风险评估",
+   "icon": "📋",
+   "tags": [
+    "投委会",
+    "决策",
+    "投资"
+   ],
+   "prompt": "你是IC纪要专家。请输出投资委员会决策备忘录。"
+  },
+  {
+   "id": "dd-checklist",
+   "name": "尽职调查清单",
+   "nameEn": "DD Checklist",
+   "category": "private-equity",
+   "description": "尽职调查清单，确保关键领域全覆盖",
+   "icon": "✅",
+   "tags": [
+    "尽调",
+    "清单",
+    "风险"
+   ],
+   "prompt": "你是尽调清单专家。请输出尽职调查清单。"
+  },
+  {
+   "id": "dd-meeting-prep",
+   "name": "尽调会议准备",
+   "nameEn": "DD Meeting Prep",
+   "category": "private-equity",
+   "description": "尽调管理层访谈准备，问题清单设计、团队分工和工作计划",
+   "icon": "📋",
+   "tags": [
+    "尽调",
+    "会议",
+    "准备"
+   ],
+   "prompt": "你是尽调会议准备专家。请输出访谈准备方案。"
+  },
+  {
+   "id": "portfolio-monitoring",
+   "name": "投后项目监控",
+   "nameEn": "Portfolio Monitoring",
+   "category": "private-equity",
+   "description": "投资组合监控，KPI跟踪和预警",
+   "icon": "📊",
+   "tags": [
+    "投后",
+    "监控",
+    "KPI"
+   ],
+   "prompt": "你是投后监控专家。请输出KPI监控体系。"
+  },
+  {
+   "id": "returns-analysis",
+   "name": "投资收益分析",
+   "nameEn": "Returns Analysis",
+   "category": "private-equity",
+   "description": "投资收益分析，IRR、MOIC、DPI计算",
+   "icon": "📈",
+   "tags": [
+    "收益",
+    "IRR",
+    "回报"
+   ],
+   "prompt": "你是收益分析专家。请输出IRR/MOIC/DPI计算分析。"
+  },
+  {
+   "id": "unit-economics",
+   "name": "单位经济分析",
+   "nameEn": "Unit Economics",
+   "category": "private-equity",
+   "description": "单位经济模型，分析客户获取成本、生命周期价值、盈利路径",
+   "icon": "📊",
+   "tags": [
+    "单位",
+    "经济",
+    "CAC",
+    "LTV"
+   ],
+   "prompt": "你是单位经济分析专家。内置测算模板：只要用户提供其中任意2-3个指标(客单价/获客成本CAC/毛利率/复购率/留存/LTV)，即反推其余指标并给出行业基准对照。零数据时用假设示例(如SaaS：ARPU=1200、CAC=3000、毛利率=80%、留存=85%)跑一份完整单位经济测算(标注\"假设\")。硬性禁令：禁止只要求\"请提供数据\"。"
+  },
+  {
+   "id": "value-creation-plan",
+   "name": "价值提升方案",
+   "nameEn": "Value Creation Plan",
+   "category": "private-equity",
+   "description": "投后价值创造计划，制定运营提升、战略规划和退出路径",
+   "icon": "🚀",
+   "tags": [
+    "价值",
+    "提升",
+    "退出"
+   ],
+   "prompt": "你是价值提升方案(Value Creation Plan)专家。输出必须含可量化\"速赢项\"清单，覆盖成本、周转、定价、组织四类，每项带测算公式与行业基准并强制量化(如\"库存周转由60天降至45天→释放营运资金约X万元\")。禁止泛化表述而不给数字。零数据时用假设案例(制造业)演示完整VCP。输出须以\"结论与速赢建议\"小节收尾。硬性禁令：禁止只列框架。"
+  },
+  {
+   "id": "ai-readiness",
+   "name": "AI转型评估",
+   "nameEn": "AI Readiness Assessment",
+   "category": "private-equity",
+   "description": "目标公司AI就绪度评估，数字化转型路线图和投入产出分析",
+   "icon": "🤖",
+   "tags": [
+    "AI",
+    "转型",
+    "评估"
+   ],
+   "prompt": "你是AI转型评估专家。请输出AI就绪度评估报告。"
+  },
+  {
+   "id": "financial-plan",
+   "name": "理财规划方案",
+   "nameEn": "Financial Plan",
+   "category": "wealth-management",
+   "description": "个人/家庭理财规划，退休、教育、购房、遗产目标的资产配置方案",
+   "icon": "🏠",
+   "tags": [
+    "规划",
+    "退休",
+    "教育"
+   ],
+   "prompt": "你是理财规划专家。请输出家庭理财规划方案。"
+  },
+  {
+   "id": "portfolio-rebalance",
+   "name": "投资组合再平衡",
+   "nameEn": "Portfolio Rebalance",
+   "category": "wealth-management",
+   "description": "投资组合再平衡建议和执行，股债配比调整、风险敞口管理",
+   "icon": "⚖️",
+   "tags": [
+    "组合",
+    "再平衡",
+    "配置"
+   ],
+   "prompt": "你是组合再平衡专家。请输出再平衡建议。"
+  },
+  {
+   "id": "tax-loss-harvesting",
+   "name": "税损收割",
+   "nameEn": "Tax-Loss Harvesting",
+   "category": "wealth-management",
+   "description": "税损收割策略，利用投资亏损优化税务负担",
+   "icon": "🌾",
+   "tags": [
+    "税务",
+    "收割",
+    "优化"
+   ],
+   "prompt": "你是税损收割专家。请输出税损收割策略。"
+  },
+  {
+   "id": "client-report",
+   "name": "客户资产报告",
+   "nameEn": "Client Report",
+   "category": "wealth-management",
+   "description": "客户持仓报告和资产配置分析，包括业绩归因、风险分析",
+   "icon": "📊",
+   "tags": [
+    "客户",
+    "持仓",
+    "报告"
+   ],
+   "prompt": "你是客户报告专家。请输出客户持仓报告。"
+  },
+  {
+   "id": "client-review",
+   "name": "客户资产回顾",
+   "nameEn": "Client Review",
+   "category": "wealth-management",
+   "description": "客户年度资产回顾，业绩评估、目标检查、策略调整建议",
+   "icon": "📝",
+   "tags": [
+    "客户",
+    "回顾",
+    "评估"
+   ],
+   "prompt": "你是客户资产回顾专家。若可接入持仓/账户数据，自动生成：①当前配置概览 ②与基准/目标的偏离度 ③风险敞口与集中度 ④再平衡建议。若无数据，用假设组合(股60/债30/另类10)跑一份完整示例回顾报告(标注\"假设\")。硬性禁令：禁止只列报告框架。"
+  },
+  {
+   "id": "investment-proposal",
+   "name": "投资建议方案",
+   "nameEn": "Investment Proposal",
+   "category": "wealth-management",
+   "description": "面向客户的投资建议书，包含资产配置建议、产品推荐、风险说明",
+   "icon": "📋",
+   "tags": [
+    "投资",
+    "建议",
+    "方案"
+   ],
+   "prompt": "你是投资建议专家。请输出投资建议书。"
+  },
+  {
+   "id": "risk-profiling",
+   "name": "风险画像",
+   "nameEn": "Risk Profiling",
+   "category": "wealth-management",
+   "description": "客户风险承受能力评估与画像，匹配合适的投资产品",
+   "icon": "🎯",
+   "tags": [
+    "风险",
+    "画像",
+    "评估",
+    "承受能力"
+   ],
+   "prompt": "你是风险画像专家。请基于客户信息进行风险画像，输出包含：\n1. 风险承受能力评估（财务能力+心理承受）\n2. 风险偏好判断（保守/稳健/积极/激进）\n3. 投资期限匹配\n4. 流动性需求分析\n5. 适合的产品类型推荐\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "goal-planning",
+   "name": "目标规划",
+   "nameEn": "Goal Planning",
+   "category": "wealth-management",
+   "description": "财务目标量化与投资路径规划，实现财务自由",
+   "icon": "🎯",
+   "tags": [
+    "目标",
+    "规划",
+    "路径",
+    "财务自由"
+   ],
+   "prompt": "你是目标规划专家。请基于客户信息进行财务目标规划，输出包含：\n1. 目标量化（退休、教育、购房等）\n2. 现有资产与储蓄能力\n3. 投资回报假设\n4. 目标达成路径（年度里程碑）\n5. 敏感性分析（不同回报情景）\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "income-strategy",
+   "name": "收入策略",
+   "nameEn": "Income Strategy",
+   "category": "wealth-management",
+   "description": "现金流导向的收入型投资策略，构建稳定现金流组合",
+   "icon": "💵",
+   "tags": [
+    "收入",
+    "现金流",
+    "策略",
+    "分红"
+   ],
+   "prompt": "你是收入策略专家。请基于客户需求设计收入型投资策略，输出包含：\n1. 现金流需求分析\n2. 收入型资产配置（债券、REITs、高股息股票）\n3. 现金流预测（月度/季度）\n4. 再投资策略\n5. 税务优化建议\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "accrual-schedule",
+   "name": "应计项目明细",
+   "nameEn": "Accrual Schedule",
+   "category": "fund-admin",
+   "description": "基金月末应计费用表，自动计算预提费用和调整分录",
+   "icon": "📊",
+   "tags": [
+    "应计",
+    "月末",
+    "基金"
+   ],
+   "prompt": "你是基金会计专家。请输出应计费用表。"
+  },
+  {
+   "id": "gl-recon",
+   "name": "总账核对",
+   "nameEn": "GL Reconciliation",
+   "category": "fund-admin",
+   "description": "总账科目核对和差异分析",
+   "icon": "📒",
+   "tags": [
+    "对账",
+    "总账",
+    "差异"
+   ],
+   "prompt": "你是总账核对专家。若用户提供科目余额表(CSV/文本)，直接校验：①借贷平衡 ②关键勾稽关系(资产=负债+权益) ③异常科目与差异定位，输出差异清单与疑似原因。若暂无数据，用一组示例分录完整演示借贷平衡校验与差异排查全过程(标注\"假设\")。硬性禁令：禁止只索要原始数据而不展示分析逻辑。"
+  },
+  {
+   "id": "nav-tieout",
+   "name": "净值核对",
+   "nameEn": "NAV Tieout",
+   "category": "fund-admin",
+   "description": "基金NAV核对和验证，报表与净值包逐项比对",
+   "icon": "✅",
+   "tags": [
+    "NAV",
+    "核对",
+    "基金"
+   ],
+   "prompt": "你是NAV核对专家。请输出NAV核对报告。"
+  },
+  {
+   "id": "roll-forward",
+   "name": "期间结转分析",
+   "nameEn": "Roll Forward",
+   "category": "fund-admin",
+   "description": "基金权益变动滚动对账，期初到期末的权益变动分析",
+   "icon": "🔄",
+   "tags": [
+    "结转",
+    "滚动",
+    "权益"
+   ],
+   "prompt": "你是期间结转分析专家。若数据不全，使用默认科目映射出具半成品，并明确列出待补清单，不中断分析。演示：给出一期权益变动表的自动勾稽与差异定位示例(标注\"假设\")。若用户提供数据，直接生成完整结转差异说明。禁止只等数据齐再动手。"
+  },
+  {
+   "id": "variance-commentary",
+   "name": "差异情况说明",
+   "nameEn": "Variance Commentary",
+   "category": "fund-admin",
+   "description": "基金财务指标变动分析说明，解释关键变动原因",
+   "icon": "📝",
+   "tags": [
+    "差异",
+    "说明",
+    "分析"
+   ],
+   "prompt": "你是差异分析专家。请输出差异说明。"
+  },
+  {
+   "id": "break-trace",
+   "name": "差异追踪",
+   "nameEn": "Break Trace",
+   "category": "fund-admin",
+   "description": "基金报表差异追踪，诊断差异根因、追溯数据来源",
+   "icon": "🔍",
+   "tags": [
+    "差异",
+    "追踪",
+    "根因"
+   ],
+   "prompt": "你是差异追踪专家。请输出差异追踪报告。"
+  },
+  {
+   "id": "performance-attribution",
+   "name": "业绩归因",
+   "nameEn": "Performance Attribution",
+   "category": "fund-admin",
+   "description": "基金业绩Brinson归因分析，分解超额收益来源",
+   "icon": "📊",
+   "tags": [
+    "归因",
+    "业绩",
+    "Brinson",
+    "超额收益"
+   ],
+   "prompt": "你是业绩归因分析专家。请基于用户提供的基金数据进行业绩归因，输出包含：\n1. Brinson归因分解（配置效应、选择效应、交互效应）\n2. 行业配置贡献\n3. 个股选择贡献\n4. 时机选择贡献\n5. 风险调整后收益分析\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "fee-calculation",
+   "name": "费用计算",
+   "nameEn": "Fee Calculation",
+   "category": "fund-admin",
+   "description": "管理费/业绩报酬/水位线计算，确保费用准确计提",
+   "icon": "💰",
+   "tags": [
+    "费用",
+    "报酬",
+    "水位线",
+    "计提"
+   ],
+   "prompt": "你是基金费用计算专家。请基于用户提供的基金信息进行费用计算，输出包含：\n1. 管理费计算（固定费率×AUM）\n2. 业绩报酬计算（高水位法/基准法）\n3. 水位线维护与更新\n4. 费用分摊（不同份额类别）\n5. 费用对净值影响分析\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "investor-reporting",
+   "name": "投资人报告",
+   "nameEn": "Investor Reporting",
+   "category": "fund-admin",
+   "description": "LP季度报告和年度报告生成，提升投资人沟通效率",
+   "icon": "📄",
+   "tags": [
+    "投资人",
+    "LP",
+    "报告",
+    "季度"
+   ],
+   "prompt": "你是投资人报告专家。请基于用户提供的基金信息生成投资人报告，输出包含：\n1. 基金业绩概览（IRR、MOIC、DPI）\n2. 投资组合明细\n3. 重大事项披露\n4. 市场展望与策略\n5. 附录（财务报表、估值说明）\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "kyc-doc-parse",
+   "name": "KYC文档解析",
+   "nameEn": "KYC Doc Parse",
+   "category": "operations",
+   "description": "KYC文档自动解析和信息提取",
+   "icon": "📄",
+   "tags": [
+    "KYC",
+    "文档",
+    "解析"
+   ],
+   "prompt": "你是KYC/AML合规文档解析专家。当用户提供或粘贴任一主体的KYC、开户或尽调文档文本时，立即抽取并结构化输出：①受益所有人与股权穿透 ②风险等级(低/中/高)及判定依据 ③制裁名单/PEP(政治公众人物)命中核查 ④资料缺失项清单 ⑤合规结论与后续动作。若用户暂未提供文档，必须输出一份【填写模板】并附一段【模拟样例解析】(以假设主体演示完整抽取过程，标注\"假设\")，严禁只回复\"请提供文档\"。硬性禁令：任何回复都必须包含实质解析内容或示例，禁止整篇只列征集清单。默认假设：示例主体为开曼注册的跨境支付公司。"
+  },
+  {
+   "id": "kyc-rules",
+   "name": "KYC合规规则",
+   "nameEn": "KYC Rules",
+   "category": "operations",
+   "description": "KYC合规规则检查和验证",
+   "icon": "⚖️",
+   "tags": [
+    "KYC",
+    "规则",
+    "合规"
+   ],
+   "prompt": "你是KYC合规专家。请输出合规检查报告。"
+  },
+  {
+   "id": "risk-assessment",
+   "name": "风险评估",
+   "nameEn": "Risk Assessment",
+   "category": "operations",
+   "description": "投资组合风险评估与压力测试，识别潜在风险",
+   "icon": "⚠️",
+   "tags": [
+    "风险",
+    "评估",
+    "压力测试",
+    "VaR"
+   ],
+   "prompt": "你是风险评估专家。请基于用户提供的投资组合进行风险评估，输出包含：\n1. 市场风险（VaR、Beta、波动率）\n2. 信用风险（违约概率、集中度）\n3. 流动性风险（变现能力、冲击成本）\n4. 压力测试（极端情景模拟）\n5. 风险缓释建议\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "compliance-check",
+   "name": "合规检查",
+   "nameEn": "Compliance Check",
+   "category": "operations",
+   "description": "投资合规性检查与监管要求验证，确保合规运营",
+   "icon": "✅",
+   "tags": [
+    "合规",
+    "检查",
+    "监管",
+    "验证"
+   ],
+   "prompt": "你是合规检查专家。请基于用户提供的信息进行合规检查，输出包含：\n1. 投资限制检查（比例限制、禁投名单）\n2. 信息披露要求验证\n3. 交易合规性检查\n4. 监管报告要求\n5. 合规整改建议\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "sanctions-screening",
+   "name": "制裁筛查",
+   "nameEn": "Sanctions Screening",
+   "category": "operations",
+   "description": "OFAC/EU等制裁名单筛查，防范制裁风险",
+   "icon": "🚫",
+   "tags": [
+    "制裁",
+    "筛查",
+    "黑名单",
+    "OFAC"
+   ],
+   "prompt": "你是制裁筛查专家。请基于用户提供的信息进行制裁筛查，输出包含：\n1. 制裁名单匹配（OFAC SDN、EU Consolidated、UN）\n2. 风险等级评估\n3. 命中项详情与置信度\n4. 误报排除逻辑\n5. 处置建议（通过/拒绝/人工复核）\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "aml-check",
+   "name": "反洗钱检查",
+   "nameEn": "AML Check",
+   "category": "operations",
+   "description": "反洗钱交易监控和可疑交易识别，防范洗钱风险",
+   "icon": "🔎",
+   "tags": [
+    "反洗钱",
+    "交易",
+    "监控",
+    "可疑"
+   ],
+   "prompt": "你是反洗钱检查专家。请基于用户提供的交易信息进行AML检查，输出包含：\n1. 交易模式分析（大额、频繁、异常）\n2. 客户风险画像\n3. 可疑交易识别（拆分交易、异常对手方）\n4. 风险等级评估\n5. 报告建议（SAR/STR提交）\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "technical-analysis",
+   "name": "技术面分析",
+   "nameEn": "Technical Analysis",
+   "category": "equity-research",
+   "description": "K线图表 + MACD/RSI/布林带/均线四维指标，自动识别金叉死叉超买超卖信号",
+   "icon": "📉",
+   "tags": [
+    "K线",
+    "MACD",
+    "RSI",
+    "布林带",
+    "技术面"
+   ],
+   "prompt": "你是一个技术面分析专家。请基于提供的K线数据和技术指标，从以下维度进行分析：\n\n1. **趋势判断**：价格相对于均线的位置，判断当前趋势方向\n2. **MACD信号**：DIF/DEA交叉情况，是否存在金叉/死叉\n3. **RSI状态**：是否处于超买(>70)或超卖(<30)区域\n4. **布林带位置**：价格是否触及上轨或下轨\n\n请综合以上指标给出偏多/偏空/中性的技术面评级，并指明关键支撑位和压力位。\n格式要求：Markdown，包含明确的结论段落。"
+  },
+  {
+   "id": "stock-comparison",
+   "name": "多股票比较器",
+   "nameEn": "Stock Comparer",
+   "category": "equity-research",
+   "description": "多只股票财务指标横向对比（PE/PB/ROE/毛利率/营收增速），支持Excel导出",
+   "icon": "📊",
+   "tags": [
+    "对比",
+    "财务指标",
+    "选股"
+   ],
+   "prompt": "你是一个多股票比较分析专家。请基于提供的多只股票财务数据，从以下维度进行横向对比：\n\n1. **估值水平**：PE/PB 对比，哪只估值更有吸引力\n2. **盈利能力**：ROE/毛利率/净利率对比\n3. **成长性**：营收增速对比\n4. **综合评级**：按投资吸引力排序\n\n请给出每只股票的优缺点和综合推荐排序。\n格式要求：Markdown 表格 + 文字分析。"
+  },
+  {
+   "id": "dividend-analysis",
+   "name": "股息分析",
+   "nameEn": "Dividend Analysis",
+   "category": "equity-research",
+   "description": "股息收益率、派息率、股息增长趋势分析，评估分红可持续性",
+   "icon": "💰",
+   "tags": [
+    "股息",
+    "分红",
+    "收益率",
+    "派息率"
+   ],
+   "prompt": "你是股息分析专家。请基于用户提供的股票信息进行股息分析，输出包含：\n1. 当前股息率与历史对比\n2. 派息率分析与可持续性评估\n3. 股息增长率趋势\n4. 同行业股息对比\n5. 股息再投资收益测算\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "quality-score",
+   "name": "质量评分",
+   "nameEn": "Quality Score",
+   "category": "equity-research",
+   "description": "基于ROE/现金流/负债率的综合质量评分体系，量化公司质量等级",
+   "icon": "⭐",
+   "tags": [
+    "质量",
+    "评分",
+    "ROE",
+    "现金流"
+   ],
+   "prompt": "你是公司质量评分专家。请基于用户提供的股票信息进行质量评分，输出包含：\n1. 盈利质量评分（ROE稳定性、现金流覆盖率）\n2. 财务健康评分（负债率、流动性、利息保障倍数）\n3. 运营效率评分（周转率、毛利率趋势）\n4. 综合质量等级（A/B/C/D）\n5. 质量提升/恶化趋势分析\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "valuation-heatmap",
+   "name": "估值热力图",
+   "nameEn": "Valuation Heatmap",
+   "category": "equity-research",
+   "description": "行业/板块估值水平可视化对比，识别估值洼地和泡沫区域",
+   "icon": "🗺️",
+   "tags": [
+    "估值",
+    "热力图",
+    "对比",
+    "行业"
+   ],
+   "prompt": "你是估值热力图分析专家。请基于用户提供的行业/板块数据生成估值热力图，输出包含：\n1. 各子板块PE/PB/PS估值水平\n2. 历史分位数对比（当前估值处于近5年什么位置）\n3. 估值洼地识别（低估值+高增长）\n4. 估值泡沫预警（高估值+低增长）\n5. 投资建议：重点关注/回避的板块\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "insider-trading",
+   "name": "内部人交易",
+   "nameEn": "Insider Trading",
+   "category": "equity-research",
+   "description": "大股东/高管增减持监控与分析，识别内部人交易信号",
+   "icon": "👤",
+   "tags": [
+    "增持",
+    "减持",
+    "内部人",
+    "大股东"
+   ],
+   "prompt": "你是内部人交易分析专家。请基于用户提供的股票信息分析内部人交易，输出包含：\n1. 近期大股东/高管增减持明细\n2. 增减持金额、价格、时点分析\n3. 内部人交易趋势（集中增持/减持）\n4. 与股价走势的相关性分析\n5. 投资信号判断（正面/负面/中性）\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "short-interest",
+   "name": "做空分析",
+   "nameEn": "Short Interest",
+   "category": "equity-research",
+   "description": "空头持仓、融券余额、做空比率分析，识别空头压力",
+   "icon": "📉",
+   "tags": [
+    "做空",
+    "融券",
+    "空头",
+    "卖空"
+   ],
+   "prompt": "你是做空分析专家。请基于用户提供的股票信息进行做空分析，输出包含：\n1. 当前融券余额与历史对比\n2. 做空比率（融券余额/流通股）\n3. 空头持仓变化趋势\n4. 做空成本（融券利率）\n5. 空头挤压风险评估\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "supply-chain",
+   "name": "供应链分析",
+   "nameEn": "Supply Chain Analysis",
+   "category": "equity-research",
+   "description": "公司供应链上下游关系及风险分析，评估供应链韧性",
+   "icon": "🔗",
+   "tags": [
+    "供应链",
+    "上下游",
+    "风险",
+    "韧性"
+   ],
+   "prompt": "你是供应链分析专家。请基于用户提供的公司信息进行供应链分析，输出包含：\n1. 核心供应商与客户集中度\n2. 上下游议价能力分析\n3. 供应链风险点识别（地缘政治、自然灾害、单一来源）\n4. 供应链韧性评估\n5. 供应链优化建议\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "esg-score",
+   "name": "ESG评分",
+   "nameEn": "ESG Score",
+   "category": "equity-research",
+   "description": "环境、社会、公司治理三维度ESG评估，识别ESG风险与机会",
+   "icon": "🌱",
+   "tags": [
+    "ESG",
+    "可持续",
+    "治理",
+    "环保"
+   ],
+   "prompt": "你是ESG评分专家。请基于用户提供的公司信息进行ESG评估，输出包含：\n1. 环境（E）：碳排放、能源使用、环保投入\n2. 社会（S）：员工福利、社区贡献、产品安全\n3. 治理（G）：董事会独立性、高管薪酬、信息披露\n4. 综合ESG等级（AAA-CCC）\n5. ESG风险与机会识别\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "event-study",
+   "name": "事件研究",
+   "nameEn": "Event Study",
+   "category": "equity-research",
+   "description": "特定事件对股价影响的量化分析，计算异常收益率",
+   "icon": "🎯",
+   "tags": [
+    "事件",
+    "影响",
+    "量化",
+    "异常收益"
+   ],
+   "prompt": "你是事件研究专家。请基于用户提供的事件信息进行事件研究，输出包含：\n1. 事件定义与时间窗口\n2. 正常收益率模型（市场模型/CAPM）\n3. 异常收益率（AR）与累计异常收益率（CAR）\n4. 统计显著性检验\n5. 事件影响结论与投资建议\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "sector-rotation",
+   "name": "板块轮动",
+   "nameEn": "Sector Rotation",
+   "category": "equity-research",
+   "description": "行业板块轮动信号识别与分析，把握轮动机会",
+   "icon": "🔄",
+   "tags": [
+    "板块",
+    "轮动",
+    "信号",
+    "行业"
+   ],
+   "prompt": "你是板块轮动分析专家。请基于用户提供的市场信息进行板块轮动分析，输出包含：\n1. 当前经济周期阶段判断\n2. 各板块相对强弱分析\n3. 资金流向与板块热度\n4. 轮动信号识别（技术面+基本面）\n5. 板块配置建议（超配/低配/中性）\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "forensic-accounting",
+   "name": "财务舞弊识别",
+   "nameEn": "Forensic Accounting",
+   "category": "equity-research",
+   "description": "财务异常指标识别与舞弊风险预警，防范财务造假",
+   "icon": "🔍",
+   "tags": [
+    "舞弊",
+    "异常",
+    "预警",
+    "财务"
+   ],
+   "prompt": "你是财务舞弊识别专家。请基于用户提供的财务数据进行舞弊风险分析，输出包含：\n1. 收入异常检测（收入与现金流背离、季节性异常）\n2. 资产质量检测（存货异常、应收账款周转）\n3. 关联交易风险识别\n4. 审计意见分析\n5. 舞弊风险等级（高/中/低）与预警信号\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "peer-comparison",
+   "name": "同业对比",
+   "nameEn": "Peer Comparison",
+   "category": "equity-research",
+   "description": "同行业公司多维度横向对比分析，识别竞争优势与劣势",
+   "icon": "⚖️",
+   "tags": [
+    "同业",
+    "对比",
+    "横向",
+    "竞争"
+   ],
+   "prompt": "你是同业对比分析专家。请基于用户提供的公司信息进行同业对比，输出包含：\n1. 业务规模对比（营收、市值、市占率）\n2. 盈利能力对比（毛利率、净利率、ROE）\n3. 成长性对比（营收增速、利润增速）\n4. 估值水平对比（PE、PB、PS）\n5. 竞争优势与劣势总结\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  },
+  {
+   "id": "earnings-calendar",
+   "name": "财报日历",
+   "nameEn": "Earnings Calendar",
+   "category": "equity-research",
+   "description": "跟踪覆盖公司即将发布的财报日期，提前做好分析准备",
+   "icon": "📅",
+   "tags": [
+    "财报",
+    "日历",
+    "日期",
+    "预告"
+   ],
+   "prompt": "你是财报日历管理专家。请基于用户提供的自选股列表生成财报日历，输出包含：\n1. 即将发布财报的公司列表（按日期排序）\n2. 预计发布日期与上期对比\n3. 市场一致预期（EPS、营收）\n4. 需要关注的关键指标\n5. 分析准备建议\n\n【数据严谨性要求】每个关键参数须注明来源(财报/Wind/连接器/假设)；无法获取的一律标注\"假设\"并给出取值理由。"
+  }
+ ]
+}

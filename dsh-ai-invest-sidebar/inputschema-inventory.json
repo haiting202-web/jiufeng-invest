@@ -1,0 +1,435 @@
+[
+  {
+    "id": "earnings-analysis",
+    "name": "美股财报分析",
+    "icon": "📈",
+    "category": "equity-research",
+    "description": "美股季度财报深度分析，拆解beat/miss原因、调整盈利预测、US GAAP准则。A股用户请用「A股业绩点评」",
+    "fieldCount": 2,
+    "inputSchema": [
+      {
+        "key": "ticker",
+        "label": "分析对象",
+        "type": "stock-picker",
+        "required": true,
+        "placeholder": "输入股票代码或公司名称"
+      },
+      {
+        "key": "quarter",
+        "label": "财报期",
+        "type": "select",
+        "required": true,
+        "options": [
+          {
+            "label": "2026Q1",
+            "value": "2026Q1"
+          },
+          {
+            "label": "2025Q4",
+            "value": "2025Q4"
+          },
+          {
+            "label": "2025Q3",
+            "value": "2025Q3"
+          },
+          {
+            "label": "2025Q2",
+            "value": "2025Q2"
+          },
+          {
+            "label": "2025Q1",
+            "value": "2025Q1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "idea-generation",
+    "name": "美股选股筛选",
+    "icon": "🎯",
+    "category": "equity-research",
+    "description": "美股系统性股票筛选：量化筛选、主题投资、SEC Filing分析。A股用户请用「A股选股筛选」",
+    "fieldCount": 6,
+    "inputSchema": [
+      {
+        "key": "direction",
+        "label": "方向",
+        "type": "select",
+        "required": true,
+        "options": [
+          {
+            "label": "做多 (Long)",
+            "value": "long"
+          },
+          {
+            "label": "做空 (Short)",
+            "value": "short"
+          },
+          {
+            "label": "两者皆可",
+            "value": "both"
+          }
+        ]
+      },
+      {
+        "key": "marketCap",
+        "label": "市值",
+        "type": "select",
+        "required": true,
+        "options": [
+          {
+            "label": "大盘 (>100亿)",
+            "value": "large"
+          },
+          {
+            "label": "中盘 (30-100亿)",
+            "value": "mid"
+          },
+          {
+            "label": "小盘 (10-30亿)",
+            "value": "small"
+          },
+          {
+            "label": "微盘 (<10亿)",
+            "value": "micro"
+          }
+        ]
+      },
+      {
+        "key": "sector",
+        "label": "行业",
+        "type": "text",
+        "required": true,
+        "placeholder": "如 \"新能源\"、\"半导体\"、\"消费电子\"，或输入 \"跨行业\""
+      },
+      {
+        "key": "style",
+        "label": "投资风格",
+        "type": "select",
+        "required": true,
+        "options": [
+          {
+            "label": "价值型",
+            "value": "value"
+          },
+          {
+            "label": "成长型",
+            "value": "growth"
+          },
+          {
+            "label": "质量型",
+            "value": "quality"
+          },
+          {
+            "label": "特殊情况",
+            "value": "special-situation"
+          },
+          {
+            "label": "事件驱动",
+            "value": "event-driven"
+          }
+        ]
+      },
+      {
+        "key": "geography",
+        "label": "地区",
+        "type": "select",
+        "required": true,
+        "options": [
+          {
+            "label": "A股",
+            "value": "a-share"
+          },
+          {
+            "label": "港股",
+            "value": "hk"
+          },
+          {
+            "label": "美股",
+            "value": "us"
+          },
+          {
+            "label": "全球",
+            "value": "global"
+          }
+        ]
+      },
+      {
+        "key": "theme",
+        "label": "主题",
+        "type": "text",
+        "placeholder": "如 \"AI\"、\"国产替代\"、\"老龄化\"（选填）"
+      }
+    ]
+  },
+  {
+    "id": "sector-overview",
+    "name": "美股行业分析",
+    "icon": "🏭",
+    "category": "equity-research",
+    "description": "美股行业全景分析：市场规模、竞争格局、SEC监管环境、GICS分类。A股用户请用「A股行业深度分析」",
+    "fieldCount": 5,
+    "inputSchema": [
+      {
+        "key": "sector",
+        "label": "行业",
+        "type": "text",
+        "required": true,
+        "placeholder": "如 \"新能源汽车\"、\"半导体\"、\"白酒\""
+      },
+      {
+        "key": "depth",
+        "label": "分析深度",
+        "type": "select",
+        "defaultValue": "overview",
+        "options": [
+          {
+            "label": "概览 (5-10页)",
+            "value": "overview"
+          },
+          {
+            "label": "深度 (20-30页)",
+            "value": "deep-dive"
+          }
+        ]
+      },
+      {
+        "key": "angle",
+        "label": "分析角度",
+        "type": "select",
+        "defaultValue": "neutral",
+        "options": [
+          {
+            "label": "中立全景",
+            "value": "neutral"
+          },
+          {
+            "label": "主题驱动",
+            "value": "thematic"
+          }
+        ]
+      },
+      {
+        "key": "universe",
+        "label": "覆盖范围",
+        "type": "select",
+        "defaultValue": "public",
+        "options": [
+          {
+            "label": "仅上市公司",
+            "value": "public"
+          },
+          {
+            "label": "包含非上市",
+            "value": "all"
+          }
+        ]
+      },
+      {
+        "key": "purpose",
+        "label": "用途",
+        "type": "select",
+        "defaultValue": "internal",
+        "options": [
+          {
+            "label": "客户报告",
+            "value": "client"
+          },
+          {
+            "label": "内部研究",
+            "value": "internal"
+          },
+          {
+            "label": "路演材料",
+            "value": "pitch"
+          },
+          {
+            "label": "投资机会",
+            "value": "idea"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "comps-analysis",
+    "name": "美股可比公司分析",
+    "icon": "🔍",
+    "category": "financial-analysis",
+    "description": "美股可比公司估值矩阵：PE/PB/EV-EBITDA/PEG对标、GICS行业分类、SEC Filing数据。A股用户请用「A股可比公司分析」",
+    "fieldCount": 4,
+    "inputSchema": [
+      {
+        "key": "target",
+        "label": "目标公司",
+        "type": "stock-picker",
+        "required": true,
+        "placeholder": "输入目标公司代码或名称"
+      },
+      {
+        "key": "peers",
+        "label": "可比公司",
+        "type": "text",
+        "placeholder": "输入代码，逗号分隔，或留空由 AI 推荐"
+      },
+      {
+        "key": "focus",
+        "label": "分析重点",
+        "type": "select",
+        "defaultValue": "valuation",
+        "options": [
+          {
+            "label": "估值对比",
+            "value": "valuation"
+          },
+          {
+            "label": "增长分析",
+            "value": "growth"
+          },
+          {
+            "label": "竞争定位",
+            "value": "positioning"
+          },
+          {
+            "label": "运营效率",
+            "value": "efficiency"
+          }
+        ]
+      },
+      {
+        "key": "context",
+        "label": "场景",
+        "type": "select",
+        "defaultValue": "investment",
+        "options": [
+          {
+            "label": "投资决策",
+            "value": "investment"
+          },
+          {
+            "label": "并购评估",
+            "value": "ma"
+          },
+          {
+            "label": "行业对标",
+            "value": "benchmark"
+          },
+          {
+            "label": "业绩回顾",
+            "value": "review"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dcf-model",
+    "name": "DCF估值模型",
+    "icon": "💎",
+    "category": "financial-analysis",
+    "description": "机构级现金流折现估值模型，支持敏感性分析、情景模拟、WACC计算",
+    "fieldCount": 7,
+    "inputSchema": [
+      {
+        "key": "ticker",
+        "label": "分析对象",
+        "type": "stock-picker",
+        "required": true,
+        "placeholder": "输入股票代码或公司名称"
+      },
+      {
+        "key": "years",
+        "label": "预测期",
+        "type": "select",
+        "defaultValue": "5",
+        "options": [
+          {
+            "label": "3年",
+            "value": "3"
+          },
+          {
+            "label": "5年",
+            "value": "5"
+          },
+          {
+            "label": "10年",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "key": "wacc",
+        "label": "折现率 (WACC)",
+        "type": "select",
+        "defaultValue": "10",
+        "options": [
+          {
+            "label": "8%",
+            "value": "8"
+          },
+          {
+            "label": "10%",
+            "value": "10"
+          },
+          {
+            "label": "12%",
+            "value": "12"
+          },
+          {
+            "label": "自定义",
+            "value": "custom"
+          }
+        ]
+      },
+      {
+        "key": "waccCustom",
+        "label": "自定义 WACC",
+        "type": "number",
+        "unit": "%",
+        "placeholder": "输入自定义折现率",
+        "dependsOn": {
+          "key": "wacc",
+          "value": "custom"
+        }
+      },
+      {
+        "key": "terminalMethod",
+        "label": "终值方法",
+        "type": "select",
+        "defaultValue": "perpetuity",
+        "options": [
+          {
+            "label": "永续增长法",
+            "value": "perpetuity"
+          },
+          {
+            "label": "退出倍数法",
+            "value": "exit-multiple"
+          }
+        ]
+      },
+      {
+        "key": "terminalGrowth",
+        "label": "永续增长率",
+        "type": "number",
+        "unit": "%",
+        "defaultValue": 2.5,
+        "dependsOn": {
+          "key": "terminalMethod",
+          "value": "perpetuity"
+        }
+      },
+      {
+        "key": "exitMultiple",
+        "label": "退出 EV/EBITDA",
+        "type": "number",
+        "unit": "x",
+        "dependsOn": {
+          "key": "terminalMethod",
+          "value": "exit-multiple"
+        }
+      }
+    ]
+  }
+]
