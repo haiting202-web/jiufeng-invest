@@ -26,12 +26,9 @@ DSH（DeepSeek Harness Desktop）金融投研数据工具插件。把一套 Web 
 ### 关于 `search_stock`（代码 / 名称搜索）
 
 该工具调用东方财富的公开 `suggest` 接口，接口需要一个 `token` 参数。
-开源版**不内置**这个 token。未设置 `EM_SEARCH_TOKEN` 时：
+这个 token 是**公开接口的固定参数**，不是账号凭据 —— 代码里已内嵌默认值，开箱可用。
 
-- `search_stock` 返回空，模型会自动改用其他工具（不影响其余 20 个工具）
-- 侧边栏插件的股票搜索框降级为**手工输入代码**
-
-如需启用，自备 token 并设为环境变量：
+如需换成自己的 token，设环境变量覆盖即可：
 
 ```sh
 export EM_SEARCH_TOKEN=<你的 token>

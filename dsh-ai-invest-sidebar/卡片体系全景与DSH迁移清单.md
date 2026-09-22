@@ -206,7 +206,7 @@ AI 输出 ` ```ddxml ` 代码块 → 解析为富文档。这是**输出侧**卡
 - WEB 实现：`window.electronAPI.searchStockEx(keyword)` → Electron 主进程 → 东方财富
 - DSH 可行方案：`dsh-finance-tools/lib/datasource.js` 的 `searchStockSmart()` 是**纯 fetch 零依赖**：
   - A股/港股：`https://searchapi.eastmoney.com/api/suggest/get?input={kw}&type=14&token={EM_SEARCH_TOKEN}&count=5`
-    （`EM_SEARCH_TOKEN` 由环境变量注入，见 `dsh-finance-tools/lib/datasource.js`）
+    （`EM_SEARCH_TOKEN` 是公开接口固定参数，已在 `dsh-finance-tools/lib/datasource.js` 内嵌默认值；可用环境变量覆盖）
   - 美股：`...&type=4&...`（回落）
   - 返回 `{code, name, market, kind}`
 

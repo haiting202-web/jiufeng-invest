@@ -690,9 +690,9 @@ export async function getAggregatedNews(code, limit = 10) {
 
 // ── 搜索 ──────────────────────────────────────────────────────────────────
 
-// 东方财富搜索接口 token：开源版不硬编码，改由环境变量 EM_SEARCH_TOKEN 注入。
-// 未配置时下面的 searchStock / searchStockUS 会直接返回 null，调用方自动降级为手工输入。
-const EM_SEARCH_TOKEN = process.env.EM_SEARCH_TOKEN || ''
+// 东方财富搜索接口 token。这是公开 suggest 接口的固定参数（非私密凭据），
+// 内嵌默认值以保证开箱可用；如需替换可设环境变量 EM_SEARCH_TOKEN 覆盖。
+const EM_SEARCH_TOKEN = process.env.EM_SEARCH_TOKEN || 'D43BF722C8E33BDC906FB84D85E326E8'
 
 export async function searchStock(keyword) {
   if (!EM_SEARCH_TOKEN) return null

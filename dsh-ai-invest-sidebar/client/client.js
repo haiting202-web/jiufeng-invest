@@ -120,9 +120,9 @@ window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", factory: (require) =
 	}
 
 	// #region ============ 股票搜索（东方财富 suggest 接口，与 dsh-finance-tools 同源）============
-	// 东方财富搜索接口 token：开源版不硬编码。
-	// 宿主可用 globalThis.EM_SEARCH_TOKEN 注入；未注入时 emSearch 返回 null，调用方降级为手工输入。
-	const EM_SEARCH_TOKEN = (typeof globalThis !== "undefined" && globalThis.EM_SEARCH_TOKEN) || "";
+	// 东方财富搜索接口 token。这是公开 suggest 接口的固定参数（非私密凭据），
+	// 内嵌默认值以保证开箱可用；如需替换可用 globalThis.EM_SEARCH_TOKEN 覆盖。
+	const EM_SEARCH_TOKEN = (typeof globalThis !== "undefined" && globalThis.EM_SEARCH_TOKEN) || "D43BF722C8E33BDC906FB84D85E326E8";
 	const EM_SEARCH_API = "https://searchapi.eastmoney.com/api/suggest/get";
 
 	/** type=14 → A股/港股；type=4 → 美股。返回 null 表示网络不可用（调用方需降级）*/
