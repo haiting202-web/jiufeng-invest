@@ -74,6 +74,16 @@
     实际替换交给 品牌文案补丁.py（幂等、带备份、带 node --check 语法自检），
     本脚本只负责"发现不同步 → 调它贴回 → 复查"。
 
+    第五件事：启动画面（2026-09-29 并入）
+    ------------------------------------
+    DSH 主窗口要等 host-boot 全部完成才显示，冷启动几十秒里桌面毫无反馈。
+    启动反馈补丁.py 在 app 包 main.js 里插入一个无边框 splash 窗（玖峰 LOGO +
+    进度条动画，双击约 1 秒出现），并在 electron-runtime 的 revealApplication()
+    开头挂钩子——主窗口任何路径显示时自动关闭 splash。
+    main.js 与 electron-runtime-*.js 同样躺在安装目录里，**覆盖安装会被还原**，
+    所以并入 Lock：发现补丁缺失就调 启动反馈补丁.py apply 贴回（幂等、带备份、
+    带 node --check 语法自检，apply 失败自动从备份还原）。
+
     安全边界（脚本里已固化，别越线）：
       - 绝不改 DESKTOP_PRODUCT_NAME / app.setName() —— 它同时决定 userData 目录，
         改了会换目录、丢配置。只改运行时显示用的 spec.productName 参数。
@@ -81,14 +91,15 @@
       - 找到 python 才执行；找不到就跳过并提示，不让 Lock 整体失败。
 
 .PARAMETER Action
-    Lock    锁上——一次固化四件事：
+    Lock    锁上——一次固化五件事：
               ① 禁用更新插件（桌面「检查更新…」消失）
               ② 关闭 web-runtime 的 surfaceContext（system prompt 收窄）
               ③ 把自定义图标贴回 app 目录
               ④ 把 app 包品牌文案（托盘 / 窗口标题 / 向导 / 恢复助手）贴回
+              ⑤ 把启动画面补丁（双击秒回加载窗）贴回
             幂等，可重复执行；基座升级后必做。
     Unlock  解锁——恢复官方更新入口，并把 surfaceContext 还原为 true。
-            图标与品牌文案**保持用户自定义、不还原**（Unlock 是调试用的，不是撤销偏好）。
+            图标、品牌文案与启动画面**保持用户自定义、不还原**（Unlock 是调试用的，不是撤销偏好）。
             仅在调试新基座时使用。
     Verify  只读校验（默认），不改任何文件。升级后先跑这个。
 
@@ -132,6 +143,9 @@ $ICON_FILES = @('app-icon.png', 'tray-icon-blue.png', 'tray-icon-blue@2x.png')
 
 # 第四件事：app 包品牌文案（托盘 / 窗口标题 / 向导 / 恢复助手），交给 python 脚本
 $BRAND_PATCH_PY = Join-Path $PSScriptRoot '品牌文案补丁.py'
+
+# 第五件事：启动画面（双击秒回加载窗），交给 python 脚本
+$SPLASH_PATCH_PY = Join-Path $PSScriptRoot '启动反馈补丁.py'
 
 function Get-FileSha {
     param([string]$Path)
@@ -237,6 +251,51 @@ function Invoke-BrandPatch {
     }
 
     $reason = if ($code -eq 0) { 'app 包已是品牌文案' } else { "app 包仍有未替换的品牌文案（退出码 $code）" }
+    return @{ Available = $true; Ok = ($code -eq 0); Exit = $code; Reason = $reason }
+}
+
+function Invoke-SplashPatch {
+    <#
+        调 启动反馈补丁.py 处理 app 包：双击约 1 秒弹出玖峰 splash 窗，
+        主窗口经 revealApplication() 显示时自动关闭。
+        返回 @{ Available; Ok; Exit; Reason }，契约同 Invoke-BrandPatch：
+        启动画面不是关键路径，失败时跳过并提示，不让整个 Lock 失败。
+        注意 verify 退出码 1 同时可能是「补丁缺失」与「语法异常」；
+        Lock 分支直接靠 apply 自愈（apply 自带锚点校验与失败还原）。
+    #>
+    param([string]$Root, [switch]$Write)
+
+    if (-not (Test-Path $SPLASH_PATCH_PY)) {
+        return @{ Available = $false; Ok = $false; Exit = -1; Reason = "找不到 $SPLASH_PATCH_PY" }
+    }
+    $py = Get-PythonExe
+    if (-not $py) {
+        return @{ Available = $false; Ok = $false; Exit = -1; Reason = 'PATH 里找不到 python' }
+    }
+
+    $appDir = Join-Path $Root 'resources\app'
+    if (-not (Test-Path $appDir)) {
+        return @{ Available = $false; Ok = $false; Exit = -1; Reason = "找不到 $appDir" }
+    }
+
+    $savedEnc = $env:PYTHONIOENCODING
+    $env:PYTHONIOENCODING = 'utf-8'
+    try {
+        $argv = @($SPLASH_PATCH_PY, '--app', $appDir)
+        if ($Write) {
+            $argv += 'apply'
+            & $py @argv                       # 落盘时透传输出（改动清单 / 语法自检 / 备份路径）
+        } else {
+            $argv += 'verify'
+            & $py @argv | Out-Null            # 只读校验，调用方自己打印摘要
+        }
+        $code = $LASTEXITCODE
+    } finally {
+        if ($null -eq $savedEnc) { Remove-Item Env:PYTHONIOENCODING -ErrorAction SilentlyContinue }
+        else { $env:PYTHONIOENCODING = $savedEnc }
+    }
+
+    $reason = if ($code -eq 0) { '启动画面补丁在位' } else { "启动画面补丁缺失或异常（退出码 $code）" }
     return @{ Available = $true; Ok = ($code -eq 0); Exit = $code; Reason = $reason }
 }
 
@@ -581,6 +640,18 @@ switch ($Action) {
             Write-Info  '执行 -Action Lock 会自动贴回（等价于 python 品牌文案补丁.py --write）。'
         }
 
+        Write-Host ''
+        Write-Host '  ⑤ 启动画面（双击秒回「玖峰金融工作台」加载窗）' -ForegroundColor White
+        $splash = Invoke-SplashPatch -Root $root
+        if (-not $splash.Available) {
+            Write-Warn2 "环境不具备，跳过：$($splash.Reason)"
+        } elseif ($splash.Ok) {
+            Write-Ok '启动画面补丁在位（双击约 1 秒出画面，主窗口出现后自动关闭）。'
+        } else {
+            Write-Err2 $splash.Reason
+            Write-Info  '执行 -Action Lock 会自动贴回（等价于 python 启动反馈补丁.py apply）。'
+        }
+
         $running = Get-DshProcesses
         Write-Host ''
         Write-Info "DSH 进程数 : $($running.Count)"
@@ -604,7 +675,7 @@ switch ($Action) {
                 exit 3
             }
 
-            $guardLine = "$($row.Indent)disabled: true   # $GUARD_TAG 受控更新守卫 · 管理脚本 $PSScriptRoot\切换更新守卫.ps1"
+            $guardLine = "$($row.Indent)disabled: true   # $GUARD_TAG 受控更新守卫 · 管理脚本 .\dsh-update-guard\切换更新守卫.ps1"
             $newLines  = New-Object System.Collections.Generic.List[string]
             $newLines.AddRange([string[]]$lines)
 
@@ -690,12 +761,34 @@ switch ($Action) {
             }
         }
 
+        # ── ⑤ 启动画面：贴回（覆盖安装会还原 main.js / electron-runtime-*.js）──
+        Write-Host ''
+        Write-Host '  ⑤ 启动画面（双击秒回「玖峰金融工作台」加载窗）' -ForegroundColor White
+
+        $splash = Invoke-SplashPatch -Root $root
+        if (-not $splash.Available) {
+            Write-Warn2 "环境不具备，跳过：$($splash.Reason)"
+            Write-Info  '不影响更新锁与图标。想单独补跑：python 启动反馈补丁.py apply'
+        } elseif ($splash.Ok) {
+            Write-Ok '启动画面补丁已在位，无需改动。'
+        } else {
+            Write-Info '检测到补丁缺失（覆盖安装还原了 app 包），正在贴回…'
+            $splash2 = Invoke-SplashPatch -Root $root -Write
+            if ($splash2.Ok) {
+                Write-Ok '已贴回启动画面补丁（重启 DSH 生效）。'
+            } else {
+                Write-Err2 "贴回失败（退出码 $($splash2.Exit)），请人工检查；备份在 splash-backup-* 下，可用 python 启动反馈补丁.py revert 还原。"
+                exit 4
+            }
+        }
+
         Save-GuardState -Root $root -Version $version -Action 'Lock'
 
         $running = Get-DshProcesses
         Write-Host ''
         if ($running.Count -gt 0) {
-            Write-Warn2 "DSH 正在运行（$($running.Count) 个进程），本次改动尚未生效。"            Write-Info  '请右键系统托盘图标 →「退出」，再重新启动 DSH。'
+            Write-Warn2 "DSH 正在运行（$($running.Count) 个进程），本次改动尚未生效。"
+            Write-Info  '请右键系统托盘图标 →「退出」，再重新启动 DSH。'
         } else {
             Write-Info 'DSH 未运行，下次启动即生效。'
         }
@@ -771,6 +864,18 @@ switch ($Action) {
             Write-Ok '保持品牌文案（Unlock 不还原偏好）。'
         } else {
             Write-Warn2 '当前不是品牌文案（刚覆盖安装过？）。补跑：-Action Lock，或 python 品牌文案补丁.py --write'
+        }
+
+        # ── ⑤ 启动画面：Unlock 同样不动（启动画面是用户偏好，不是调试开关）────
+        Write-Host ''
+        Write-Host '  ⑤ 启动画面（双击秒回「玖峰金融工作台」加载窗）' -ForegroundColor White
+        $splash = Invoke-SplashPatch -Root $root
+        if (-not $splash.Available) {
+            Write-Info "环境不具备，跳过：$($splash.Reason)"
+        } elseif ($splash.Ok) {
+            Write-Ok '保持启动画面补丁（Unlock 不还原偏好）。'
+        } else {
+            Write-Warn2 '启动画面补丁缺失（刚覆盖安装过？）。补跑：-Action Lock，或 python 启动反馈补丁.py apply'
         }
 
         Save-GuardState -Root $root -Version $version -Action 'Unlock'
