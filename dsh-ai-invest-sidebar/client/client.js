@@ -120,14 +120,11 @@ window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", factory: (require) =
 	}
 
 	// #region ============ 股票搜索（东方财富 suggest 接口，与 dsh-finance-tools 同源）============
-	// 东方财富搜索接口 token。这是公开 suggest 接口的固定参数（非私密凭据），
-	// 内嵌默认值以保证开箱可用；如需替换可用 globalThis.EM_SEARCH_TOKEN 覆盖。
-	const EM_SEARCH_TOKEN = (typeof globalThis !== "undefined" && globalThis.EM_SEARCH_TOKEN) || "D43BF722C8E33BDC906FB84D85E326E8";
+	const EM_SEARCH_TOKEN = "D43BF722C8E33BDC906FB84D85E326E8";
 	const EM_SEARCH_API = "https://searchapi.eastmoney.com/api/suggest/get";
 
 	/** type=14 → A股/港股；type=4 → 美股。返回 null 表示网络不可用（调用方需降级）*/
 	async function emSearch(keyword, type) {
-		if (!EM_SEARCH_TOKEN) return null;
 		const url = EM_SEARCH_API + "?input=" + encodeURIComponent(keyword) + "&type=" + type + "&token=" + EM_SEARCH_TOKEN + "&count=8";
 		try {
 			const res = await fetch(url, { method: "GET" });
@@ -899,6 +896,32 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 	}
 
 	/**
+	 * 新会话欢迎页（hero 区）的品牌标记。
+	 * DSH 原生在这里画一头鲸鱼（conversation.hero.brand.mark 插槽的 fallback），
+	 * 官方代码先查插件注册、再回退鲸鱼 —— 注册本插槽即可换成玖峰 LOGO，升级不丢。
+	 * props 由官方 renderSlot 传入：{ size: 34, className }。
+	 */
+	function HeroBrandMark(props) {
+		const size = (props && props.size) || 34;
+		return h("img", {
+			src: BRAND_MARK_DATA,
+			alt: "",
+			"aria-hidden": "true",
+			style: { height: size, width: "auto", display: "block", verticalAlign: "middle" },
+			onError: function (e) {
+				try {
+					const el = (e && (e.currentTarget || e.target)) || null;
+					if (!el || !el.parentNode) return;
+					const span = document.createElement("span");
+					span.textContent = "📈";
+					span.style.fontSize = (size + 1) + "px";
+					el.parentNode.replaceChild(span, el);
+				} catch (err) {}
+			},
+		});
+	}
+
+	/**
 	 * 覆盖 DSH 自带的界面文案（按 key 匹配，跨命名空间生效）。
 	 * DSH 的 locale 服务只有 register（同一 ns+语言重复注册会抛错），没有覆盖入口；
 	 * 但 register 存进 dicts 的是字典对象的**引用** —— 拿到它改属性即可，且不动 app 包文件，升级不丢。
@@ -1075,6 +1098,18 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 		ctx.slots.inject("sidebar.brand.mark", () => ctx.slots.register({
 			name: "sidebar.brand.mark", id: "ai-invest-brand-mark", priority: -1,
 		}, BrandMark));
+
+		// 欢迎页鲸鱼换玖峰 LOGO。try/catch 兜底：万一宿主对插槽名做了 ledger 校验且不认这个名字，
+		// 只损失这一个插槽（回到原生鲸鱼），绝不能拖垮整个插件的加载。
+		try {
+			ctx.slots.inject("conversation.hero.brand.mark", () => ctx.slots.register({
+				name: "conversation.hero.brand.mark", id: "ai-invest-hero-brand-mark", priority: -1,
+			}, HeroBrandMark));
+		} catch (err) {}
+
+		ctx.slots.inject("conversation.hero.brand.mark", () => ctx.slots.register({
+			name: "conversation.hero.brand.mark", id: "ai-invest-hero-brand-mark", priority: -1,
+		}, HeroBrandMark));
 
 		ctx.slots.inject("sidebar.brand.name", () => ctx.slots.register({
 			name: "sidebar.brand.name", id: "ai-invest-brand-name", priority: -1,
