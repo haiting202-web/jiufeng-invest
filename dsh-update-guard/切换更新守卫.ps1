@@ -55,9 +55,10 @@
     用户自己的图标成品放在 ~/.dsh/icons/（用户目录，升级不受影响），
     所以 Lock 时顺手把这 3 个文件贴回去就行，不需要重新抠图或重新生成。
 
-    注意快捷方式不在处理范围：桌面/开始菜单 .lnk 的图标字段存在 %USERPROFILE%
-    下的 .lnk 文件里，指向 ~/.dsh/icons/dsh.ico，不随安装目录被还原，无需重贴。
-    （万一它也被改坏了，用 切换DSH图标.py apply 重跑一次即可。）
+    注意快捷方式的**图标字段**不在处理范围：桌面/开始菜单 .lnk 的图标字段存在
+    %USERPROFILE% 下的 .lnk 文件里，指向 ~/.dsh/icons/dsh.ico，不随安装目录被还原，
+    无需重贴。（万一它也被改坏了，用 切换DSH图标.py apply 重跑一次即可。）
+    但快捷方式的**显示名**见下方「第六件事」。
 
     想换成别的图：
         1) python 抠白底生成透明logo.py <图>            # 白底图先抠成透明底
@@ -84,6 +85,16 @@
     所以并入 Lock：发现补丁缺失就调 启动反馈补丁.py apply 贴回（幂等、带备份、
     带 node --check 语法自检，apply 失败自动从备份还原）。
 
+    第六件事：快捷方式显示名（2026-10-09 并入）
+    ------------------------------------------
+    安装程序把快捷方式写死叫 `DSH Desktop.lnk`，落在桌面与开始菜单 Programs 下。
+    改名成品牌名后，**覆盖安装会重新生成一份官方名的 .lnk**，与品牌名那份并存：
+    于是开始菜单里出现两个入口，其中官方名那份没有自定义 IconLocation，
+    显示的是 exe 内嵌的旧 LOGO —— 用户看到的就是「入口还是旧的」。
+    改快捷方式名.py 会把官方名那份清掉（先备份），只留品牌名那份。
+    本脚本并入第 ⑥ 步：发现未改名就调 `改快捷方式名.py apply` 贴回。
+    （它改的是 %USERPROFILE% 下的 .lnk，不依赖 app 目录，故不传 --app。）
+
     安全边界（脚本里已固化，别越线）：
       - 绝不改 DESKTOP_PRODUCT_NAME / app.setName() —— 它同时决定 userData 目录，
         改了会换目录、丢配置。只改运行时显示用的 spec.productName 参数。
@@ -91,15 +102,17 @@
       - 找到 python 才执行；找不到就跳过并提示，不让 Lock 整体失败。
 
 .PARAMETER Action
-    Lock    锁上——一次固化五件事：
+    Lock    锁上——一次固化六件事：
               ① 禁用更新插件（桌面「检查更新…」消失）
               ② 关闭 web-runtime 的 surfaceContext（system prompt 收窄）
               ③ 把自定义图标贴回 app 目录
-              ④ 把 app 包品牌文案（托盘 / 窗口标题 / 向导 / 恢复助手）贴回
+              ④ 把 app 包品牌文案（托盘 / 窗口标题 / 向导 / 恢复助手 / 顶栏）贴回
               ⑤ 把启动画面补丁（双击秒回加载窗）贴回
+              ⑥ 清理覆盖安装重新生成的官方名快捷方式（只留品牌名那份）
             幂等，可重复执行；基座升级后必做。
     Unlock  解锁——恢复官方更新入口，并把 surfaceContext 还原为 true。
-            图标、品牌文案与启动画面**保持用户自定义、不还原**（Unlock 是调试用的，不是撤销偏好）。
+            图标、品牌文案、启动画面与快捷方式显示名**保持用户自定义、不还原**
+            （Unlock 是调试用的，不是撤销偏好）。
             仅在调试新基座时使用。
     Verify  只读校验（默认），不改任何文件。升级后先跑这个。
 
@@ -146,6 +159,11 @@ $BRAND_PATCH_PY = Join-Path $PSScriptRoot '品牌文案补丁.py'
 
 # 第五件事：启动画面（双击秒回加载窗），交给 python 脚本
 $SPLASH_PATCH_PY = Join-Path $PSScriptRoot '启动反馈补丁.py'
+
+# 第六件事：桌面 / 开始菜单快捷方式显示名（覆盖安装会重新生成官方名的 .lnk，
+# 与改名后的品牌名 .lnk 并存 —— 那个官方名的 .lnk 没有自定义图标，开始菜单里
+# 会显示 exe 内嵌的旧 LOGO），交给 python 脚本。
+$RENAME_PY = Join-Path $PSScriptRoot '改快捷方式名.py'
 
 function Get-FileSha {
     param([string]$Path)
@@ -296,6 +314,45 @@ function Invoke-SplashPatch {
     }
 
     $reason = if ($code -eq 0) { '启动画面补丁在位' } else { "启动画面补丁缺失或异常（退出码 $code）" }
+    return @{ Available = $true; Ok = ($code -eq 0); Exit = $code; Reason = $reason }
+}
+
+function Invoke-ShortcutRename {
+    <#
+        调 改快捷方式名.py 处理桌面 / 开始菜单快捷方式的**显示名**。
+        覆盖安装会重新写一个官方名的 .lnk（`DSH Desktop.lnk`），它没有自定义
+        IconLocation，开始菜单里会显示 exe 内嵌的旧 LOGO，并且与改名后的品牌名
+        .lnk 并存 —— 用户看到的就是「两个入口、一个还是旧图标」。
+        apply 会把官方名那份清掉（先备份），只留品牌名那份。
+        返回 @{ Available; Ok; Exit; Reason }，契约同 Invoke-BrandPatch：
+        verify 退出码 2 = 「尚未改名」（正常可自愈态），不是异常。
+        脚本不依赖 app 目录（改的是 %USERPROFILE% 下的 .lnk），故不传 --app。
+    #>
+    param([switch]$Write)
+
+    if (-not (Test-Path $RENAME_PY)) {
+        return @{ Available = $false; Ok = $false; Exit = -1; Reason = "找不到 $RENAME_PY" }
+    }
+    $py = Get-PythonExe
+    if (-not $py) {
+        return @{ Available = $false; Ok = $false; Exit = -1; Reason = 'PATH 里找不到 python' }
+    }
+
+    $savedEnc = $env:PYTHONIOENCODING
+    $env:PYTHONIOENCODING = 'utf-8'
+    try {
+        if ($Write) {
+            & $py @($RENAME_PY, 'apply')      # 落盘时透传输出（改名 / 清理 / 备份路径）
+        } else {
+            & $py @($RENAME_PY, 'verify') | Out-Null
+        }
+        $code = $LASTEXITCODE
+    } finally {
+        if ($null -eq $savedEnc) { Remove-Item Env:PYTHONIOENCODING -ErrorAction SilentlyContinue }
+        else { $env:PYTHONIOENCODING = $savedEnc }
+    }
+
+    $reason = if ($code -eq 0) { '快捷方式显示名已是品牌名' } else { "快捷方式仍用官方显示名（退出码 $code）" }
     return @{ Available = $true; Ok = ($code -eq 0); Exit = $code; Reason = $reason }
 }
 
@@ -641,7 +698,7 @@ switch ($Action) {
         }
 
         Write-Host ''
-        Write-Host '  ⑤ 启动画面（双击秒回「玖峰金融工作台」加载窗）' -ForegroundColor White
+        Write-Host '  ⑤ 启动画面（双击秒回「玖峰投研工作台」加载窗）' -ForegroundColor White
         $splash = Invoke-SplashPatch -Root $root
         if (-not $splash.Available) {
             Write-Warn2 "环境不具备，跳过：$($splash.Reason)"
@@ -650,6 +707,18 @@ switch ($Action) {
         } else {
             Write-Err2 $splash.Reason
             Write-Info  '执行 -Action Lock 会自动贴回（等价于 python 启动反馈补丁.py apply）。'
+        }
+
+        Write-Host ''
+        Write-Host '  ⑥ 快捷方式显示名（桌面 / 开始菜单）' -ForegroundColor White
+        $ren = Invoke-ShortcutRename
+        if (-not $ren.Available) {
+            Write-Warn2 "环境不具备，跳过：$($ren.Reason)"
+        } elseif ($ren.Ok) {
+            Write-Ok '桌面 / 开始菜单均为品牌显示名。'
+        } else {
+            Write-Err2 $ren.Reason
+            Write-Info  '执行 -Action Lock 会自动清理（等价于 python 改快捷方式名.py apply）。'
         }
 
         $running = Get-DshProcesses
@@ -763,7 +832,7 @@ switch ($Action) {
 
         # ── ⑤ 启动画面：贴回（覆盖安装会还原 main.js / electron-runtime-*.js）──
         Write-Host ''
-        Write-Host '  ⑤ 启动画面（双击秒回「玖峰金融工作台」加载窗）' -ForegroundColor White
+        Write-Host '  ⑤ 启动画面（双击秒回「玖峰投研工作台」加载窗）' -ForegroundColor White
 
         $splash = Invoke-SplashPatch -Root $root
         if (-not $splash.Available) {
@@ -779,6 +848,26 @@ switch ($Action) {
             } else {
                 Write-Err2 "贴回失败（退出码 $($splash2.Exit)），请人工检查；备份在 splash-backup-* 下，可用 python 启动反馈补丁.py revert 还原。"
                 exit 4
+            }
+        }
+
+        # ── ⑥ 快捷方式显示名：清掉覆盖安装重新生成的官方名 .lnk ────────────────
+        Write-Host ''
+        Write-Host '  ⑥ 快捷方式显示名（桌面 / 开始菜单）' -ForegroundColor White
+
+        $ren = Invoke-ShortcutRename
+        if (-not $ren.Available) {
+            Write-Warn2 "环境不具备，跳过：$($ren.Reason)"
+            Write-Info  '不影响更新锁与图标。想单独补跑：python 改快捷方式名.py apply'
+        } elseif ($ren.Ok) {
+            Write-Ok '已是品牌显示名，无需改动。'
+        } else {
+            Write-Info '检测到官方显示名残留（覆盖安装重新生成了 .lnk），正在清理…'
+            $ren2 = Invoke-ShortcutRename -Write
+            if ($ren2.Ok) {
+                Write-Ok '已清理，只保留品牌名快捷方式。'
+            } else {
+                Write-Warn2 "清理失败（退出码 $($ren2.Exit)），可人工跑：python 改快捷方式名.py apply"
             }
         }
 
@@ -868,7 +957,7 @@ switch ($Action) {
 
         # ── ⑤ 启动画面：Unlock 同样不动（启动画面是用户偏好，不是调试开关）────
         Write-Host ''
-        Write-Host '  ⑤ 启动画面（双击秒回「玖峰金融工作台」加载窗）' -ForegroundColor White
+        Write-Host '  ⑤ 启动画面（双击秒回「玖峰投研工作台」加载窗）' -ForegroundColor White
         $splash = Invoke-SplashPatch -Root $root
         if (-not $splash.Available) {
             Write-Info "环境不具备，跳过：$($splash.Reason)"
@@ -876,6 +965,18 @@ switch ($Action) {
             Write-Ok '保持启动画面补丁（Unlock 不还原偏好）。'
         } else {
             Write-Warn2 '启动画面补丁缺失（刚覆盖安装过？）。补跑：-Action Lock，或 python 启动反馈补丁.py apply'
+        }
+
+        # ── ⑥ 快捷方式显示名：Unlock 同样不动（品牌是用户偏好，不是调试开关）──
+        Write-Host ''
+        Write-Host '  ⑥ 快捷方式显示名（桌面 / 开始菜单）' -ForegroundColor White
+        $ren = Invoke-ShortcutRename
+        if (-not $ren.Available) {
+            Write-Info "环境不具备，跳过：$($ren.Reason)"
+        } elseif ($ren.Ok) {
+            Write-Ok '保持品牌显示名（Unlock 不还原偏好）。'
+        } else {
+            Write-Warn2 '快捷方式仍是官方显示名（刚覆盖安装过？）。补跑：-Action Lock，或 python 改快捷方式名.py apply'
         }
 
         Save-GuardState -Root $root -Version $version -Action 'Unlock'

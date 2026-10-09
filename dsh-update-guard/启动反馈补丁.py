@@ -16,8 +16,12 @@
 用法（在 dsh-update-guard 目录下）：
     python 启动反馈补丁.py            # dry-run：打印将要做的改动，不落盘
     python 启动反馈补丁.py apply      # 备份后落盘 + node --check 自检
+    python 启动反馈补丁.py refresh    # ★ 只重写"已注入的" splash 块（改文案/图标走这个）
     python 启动反馈补丁.py verify     # 只读：检查补丁是否在位
-    python 启动反馈补丁.py revert     # 从最近一次备份还原
+    python 启动反馈补丁.py revert     # 从最近一次备份还原（会整文件还原，慎用）
+
+⚠️ 改 splash 内容请用 refresh，不要 revert+apply：
+   revert 是整文件还原到注入当时的备份，会把之后打在 main.js 上的其它改动一起冲掉。
 """
 import json
 import os
@@ -42,16 +46,24 @@ IMPORT_NEW = 'import { app, BrowserWindow, crashReporter, dialog, safeStorage, s
 ANCHOR_MAIN = 'if (process.platform === "win32") app.setAppUserModelId(DESKTOP_APP_ID);'
 ANCHOR_REVEAL = "function revealApplication(window, platform = process.platform) {\n\tif (platform === \"darwin\" && app.isHidden()) app.show();"
 
-SPLASH_HTML = """<!DOCTYPE html>
+LOGO_B64_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "splash-logo.b64.txt")
+
+# 启动画面 HTML 模板。
+#   __LOGO__ 由 splash_html() 替换成 base64 data URI（真实品牌 logo）。
+# 为什么用真实 logo 而不是原来的"渐变方块 + 玖"字母标记：
+# 那个方块是早期占位设计，与应用图标（蓝色 swoosh）完全不像，启动瞬间会先闪出一个
+# 跟托盘/任务栏都不一致的图形 —— 用户反馈"标识不统一"就包含这一类。
+SPLASH_HTML_TMPL = """<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden}
 body{background:#0f1216;display:flex;flex-direction:column;align-items:center;justify-content:center;
 font-family:"Microsoft YaHei UI","Microsoft YaHei",sans-serif;user-select:none;border:1px solid #2a3038}
-.logo{width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#1e6fff,#7a3cff);
+.logo{height:64px;width:auto;display:block;filter:drop-shadow(0 6px 22px rgba(30,111,255,.30))}
+.logo-fallback{width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#1e6fff,#7a3cff);
 display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(30,111,255,.35)}
-.logo span{color:#fff;font-size:40px;font-weight:700;line-height:1}
-.name{margin-top:18px;color:#e8eaed;font-size:17px;font-weight:600;letter-spacing:1px}
+.logo-fallback span{color:#fff;font-size:40px;font-weight:700;line-height:1}
+.name{margin-top:16px;color:#e8eaed;font-size:17px;font-weight:600;letter-spacing:1px}
 .slogan{margin-top:6px;color:#8a919c;font-size:12px}
 .bar{margin-top:22px;width:180px;height:3px;border-radius:2px;background:#242a32;overflow:hidden}
 .bar i{display:block;height:100%;width:40%;border-radius:2px;background:linear-gradient(90deg,#1e6fff,#7a3cff);
@@ -59,12 +71,29 @@ animation:slide 1.2s ease-in-out infinite}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(450%)}}
 .tip{margin-top:12px;color:#5c6570;font-size:11px}
 </style></head><body>
-<div class="logo"><span>玖</span></div>
-<div class="name">玖峰金融工作台</div>
+<img class="logo" src="__LOGO__" alt="">
+<div class="name">玖峰投研工作台</div>
 <div class="slogan">把散落的金融工具，装进一个桌面端</div>
 <div class="bar"><i></i></div>
 <div class="tip">正在启动，组件加载通常需要几秒</div>
 </body></html>"""
+
+
+def splash_html():
+    """拼出启动画面 HTML；logo 内联串缺失时退回字母标记（保证 apply 不因缺文件失败）。"""
+    uri = ""
+    try:
+        with open(LOGO_B64_FILE, "r", encoding="ascii") as fh:
+            b = fh.read().strip()
+        if b:
+            uri = "data:image/png;base64," + b
+    except OSError:
+        uri = ""
+    if uri:
+        return SPLASH_HTML_TMPL.replace("__LOGO__", uri)
+    return SPLASH_HTML_TMPL.replace(
+        '<img class="logo" src="__LOGO__" alt="">', '<div class="logo-fallback"><span>玖</span></div>'
+    ).replace("__LOGO__", "")
 
 
 def find_app_dir():
@@ -93,14 +122,23 @@ def write_text(path, text):
 
 
 def splash_block():
-    html_lit = json.dumps(SPLASH_HTML, ensure_ascii=True)
+    """生成注入 main.js 的 splash 代码块。
+
+    skipTaskbar / icon 是 2026-10-09 补上的：
+    无边框 splash 如果不加 skipTaskbar，**照样会在任务栏占一个按钮**；而它没设 icon
+    时用的是 exe 内嵌的官方图标 —— 冷启动那几十秒里，用户在任务栏看到的就是
+    "图标还是旧的 LOGO"。加了 skipTaskbar，启动期间不再出现在任务栏，等主窗口
+    出现时才挂上（主窗口用的是自定义 build/app-icon.png）。
+    """
+    html_lit = json.dumps(splash_html(), ensure_ascii=True)
     lines = [
         "\t/* " + MARK + "-START */",
         "\ttry {",
         "\t\tconst splashWindow = new BrowserWindow({",
         "\t\t\twidth: 420, height: 260, frame: false, resizable: false, movable: true,",
         "\t\t\tminimizable: false, maximizable: false, fullscreenable: false,",
-        "\t\t\tcenter: true, show: false, alwaysOnTop: true,",
+        "\t\t\tcenter: true, show: false, alwaysOnTop: true, skipTaskbar: true,",
+        "\t\t\ticon: join(app.getAppPath(), \"build\", \"app-icon.png\"),",
         "\t\t\tbackgroundColor: \"#0f1216\",",
         "\t\t\twebPreferences: { contextIsolation: true, nodeIntegration: false }",
         "\t\t});",
@@ -181,6 +219,44 @@ def build_changes(app_dir):
     return changes, (MAIN_JS, runtime_rel)
 
 
+def replace_splash_block(app_dir):
+    """只替换**已注入的** splash 代码块，不动 electron-runtime、不整体 revert。
+
+    为什么需要单独一个动作：`apply` 是"没有就插入"，已注入时是 0 改动；
+    而 `revert` 会从备份**整文件**还原 —— 备份是注入当时的（如 2026-09-29），
+    会把之后打在同一个文件上的其它补丁（品牌文案）一起冲掉。
+    所以"改 splash 内容"必须用 refresh，不能用 revert+apply。
+    """
+    p = os.path.join(app_dir, MAIN_JS)
+    text = read_text(p)
+    mark_a = "\t/* " + MARK + "-START */"
+    mark_b = "\t/* " + MARK + "-END */"
+    a = text.find(mark_a)
+    b = text.find(mark_b)
+    if a < 0 or b < 0:
+        raise SystemExit("没有找到已注入的 splash 块，请先 apply")
+    b += len(mark_b)
+    new = text[:a] + splash_block() + text[b:]
+    if new == text:
+        print("splash 块已是最新，0 改动（幂等）。")
+        return 0
+    ts = time.strftime("%Y%m%d-%H%M%S")
+    backup_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "splash-refresh-backup-" + ts)
+    os.makedirs(backup_dir)
+    bak = os.path.join(backup_dir, MAIN_JS.replace("/", "_"))
+    shutil.copyfile(p, bak)
+    write_text(p, new)
+    ok, msg = node_check(p)
+    print("  语法自检 %s: %s" % (MAIN_JS, "OK" if ok else "FAIL"))
+    if not ok:
+        print(msg)
+        shutil.copyfile(bak, p)
+        raise SystemExit("语法自检未通过，已还原")
+    print("splash 块已刷新（%d → %d 字符）。备份：%s" % (len(text), len(new), backup_dir))
+    print("生效条件：重启 DSH。")
+    return 0
+
+
 def main():
     argv = sys.argv[1:]
     mode = "dry"
@@ -193,12 +269,16 @@ def main():
         else:
             mode = argv[i]
             i += 1
-    if mode not in ("dry", "apply", "verify"):
+    if mode not in ("dry", "apply", "verify", "refresh"):
         mode = "dry"
     if app_override and os.path.isfile(os.path.join(app_override, MAIN_JS)):
         app_dir = app_override
     else:
         app_dir = find_app_dir()
+
+    if mode == "refresh":
+        sys.exit(replace_splash_block(app_dir))
+
     changes, touched = build_changes(app_dir)
 
     if mode in ("dry", "apply"):

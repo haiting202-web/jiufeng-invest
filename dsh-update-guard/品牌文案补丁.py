@@ -41,18 +41,71 @@ BRAND = "玖峰投研工作台"
 OLD_PRODUCT = "DSH Desktop"
 CJK = re.compile(r"[\u4e00-\u9fff]")
 
+
+# ★ 换行符铁律：一律 newline=""（不做换行翻译）。
+#   踩坑记录（2026-10-09）：原先用 `Path.write_text(ns, encoding="utf-8")`，Python 默认
+#   newline=None → 写盘时把每个 "\n" 翻成 os.linesep，Windows 上即 CRLF。结果一份原始为
+#   LF 的 app 包 bundle 被整份改成 CRLF（client.js 37563 行、electron-runtime 3302 行…），
+#   与上游基线产生无意义 diff，也可能干扰按字节比对的完整性校验。
+#   read 侧同理：newline=None 会把 CRLF 归一成 LF，导致「读进来是 LF、写出去变 CRLF」的
+#   隐性翻转；显式 newline="" 才能原样读、原样写，保证幂等。
+def read_text(p: Path, **kw) -> str:
+    with Path(p).open("r", encoding="utf-8", newline="", **kw) as fh:
+        return fh.read()
+
+
+def write_text(p: Path, s: str) -> None:
+    with Path(p).open("w", encoding="utf-8", newline="") as fh:
+        fh.write(s)
+
 # 目标文件：模式 → 说明
+#
+# ★ 2026-10-09 扩容：原名单只有 5 个文件，实测 app 包里还有 13 个文件含**用户可见**的
+#   品牌串（顶栏产品名、桌面设置面板、通知、更新提示等），漏在外面 → 界面出现两种品牌名。
+#   新增依据：全量扫描 `grep -rl "DSH Desktop" resources/app` 后逐个判定"是否用户可见"。
+#   刻意**不收**的文件（保持原样，理由见行内注释）：
+#     · lib/bin.js / lib/profile-manager-*.js —— 版本/edition 元数据与 CLI 帮助文本
+#     · lib/update-checker-*.js / lib/update-download-*.js / lib/pnpm-policy-*.js —— 纯代码注释
+#     · lib/desktop-terminal-*.js —— 终端窗口横幅（非主界面，且含 windows/cmd 转义字面量）
 TARGETS = [
     ("lib/src-*.js", "桌面运行时 spec（托盘 tooltip / 窗口标题）"),
     ("lib/tray-locale-*.js", "托盘菜单 + 原生对话框文案"),
     ("lib/native-ui/assets/setup-wizard-*.js", "首次设置向导"),
     ("lib/native-ui/assets/recovery-copy-*.js", "恢复助手"),
     ("node_modules/@deepseek-ai/dsh-web-frontend/dist/index.html", "渲染页 HTML（初始窗口标题）"),
+    # ↓ 2026-10-09 新增
+    ("lib/client.js", "渲染进程主包（桌面设置面板 / 局域网提示等中文文案）"),
+    ("lib/native-ui/assets/compatibility-chrome-*.js", "★ 窗口顶栏（产品名 + 版本号所在处）"),
+    ("lib/electron-runtime-*.js", "主进程运行时（更新提示 / 重启对话框 / 终端文案）"),
+    ("lib/notifications-*.js", "系统通知正文"),
+    ("lib/updates.js", "更新可用通知正文"),
+    ("lib/native-ui/*.html", "原生窗口页面标题（对话框/恢复/向导/顶栏）"),
+    # ↓ 2026-10-09 追加：主进程 bundle（设置面板 / 欢迎页 / 内置开放市场文案）。
+    #   main.js 同时被 启动反馈补丁.py 改（注入 splash 块）；两个脚本都走 newline=""，
+    #   互不干扰。splash 块内已是「玖峰投研工作台」且无 "DSH Desktop"，不会被本脚本二次命中。
+    ("lib/main.js", "主进程入口（设置 / 欢迎 / 内置市场中文文案）"),
 ]
 
 # 规则 0：HTML 里的静态标题（插件层只能事后替换 document.title，
 # 这里改源头，任务栏 / Alt+Tab 从一开始就是品牌名）
-HTML_TITLE_OLD = "<title>DeepSeek Harness</title>"
+#
+# 2026-10-09 起改为**通用**处理：扫所有 <title>…</title>，按下面的映射逐条替换。
+# 顺序敏感：先长串（DSH Desktop Recovery / Set up DSH Desktop），再兜底 DSH Desktop。
+HTML_TITLE_MAP = [
+    ("DSH Desktop Recovery", "%s 恢复助手" % BRAND),
+    ("Set up DSH Desktop", "设置 %s" % BRAND),
+    ("DeepSeek Harness", BRAND),
+    ("DSH Desktop", BRAND),
+]
+
+# 规则 0b：无中文邻接的**界面字面量**（规则 ② 靠"中文邻接"判定，抓不到这些）。
+# 依据：这些是渲染层写死的 UI 文本，前后都是代码分隔符，但用户直接看得见。
+# 期望命中次数写死 —— 官方改了结构会立刻报警，而不是静默漏改。
+EXACT_UI = [
+    # 窗口顶栏左上角的产品名（className 是 CSS 选择器，千万别动；只换 children 的字面量）
+    ("children:`DSH Desktop`}", "children:`%s`}" % BRAND, 1, "顶栏产品名"),
+    ("children:[`DSH Desktop `,", "children:[`%s `," % BRAND, 1, "顶栏标题栏文本"),
+]
 
 # 规则 1：代码标识符级别的精确替换（value, 期望命中次数）
 EXACT = [
@@ -75,10 +128,17 @@ EXACT = [
 # 这种英文串误判成中文语境。只留中文特有的引号与全角标点。
 ZH_CLS = ("[\u4e00-\u9fff\u201c\u201d\u2018\u2019\uff0c\u3002\u3001\uff1a\uff1b"
           "\uff01\uff1f\uff08\uff09\u3010\u3011\u300a\u300b]")
-P_BEFORE_DESKTOP = re.compile(r"(%s\s*)%s" % (ZH_CLS, re.escape(OLD_PRODUCT)))
-P_AFTER_DESKTOP = re.compile(r"%s(?=\s*(?:\$\{[^}]*\}\s*)?%s)" % (re.escape(OLD_PRODUCT), ZH_CLS))
-P_BEFORE_DSH = re.compile(r"(%s\s*)DSH " % ZH_CLS)
-P_AFTER_DSH = re.compile(r"DSH (?=\s*(?:\$\{[^}]*\}\s*)?%s)" % ZH_CLS)
+# 护栏：官方有「DSH Desktop Beta」这个**版本名**（独立 edition，有自己的 productName/appId）。
+# 若不加负向断言，"？DSH Desktop Beta 将继续保留。" 会被改成 "？玖峰投研工作台 Beta …"
+# —— 半改的版本名比不改更糟。规则 ② 一律跳过紧邻 "Beta" 的命中。
+P_BEFORE_DESKTOP = re.compile(r"(%s\s*)%s(?!\s*Beta)" % (ZH_CLS, re.escape(OLD_PRODUCT)))
+P_AFTER_DESKTOP = re.compile(r"%s(?!\s*Beta)(?=\s*(?:\$\{[^}]*\}\s*)?%s)"
+                            % (re.escape(OLD_PRODUCT), ZH_CLS))
+P_BEFORE_DSH = re.compile(r"(%s\s*)DSH (?!Desktop)" % ZH_CLS)
+P_AFTER_DSH = re.compile(r"DSH (?!Desktop)(?=\s*(?:\$\{[^}]*\}\s*)?%s)" % ZH_CLS)
+# 短词 "DSH " 必须排除后面跟 "Desktop" 的情况，否则 "？DSH Desktop Beta 将继续保留。"
+# 会被切成 "？玖峰Desktop Beta 将继续保留。"（实测踩到，见下 SAFETY 兜底）。
+SAFETY_GLUED = re.compile(r"玖峰[A-Za-z]")
 
 
 def patch_text(s: str, rel: str):
@@ -87,11 +147,27 @@ def patch_text(s: str, rel: str):
 
     # ⓪ HTML：静态标题，整串替换即可（不做中文语境那套）
     if rel.endswith(".html"):
-        if HTML_TITLE_OLD in s:
-            new = "<title>%s</title>" % BRAND
-            s = s.replace(HTML_TITLE_OLD, new)
-            changes.append((HTML_TITLE_OLD, new, "HTML 标题"))
+        def _t(m):
+            inner = new = m.group(1)
+            for old, rep in HTML_TITLE_MAP:
+                if old in new:
+                    new = new.replace(old, rep)
+            if new != inner:
+                changes.append(("<title>%s</title>" % inner, "<title>%s</title>" % new, "HTML 标题"))
+            return "<title>%s</title>" % new
+        s = re.sub(r"<title>(.*?)</title>", _t, s, flags=re.S)
         return s, changes
+
+    # ⓪b 界面字面量（无中文邻接，规则 ② 抓不到；如窗口顶栏产品名）
+    for old, new, expect, desc in EXACT_UI:
+        n = s.count(old)
+        if n == 0:
+            continue
+        if n != expect:
+            changes.append((old, new, "★ %s 命中 %d 次（预期 %d），跳过" % (desc, n, expect)))
+            continue
+        s = s.replace(old, new)
+        changes.append((old, new, desc))
 
     # ① 精确替换（只对 src-*.js）：这类是代码标识符，不走中文语境规则
     if rel.startswith("lib/src-"):
@@ -106,6 +182,10 @@ def patch_text(s: str, rel: str):
             changes.append((old, new, "代码标识符"))
 
     # ② 中文语境替换（长词在前：先处理 "DSH Desktop"，剩下的 "DSH " 再单独处理）
+    #
+    # 关于空格：替换后保留「汉字 + 空格 + 品牌名」的原样式（如 "重启 玖峰投研工作台"）。
+    # 这是**既有已发布**的风格 —— 托盘/向导里已有 49 处这种写法。此处刻意不改成
+    # 「贴合」写法，否则新老文件会出现两种排版风格，反而更不统一。
     def run(pat, new, keep_prefix, s):
         def f(m):
             out = (m.group(1) + new) if keep_prefix else new
@@ -119,6 +199,11 @@ def patch_text(s: str, rel: str):
     s = run(P_AFTER_DESKTOP, BRAND, False, s)
     s = run(P_BEFORE_DSH, "玖峰", True, s)
     s = run(P_AFTER_DSH, "玖峰", False, s)
+
+    # SAFETY 兜底：替换后不允许出现「玖峰 + ASCII 字母」粘连 —— 那是短词规则误伤
+    # "DSH Desktop …" 的典型症状（如 "玖峰Desktop Beta"）。宁可报警也不要静默产出夹生文案。
+    for m in list(SAFETY_GLUED.finditer(s))[:5]:
+        changes.append(("", "", "★ 检出「玖峰+英文」粘连：…%s…" % s[max(0, m.start() - 16):m.end() + 16]))
     return s, changes
 
 
@@ -201,10 +286,11 @@ def main():
     wrote = 0
     for p, rel, ns, ch in todo:
         shutil.copy2(p, bdir / (rel.replace("/", "__")))
-        p.write_text(ns, encoding="utf-8")
+        write_text(p, ns)
         meta["files"][rel] = {"backup": rel.replace("/", "__"), "changes": len([c for c in ch if not c[2].startswith("★")])}
         wrote += 1
-    (bdir / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    with (bdir / "meta.json").open("w", encoding="utf-8", newline="") as fh:
+        fh.write(json.dumps(meta, ensure_ascii=False, indent=2))
     print("\n已写入 %d 个文件；备份 → %s" % (wrote, bdir))
 
     # 兜底：改完立刻验证这些文件仍是合法 JS，避免"文案改了、代码崩了"
