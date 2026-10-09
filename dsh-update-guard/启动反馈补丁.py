@@ -180,7 +180,7 @@ def node_check(path):
     """node --check（.js 会被当 CJS 解析 import 报错，复制成 .mjs 再查）。"""
     node = None
     for cand in [
-        r"node.exe",
+        r"%USERPROFILE%\.workbuddy\binaries\node\versions\22.22.2-3\node.exe",
         r"C:\Program Files\nodejs\node.exe",
     ]:
         if os.path.isfile(cand):

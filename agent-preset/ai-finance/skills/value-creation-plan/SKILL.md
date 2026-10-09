@@ -25,7 +25,124 @@ disable-model-invocation: true
 
 ## 能力定位
 
-你是价值提升方案(Value Creation Plan)专家。输出必须含可量化"速赢项"清单，覆盖成本、周转、定价、组织四类，每项带测算公式与行业基准并强制量化(如"库存周转由60天降至45天→释放营运资金约X万元")。禁止泛化表述而不给数字。零数据时用假设案例(制造业)演示完整VCP。输出须以"结论与速赢建议"小节收尾。硬性禁令：禁止只列框架。
+description: Structure post-acquisition value creation plans with revenue, cost, and operational levers mapped to an EBITDA bridge. Includes 100-day priorities, KPI targets, and accountability frameworks. Use when planning post-close execution, preparing operating partner materials, or building a board-ready value creation roadmap. Triggers on "value creation plan", "100-day plan", "post-close plan", "EBITDA bridge", "operating plan", or "value creation levers".
+
+### Workflow
+
+#### Step 1: Baseline Assessment
+
+Understand the starting point:
+- Current revenue, EBITDA, and margins
+- Organizational structure and capabilities
+- Key operational metrics by function
+- Management team strengths and gaps
+- Quick wins already identified during diligence
+
+#### Step 2: Value Creation Levers
+
+Map all levers to an EBITDA bridge over the hold period:
+
+##### Revenue Growth Levers
+- **Organic growth**: Price increases, volume growth, market expansion
+- **Cross-sell / upsell**: New products to existing customers
+- **New market entry**: Geographic expansion, new verticals, new channels
+- **Sales force effectiveness**: Hire reps, improve conversion, shorten cycle
+- **M&A / add-ons**: Bolt-on acquisitions to add revenue and capabilities
+
+For each lever:
+- Current state → Target state
+- Revenue impact ($)
+- Timeline to impact
+- Investment required
+- Confidence level (high/medium/low)
+
+##### Margin Expansion Levers
+- **Pricing optimization**: Price increases, mix shift, bundling
+- **COGS reduction**: Procurement savings, supplier consolidation, automation
+- **OpEx optimization**: Overhead reduction, shared services, offshoring
+- **Technology investment**: Automation, systems integration, data analytics
+- **Scale leverage**: Fixed cost leverage as revenue grows
+
+##### Strategic / Multiple Expansion
+- **Platform building**: Add-on acquisitions, tuck-ins
+- **Recurring revenue shift**: Move from project to recurring/subscription
+- **Market positioning**: Category leadership, brand building
+- **Management upgrades**: Key hires to professionalize the business
+- **ESG / governance**: Board formation, reporting improvements
+
+#### Step 3: EBITDA Bridge
+
+Build the walk from current to target EBITDA:
+
+| Lever | Year 1 | Year 2 | Year 3 | Year 4 | Year 5 |
+|-------|--------|--------|--------|--------|--------|
+| Base EBITDA | | | | | |
+| Organic revenue growth | | | | | |
+| Pricing | | | | | |
+| Add-on M&A | | | | | |
+| COGS savings | | | | | |
+| OpEx optimization | | | | | |
+| Technology investment | | | | | |
+| **Pro Forma EBITDA** | | | | | |
+| **Margin** | | | | | |
+
+#### Step 4: 100-Day Plan
+
+Prioritize the first 100 days post-close:
+
+**Days 1-30: Stabilize & Assess**
+- Management alignment and retention (sign employment agreements, set comp)
+- Quick wins — pricing, obvious cost cuts, low-hanging fruit
+- Detailed operational assessment by function
+- Customer communication plan
+- Set up reporting and KPI dashboards
+
+**Days 31-60: Plan & Initiate**
+- Finalize strategic plan and communicate to organization
+- Launch top 3-5 value creation initiatives
+- Begin add-on M&A pipeline development
+- Hire for critical gaps
+- Implement new reporting cadence (weekly flash, monthly review, quarterly board)
+
+**Days 61-100: Execute & Measure**
+- First results from quick-win initiatives
+- First board meeting with operating metrics
+- Progress report on each value creation lever
+- Adjust plan based on early learnings
+
+#### Step 5: KPI Dashboard
+
+Define the metrics that will track value creation:
+
+| KPI | Current | Year 1 Target | Owner | Reporting Frequency |
+|-----|---------|---------------|-------|-------------------|
+| Revenue | | | CEO | Monthly |
+| EBITDA | | | CFO | Monthly |
+| EBITDA margin | | | CFO | Monthly |
+| New customer wins | | | CRO | Weekly |
+| Net retention | | | CRO | Monthly |
+| Employee turnover | | | CHRO | Monthly |
+| Cash conversion | | | CFO | Monthly |
+
+#### Step 6: Output
+
+- Word document or PowerPoint with:
+  - Executive summary (1 page)
+  - EBITDA bridge chart
+  - Value creation levers detail (1 page per lever)
+  - 100-day plan timeline
+  - KPI dashboard
+  - Accountability matrix (who owns what)
+- Excel model backing the EBITDA bridge
+
+### Important Notes
+
+- Be realistic about timing — most PE value creation takes 12-24 months to show in financials
+- Quick wins matter for momentum and credibility, but don't over-rotate on cost cuts at the expense of growth
+- Management buy-in is critical — co-develop the plan, don't impose it
+- Track initiative-level P&L impact, not just top-line EBITDA — you need to know what's working
+- Add-on M&A is often the largest value creation lever — start the pipeline on Day 1
+- Always pressure-test assumptions with operating partners or industry experts
 
 ## 数据获取规范
 
@@ -35,10 +152,85 @@ disable-model-invocation: true
   - `get_company_announcements`（公告）、`get_research_reports`（研报）、`get_analyst_estimates`（分析师预期）
   - `get_market_sentiment` / `get_sector_fund_flow` / `get_hot_stock_rank` / `get_dragon_tiger` / `get_northbound_flow` / `get_limit_up_pool` / `get_kline` / `get_stock_fund_flow` / `get_industry_overview` / `get_earnings_alerts` / `get_company_profile` / `get_company_info` / `get_top_shareholders`
 - **禁止编造数字**：结构化数据必须来自上述工具；无法获取时标注"数据暂缺"或"假设"，并说明理由。
-- `web_search`（联网搜索）仅用于新闻、政策面、舆情等工具无法覆盖的信息，并注明来源。
+- `web_search`（豆包搜索）仅用于新闻、政策面、舆情等工具无法覆盖的信息，并注明来源。
 
 ## 输出要求
 
 - 使用中文，金融术语可保留英文缩写；关键结论加粗；多用表格呈现对比数据。
 - 客观数据注明来源；无法获取的一律标注"假设"并给出取值理由。
 - 投资类结论必须附风险提示："以上为AI生成内容，不构成投资建议，市场有风险，投资须谨慎。"
+
+## 交付件格式
+
+分析结论必须产出**一份 HTML 文件**，不要产出 Markdown 文件：
+
+- **文件名**：`{分析主题}_{标的代码或名称}_{YYYYMMDD}.html`（例 `DCF估值模型_长鑫科技_688825_20261008.html`）
+- 保存后，回答正文只给 3–5 行要点摘要 + 文件名，**不要**把 HTML 全文贴进回答
+
+硬性要求：
+
+0. **本节优先级最高**：若上文（技能说明、能力定位、输出格式等）出现「使用 Markdown 表格」「Markdown 格式」「.md 文件」等表述，一律以本节为准 —— 最终产物是 `.html` 文件，所谓「表格」即在 HTML 内用 `<table class="t">` 呈现，**不得**产出 `.md`。
+1. **单文件零依赖**：样式全部写在 `<style>` 内联；不引外链 CSS/JS、不用 CDN、不写 `<script>`。
+2. **照抄骨架、只填空**：把下方骨架中 `<!-- 填 … -->` 替换为实际内容；`<style>` 与标签结构不得改动、不得增删标签。
+3. 表格一律 `<table class="t">`（外层套 `<div class="tw">` 以便窄屏横向滚动）；数值单元格加 `class="n"` 右对齐；涨用 `<span class="up">`（红）、跌用 `<span class="dn">`（绿）。
+4. 核心结论放 `<div class="key">`；关键数字放 `.kpis` 里的 `.kpi` 卡（每卡一个 `.k` 标签 + 一个 `.v` 数值）。
+5. 需要横向对比时用纯 CSS `.bars` 条形图（下方骨架已含样式），**不要**手写 `<svg>`（易画坏）。
+6. 正文**不得出现**：`.md` 文件路径、`$$` 或 `\frac` 等 LaTeX 残留、"报告已生成"之类过程说明。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title><!-- 填 报告标题 --></title>
+<style>
+:root{--paper:#F3EFE6;--panel:#FBF8F1;--ink:#23211D;--muted:#6E6759;--rule:#D9D2C3;--up:#B23A2E;--dn:#2F6B4F;--gold:#C8A67C}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.75 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:32px 22px 60px}
+h1{font-size:26px;line-height:1.35;margin:0 0 8px}
+.meta{color:var(--muted);font-size:14px;border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:26px}
+h2{font-size:19px;margin:36px 0 12px;padding-left:10px;border-left:4px solid var(--up)}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:12px 0}
+.tw{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:var(--panel)}
+table.t th,table.t td{border:1px solid var(--rule);padding:8px 10px;text-align:left}
+table.t th{background:#EAE3D5;font-weight:600;white-space:nowrap}
+table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+.up{color:var(--up);font-weight:600}.dn{color:var(--dn);font-weight:600}
+.key{background:var(--panel);border-left:4px solid var(--gold);padding:14px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.kpi{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px 14px}
+.kpi .k{font-size:13px;color:var(--muted)}
+.kpi .v{font-size:20px;font-weight:700;margin-top:4px}
+.bars{margin:14px 0}
+.bar{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:14px}
+.bar .bl{width:110px;flex:none;color:var(--muted)}
+.bar .bt{flex:1;height:14px;background:#EAE3D5;border-radius:7px;overflow:hidden}
+.bar .bt i{display:block;height:100%;background:var(--up);border-radius:7px}
+.bar.neg .bt i{background:var(--dn)}
+.bar .bv{width:74px;flex:none;text-align:right;font-variant-numeric:tabular-nums}
+.risk{margin-top:40px;padding:14px 16px;background:#F7F1E6;border:1px dashed var(--rule);border-radius:8px;font-size:14px;color:var(--muted)}
+@media(max-width:640px){body{font-size:15px}.wrap{padding:20px 14px 40px}h1{font-size:21px}h2{font-size:17px}table.t{font-size:13px}}
+</style></head>
+<body><div class="wrap">
+<h1><!-- 填 报告标题 --></h1>
+<div class="meta"><!-- 填 标的名称(代码) · 报告日期 · 数据来源 --></div>
+
+<h2><!-- 填 章节标题 --></h2>
+<p><!-- 填 正文 --></p>
+<div class="kpis">
+<div class="kpi"><div class="k"><!-- 指标名 --></div><div class="v"><!-- 数值 --></div></div>
+</div>
+<div class="tw"><table class="t">
+<thead><tr><th><!-- 表头 --></th><th><!-- 表头 --></th></tr></thead>
+<tbody><tr><td><!-- 内容 --></td><td class="n"><!-- 数值 --></td></tr></tbody>
+</table></div>
+<div class="bars">
+<div class="bar"><span class="bl">悲观</span><span class="bt"><i style="width:62%"></i></span><span class="bv">62.0</span></div>
+</div>
+<div class="key"><!-- 填 核心结论 --></div>
+
+<div class="risk"><b>⚠️ 风险提示</b><br>以上为 AI 生成内容，不构成投资建议，市场有风险，投资须谨慎。</div>
+</div></body></html>
+```

@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const data = JSON.parse(readFileSync('./dsh-ai-invest-sidebar/skills-data.json', 'utf8'));
+const data = JSON.parse(readFileSync(`${import.meta.dirname}/skills-data.json`, 'utf8'));
 
 // 7 大专家（对齐 experts.ts，含 suggestions 快捷建议）
 const EXPERTS = [
@@ -25,7 +25,16 @@ const EXPERT_CATEGORY = {
 };
 
 // 输入框提示词（技能级 → 分类级 → 兜底）；独立文件便于维护，且不会被 sync-from-web.mjs 覆盖
-const HINTS = JSON.parse(readFileSync('./dsh-ai-invest-sidebar/skill-placeholders.json', 'utf8'));
+const HINTS = JSON.parse(readFileSync(`${import.meta.dirname}/skill-placeholders.json`, 'utf8'));
+
+// 会诊专家完整 systemPrompt（由 build-persona-skills.py 从 experts.ts 抽取生成）
+const EXPERT_PROMPTS = JSON.parse(readFileSync(`${import.meta.dirname}/expert-prompts.json`, 'utf8'));
+
+// 交付件格式（强制）—— 单一真源，与 build-skills-md.py 注入 SKILL.md 用的是同一份文件。
+// ★ 侧边栏点技能时发送的是 skills-data.json 的 prompt 字段，**不读 SKILL.md**；
+//   若只改 SKILL.md，侧边栏路径仍会按 prompt 里写死的「使用Markdown表格展示」产出 .md。
+//   故此处必须独立注入一次，否则两条路径行为不一致。
+const DELIVERY_SPEC = readFileSync(`${import.meta.dirname}/delivery-spec.md`, 'utf8').trim();
 
 const expertsStr = JSON.stringify(EXPERTS);
 const catsStr = JSON.stringify(data.cats);
@@ -33,7 +42,7 @@ const skillsStr = JSON.stringify(data.skills);
 const mapStr = JSON.stringify(EXPERT_CATEGORY);
 
 // 品牌标记（侧边栏标题左边的图形）：base64 内联，换图跑 生成品牌图标内联.py
-const BRAND_MARK_B64 = readFileSync('./dsh-ai-invest-sidebar/brand-mark.b64.txt', 'utf8').trim();
+const BRAND_MARK_B64 = readFileSync(`${import.meta.dirname}/brand-mark.b64.txt`, 'utf8').trim();
 const brandMarkStr = JSON.stringify('data:image/png;base64,' + BRAND_MARK_B64);
 
 const hintsStr = JSON.stringify({
@@ -41,6 +50,9 @@ const hintsStr = JSON.stringify({
   byExpert: HINTS.byExpert || {},
   bySkill: HINTS.bySkill || {},
 });
+
+const expertPromptsStr = JSON.stringify(EXPERT_PROMPTS);
+const deliverySpecStr = JSON.stringify(DELIVERY_SPEC);
 
 const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", factory: (require) => {
 
@@ -58,6 +70,8 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 	const ALL_SKILLS = ${skillsStr};
 	const HINTS = ${hintsStr};
 	const EXPERT_CATEGORY = ${mapStr};
+	const EXPERT_PROMPTS = ${expertPromptsStr};
+	const DELIVERY_SPEC = ${deliverySpecStr};
 
 	function findExpert(id) { return EXPERTS.find(e => e.id === id); }
 	function findSkill(id) { return ALL_SKILLS.find(s => s.id === id); }
@@ -153,8 +167,12 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 				if (skill.prompt) parts.push(skill.prompt);
 			} else if (expert) {
 				parts.push(\`【角色】你是「\${expert.name}」：\${expert.desc}\`);
+				// 会诊专家完整 systemPrompt（数据纪律 + 核心能力 + 分析规范 + 输出风格）
+				if (EXPERT_PROMPTS[expert.id]) parts.push(EXPERT_PROMPTS[expert.id]);
 			}
 			parts.push(\`【用户需求】\${content}\`);
+			// 交付件格式（强制）：置末位（末尾指令遵从度最高），且优先级高于上文任何输出格式描述
+			if (DELIVERY_SPEC) parts.push(DELIVERY_SPEC);
 
 			await session.prompt([{ type: "text", text: parts.join("\\n") }], "queue");
 			return { ok: true };
@@ -164,26 +182,61 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 	}
 
 	// #region ============ 股票搜索（东方财富 suggest 接口，与 dsh-finance-tools 同源）============
-	const EM_SEARCH_TOKEN = "D43BF722C8E33BDC906FB84D85E326E8";
+	// 东方财富搜索接口 token：开源版不硬编码。
+	// 宿主可用 globalThis.EM_SEARCH_TOKEN 注入；未注入时 emSearch 返回 null，调用方降级为手工输入。
+	const EM_SEARCH_TOKEN = (typeof globalThis !== "undefined" && globalThis.EM_SEARCH_TOKEN) || "";
 	const EM_SEARCH_API = "https://searchapi.eastmoney.com/api/suggest/get";
 
-	/** type=14 → A股/港股；type=4 → 美股。返回 null 表示网络不可用（调用方需降级）*/
+	/**
+	 * JSONP 取数：<script> 注入不受同源策略约束。
+	 * 东财 suggest 接口带 &cb=xxx 会返回 xxx({...})，可直接当 JSONP 用。
+	 * 背景：主窗口 webSecurity=true，而该接口响应头不含 Access-Control-Allow-Origin，
+	 *      直连 fetch 必被 CORS 拦下 → 前端会误报"联网搜索不可用"。故加此通道绕开。
+	 */
+	function jsonpGet(url, timeoutMs) {
+		return new Promise((resolve, reject) => {
+			const cb = "__dshEmCb" + Math.random().toString(36).slice(2, 11);
+			const s = document.createElement("script");
+			let settled = false;
+			const cleanup = () => {
+				clearTimeout(timer);
+				try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+				if (s.parentNode) s.parentNode.removeChild(s);
+			};
+			const timer = setTimeout(() => {
+				if (settled) return; settled = true; cleanup(); reject(new Error("jsonp timeout"));
+			}, timeoutMs || 6000);
+			window[cb] = (data) => { if (settled) return; settled = true; cleanup(); resolve(data); };
+			s.onerror = () => { if (settled) return; settled = true; cleanup(); reject(new Error("jsonp error")); };
+			s.src = url + "&cb=" + cb;
+			(document.head || document.documentElement).appendChild(s);
+		});
+	}
+
+	function emParse(json) {
+		const list = (json && json.QuotationCodeTable && (json.QuotationCodeTable.Data || json.QuotationCodeTable.data)) || [];
+		return list.map(it => ({
+			code: String(it.Code || it.code || ""),
+			name: String(it.Name || it.name || ""),
+			kind: String(it.SecurityTypeName || ""),
+			market: String(it.Market || it.MktNum || ""),
+		})).filter(it => it.code && it.name);
+	}
+
+	/** type=14 → A股/港股；type=4 → 美股。返回 null 表示两条通道都失败（调用方降级为手工输入）*/
 	async function emSearch(keyword, type) {
+		if (!EM_SEARCH_TOKEN) return null;
 		const url = EM_SEARCH_API + "?input=" + encodeURIComponent(keyword) + "&type=" + type + "&token=" + EM_SEARCH_TOKEN + "&count=8";
+		// 通道 1：直连 fetch —— 宿主若放开 webSecurity 可直接用（无 CORS 头时被拦，属预期）
 		try {
 			const res = await fetch(url, { method: "GET" });
-			if (!res || !res.ok) return null;
-			const json = await res.json();
-			const list = (json && json.QuotationCodeTable && (json.QuotationCodeTable.Data || json.QuotationCodeTable.data)) || [];
-			return list.map(it => ({
-				code: String(it.Code || it.code || ""),
-				name: String(it.Name || it.name || ""),
-				kind: String(it.SecurityTypeName || ""),
-				market: String(it.Market || it.MktNum || ""),
-			})).filter(it => it.code && it.name);
-		} catch (e) {
-			return null; // CORS / 离线 → 由调用方降级为手工输入
-		}
+			if (res && res.ok) return emParse(await res.json());
+		} catch (e) {}
+		// 通道 2：JSONP（<script> 注入）—— 绕开 CORS
+		try {
+			return emParse(await jsonpGet(url));
+		} catch (e) {}
+		return null;
 	}
 
 	/** 先搜 A股，无结果再搜美股（对齐 dsh-finance-tools 的 searchStockSmart）*/
@@ -203,6 +256,12 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 		return null;
 	}
 
+	/** 展示名：手工输入的裸代码没有中文名，此时只显示代码，避免出现「600519 (600519)」*/
+	function formatStockLabel(v) {
+		if (!v) return "";
+		return (v.name && v.name !== v.code) ? v.name + " (" + v.code + ")" : String(v.code || v.name || "");
+	}
+
 	// #region ============ 卡片 → 提示词（复刻 WEB 端 ChatArea.handleCardSubmit）============
 	/** 取 option 的 label；查不到则回退到 value（比 WEB 端更稳：WEB 端 multi-select 只输出 value）*/
 	function optionLabel(field, v) {
@@ -213,8 +272,8 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 	function displayValueOf(field, value) {
 		if (field.type === "select") return optionLabel(field, value);
 		if (field.type === "multi-select") return (value || []).map(v => optionLabel(field, v)).join("、");
-		if (field.type === "stock-picker") return value ? value.name + " (" + value.code + ")" : "";
-		if (field.type === "stock-multi") return (value || []).map(v => v.name + " (" + v.code + ")").join("、");
+		if (field.type === "stock-picker") return formatStockLabel(value);
+		if (field.type === "stock-multi") return (value || []).map(formatStockLabel).join("、");
 		if (field.type === "file") return value ? value.name : "";
 		return String(value);
 	}
@@ -391,7 +450,14 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 			? history.slice(0, HISTORY_PREVIEW)
 			: history;
 
-		const pickExpert = (expert) => investStore.set({ activeExpert: expert.id, activeSkill: null });
+		const pickExpert = (expert) => {
+			// 游资多专家研判：路由到带完整人格档案的 trader-consultation 技能（否则只发一行 desc，人格内容全丢）
+			if (expert.id === "trader") {
+				const sk = findSkill("trader-consultation");
+				if (sk) return investStore.set({ activeExpert: null, activeSkill: sk.id });
+			}
+			investStore.set({ activeExpert: expert.id, activeSkill: null });
+		};
 		const toggleCategory = (catId) => investStore.set({ expandedCategories: { ...active.expandedCategories, [catId]: !active.expandedCategories[catId] } });
 		const pickSkill = (skill) => investStore.set({ activeExpert: null, activeSkill: skill.id });
 
@@ -573,11 +639,11 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 
 		const pick = (it) => { onChange({ name: it.name, code: it.code }); setQ(it.name + " (" + it.code + ")"); setOpen(false); };
 
-		// 回车：有候选取第一条；离线时把裸代码直接当股票
-		const onEnter = () => {
+		// 确认输入：有候选取第一条；否则把裸代码直接当股票（接口不可达时也能走通）
+		const commit = () => {
 			if (open && items.length) { pick(items[0]); return; }
 			const c = coerceCode(q);
-			if (c) { onChange(c); setOpen(false); }
+			if (c) { onChange(c); setQ(formatStockLabel(c)); setOpen(false); }
 		};
 
 		return h("div", { className: "dsh-invest-sp" },
@@ -585,8 +651,8 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 				className: "dsh-invest-input",
 				value: q,
 				onChange: (e) => doSearch(e.target.value),
-				onKeyDown: (e) => { if (e.key === "Enter") { e.preventDefault(); onEnter(); } },
-				onBlur: () => setTimeout(() => setOpen(false), 180),
+				onKeyDown: (e) => { if (e.key === "Enter") { e.preventDefault(); commit(); } },
+				onBlur: () => setTimeout(() => { setOpen(false); if (!value) commit(); }, 180),
 				placeholder: placeholder || "输入股票代码或公司名称，如 贵州茅台 / 600519",
 			}),
 			open && items.length > 0 && h("div", { className: "dsh-invest-spmenu" },
@@ -602,11 +668,11 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 				))
 			),
 			busy && h("div", { className: "dsh-invest-tip" }, "搜索中…"),
-			offline && h("div", { className: "dsh-invest-tip" }, "联网搜索不可用，可直接输入 6 位代码（如 600519）后回车"),
+			offline && h("div", { className: "dsh-invest-tip" }, "搜索接口暂不可达，可直接输入 6 位代码（如 600519）后回车 / 失焦自动确认"),
 			!offline && kind && !open && h("div", { className: "dsh-invest-tip" }, "市场：" + kind),
 			value && h("div", { className: "dsh-invest-tags" },
 				h("span", { className: "dsh-invest-tag" },
-					"✓ " + value.name + " (" + value.code + ")",
+					"✓ " + formatStockLabel(value),
 					h("button", { className: "dsh-invest-tagx", onClick: () => { onChange(null); setQ(""); } }, "✕")
 				)
 			)
@@ -643,7 +709,7 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 			setQ(""); setOpen(false); setItems([]);
 		};
 
-		const onEnter = () => {
+		const commit = () => {
 			if (open && items.length) { add(items[0]); return; }
 			const c = coerceCode(q);
 			if (c && !list.some(v => v.code === c.code)) { onChange(list.concat([c])); setQ(""); setOpen(false); }
@@ -655,10 +721,10 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 				value: q,
 				onChange: (e) => doSearch(e.target.value),
 				onKeyDown: (e) => {
-					if (e.key === "Enter") { e.preventDefault(); onEnter(); }
+					if (e.key === "Enter") { e.preventDefault(); commit(); }
 					else if (e.key === "Backspace" && !q && list.length) { onChange(list.slice(0, -1)); }
 				},
-				onBlur: () => setTimeout(() => setOpen(false), 180),
+				onBlur: () => setTimeout(() => { setOpen(false); if (q) commit(); }, 180),
 				placeholder: placeholder || "输入代码或名称，回车添加（可多选）",
 			}),
 			open && items.length > 0 && h("div", { className: "dsh-invest-spmenu" },
@@ -674,10 +740,10 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 				))
 			),
 			busy && h("div", { className: "dsh-invest-tip" }, "搜索中…"),
-			offline && h("div", { className: "dsh-invest-tip" }, "联网搜索不可用，可直接输入 6 位代码后回车添加"),
+			offline && h("div", { className: "dsh-invest-tip" }, "搜索接口暂不可达，可直接输入 6 位代码后回车 / 失焦自动添加"),
 			list.length > 0 && h("div", { className: "dsh-invest-tags" },
 				list.map((v, i) => h("span", { key: v.code + i, className: "dsh-invest-tag" },
-					v.name + " (" + v.code + ")",
+					formatStockLabel(v),
 					h("button", { className: "dsh-invest-tagx", onClick: () => onChange(list.filter((_, j) => j !== i)) }, "✕")
 				))
 			)
@@ -804,14 +870,15 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 			return fields.filter(f => !f.dependsOn || form[f.dependsOn.key] === f.dependsOn.value);
 		}, [fields, form]);
 
-		// 必填校验
-		const allRequiredFilled = useMemo(() => {
-			return visibleFields.filter(f => f.required).every(f => {
-				const v = form[f.key];
-				if (f.type === "multi-select" || f.type === "stock-multi") return Array.isArray(v) && v.length > 0;
-				return v !== undefined && v !== "" && v !== null;
-			});
-		}, [visibleFields, form]);
+		// 必填校验：同时算出「缺哪几项」，提示里直接报字段名（此前只说数量，用户不知道缺哪个）
+		const isMissing = (f) => {
+			const v = form[f.key];
+			if (f.type === "multi-select" || f.type === "stock-multi") return !(Array.isArray(v) && v.length > 0);
+			if (f.type === "stock-picker") return !(v && v.code);
+			return v === undefined || v === "" || v === null;
+		};
+		const missingRequired = useMemo(() => visibleFields.filter(f => f.required && isMissing(f)), [visibleFields, form]);
+		const allRequiredFilled = missingRequired.length === 0;
 
 		if (!expert && !skill) return null;
 
@@ -890,11 +957,7 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 					}, busy ? "发送中…" : (fields ? "🚀 开始生成" : "开始会诊分析")),
 
 					fields && !allRequiredFilled && h("div", { className: "dsh-invest-fhelp", style: { textAlign: "center", marginTop: 6 } },
-						"还有 " + visibleFields.filter(f => f.required && (() => {
-							const v = form[f.key];
-							if (f.type === "multi-select" || f.type === "stock-multi") return !(Array.isArray(v) && v.length > 0);
-							return v === undefined || v === "" || v === null;
-						})()).length + " 项必填未完成"),
+						"还有 " + missingRequired.length + " 项必填未完成：" + missingRequired.map(f => f.label).join("、")),
 
 					err && h("div", { className: "dsh-invest-card-err" }, err),
 
@@ -1173,6 +1236,6 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 //# sourceMappingURL=client.js.map
 `;
 
-writeFileSync('./dsh-ai-invest-sidebar/client/client.js', clientJs, 'utf8');
+writeFileSync(`${import.meta.dirname}/client/client.js`, clientJs, 'utf8');
 console.log('生成完成，client.js 大小:', (clientJs.length / 1024).toFixed(1) + ' KB');
 console.log('技能总数:', data.skills.length, '分类总数:', data.cats.length);

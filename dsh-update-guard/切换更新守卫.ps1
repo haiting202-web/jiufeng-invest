@@ -744,7 +744,7 @@ switch ($Action) {
                 exit 3
             }
 
-            $guardLine = "$($row.Indent)disabled: true   # $GUARD_TAG 受控更新守卫 · 管理脚本 .\dsh-update-guard\切换更新守卫.ps1"
+            $guardLine = "$($row.Indent)disabled: true   # $GUARD_TAG 受控更新守卫 · 管理脚本 $PSScriptRoot\切换更新守卫.ps1"
             $newLines  = New-Object System.Collections.Generic.List[string]
             $newLines.AddRange([string[]]$lines)
 
