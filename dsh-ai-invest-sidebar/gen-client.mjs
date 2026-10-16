@@ -45,6 +45,27 @@ const mapStr = JSON.stringify(EXPERT_CATEGORY);
 const BRAND_MARK_B64 = readFileSync(`${import.meta.dirname}/brand-mark.b64.txt`, 'utf8').trim();
 const brandMarkStr = JSON.stringify('data:image/png;base64,' + BRAND_MARK_B64);
 
+/* ===== 客户端系统模块（每日使用上报 + 更新提示）=====
+ * 源码在 runtime/jf-sys.js。注入到 bundle 时剥离每行行首的 `export `，
+ * 使其在插件工厂作用域内成为普通声明（不污染全局）。
+ */
+const JF_CONFIG = {
+  // ★ 服务端地址：上报与「检查更新」都走这里。部署 jiufeng-server 后改成你的域名或 IP。
+  apiBase: 'https://report365.com.cn/jiufeng',
+  app: 'jiufeng-workbench',
+  channel: 'stable',
+  version: '1.1.6',         // ★ 发版时改这里；服务端 update.json 的 latest 与它比较
+  checkDelayMs: 4000,       // 启动后多久检查更新（避开启动 IO 高峰）
+  privacyDelayMs: 1500,     // 已废弃：1.1.6 起首启不再弹告知卡片（改在安装阶段告知 +「关于」里可复查）
+  heartbeatMs: 60000,       // 时长结算心跳
+  reportIntervalMs: 180000, // 上报节流：最短间隔 3 分钟
+};
+
+const jfSysSrc = readFileSync(`${import.meta.dirname}/runtime/jf-sys.js`, 'utf8')
+  .replace(/^export\s+/gm, '')
+  .trim();
+const jfConfigStr = JSON.stringify(JF_CONFIG);
+
 const hintsStr = JSON.stringify({
   byCategory: HINTS.byCategory || {},
   byExpert: HINTS.byExpert || {},
@@ -72,6 +93,10 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 	const EXPERT_CATEGORY = ${mapStr};
 	const EXPERT_PROMPTS = ${expertPromptsStr};
 	const DELIVERY_SPEC = ${deliverySpecStr};
+
+	// #region ============ 系统模块源码（由 runtime/jf-sys.js 注入）============
+	${jfSysSrc}
+	// #endregion
 
 	function findExpert(id) { return EXPERTS.find(e => e.id === id); }
 	function findSkill(id) { return ALL_SKILLS.find(s => s.id === id); }
@@ -104,6 +129,25 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 		set(patch) { storeState = { ...storeState, ...patch }; storeListeners.forEach(fn => fn()); },
 	};
 	let runtimeCtx = null;
+
+	// #region ============ 系统模块实例（每日使用上报 + 更新提示）============
+	const JF_CONFIG = ${jfConfigStr};
+	const JF = createSystem(JF_CONFIG, {
+		React: React,
+		storage: (function () { try { return window.localStorage; } catch (e) { return null; } })(),
+		document: typeof document !== "undefined" ? document : null,
+		fetch: (typeof fetch === "function") ? fetch.bind(window) : null,
+		setInterval: function (fn, ms) { return window.setInterval(fn, ms); },
+		clearInterval: function (id) { window.clearInterval(id); },
+		env: {
+			os: (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "",
+			arch: (navigator.userAgent || "").indexOf("x64") >= 0 ? "x64" : "",
+			tz: (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { return ""; } })(),
+			lang: navigator.language || "",
+		},
+		log: function () {},
+	});
+	// #endregion
 
 	// #region ============ Harness 世代兼容层 ============
 	// DSH 基座 2.0.10 将 Harness 由 0.1.1-rc.2 升至 0.1.5-rc.2，客户端接口有 3 处破坏性变更：
@@ -144,6 +188,8 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 	// #region ============ 发消息 ============
 	async function sendConsultation(expert, skill, content) {
 		const ctx = runtimeCtx;
+		// 使用埋点：只记功能 id 与次数，不记用户输入的任何内容
+		if (skill) JF.trackSkill(skill.id); else if (expert) JF.trackExpert(expert.id);
 		if (!ctx) return { ok: false, error: "runtime not ready" };
 		try {
 			const workspaces = ctx.workspaces;
@@ -177,6 +223,8 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 			await session.prompt([{ type: "text", text: parts.join("\\n") }], "queue");
 			return { ok: true };
 		} catch (e) {
+			// 操作异常上报：位置标签 + 错误摘要（路径会被归一化，不含输入内容）
+			JF.trackError("op_fail", skill ? "sendConsultation/skill" : "sendConsultation/expert", e);
 			return { ok: false, error: String(e?.message || e) };
 		}
 	}
@@ -293,6 +341,16 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 	const CSS = \`
 .dsh-invest-root{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;font-size:16px;--inv-fs:16px;--inv-fs-sm:15px;--inv-fs-label:14px;--inv-fs-meta:12.5px;box-sizing:border-box}
 .dsh-invest-scroll{flex:1 1 0;min-height:0;overflow-y:auto;overflow-x:hidden;padding:6px 8px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box}
+/* ——— 窄条态：官方 SidebarRoot 收起时 regionArea 只剩约 36px ——— */
+.dsh-invest-root.rail{font-size:16px}
+.dsh-invest-rail{flex:1 1 0;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 0 8px;box-sizing:border-box;scrollbar-width:none}
+.dsh-invest-rail::-webkit-scrollbar{width:0;height:0}
+.dsh-invest-railbtn{width:34px;height:34px;flex:none;border-radius:8px;border:none;background:transparent;color:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1;padding:0;transition:background .15s}
+.dsh-invest-railbtn:hover{background:rgba(128,128,128,.16)}
+.dsh-invest-railbtn.active{background:rgba(0,113,227,.16)}
+.dsh-invest-railbtn.expand{font-size:15px;opacity:.55}
+.dsh-invest-railbtn.expand:hover{opacity:.9}
+.dsh-invest-railsep{width:20px;height:1px;flex:none;background:rgba(128,128,128,.2);margin:3px 0}
 .dsh-invest-group-label{display:flex;align-items:center;gap:4px;padding:5px 8px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.55;cursor:pointer;border:none;background:none;width:100%;text-align:left;font:inherit;color:inherit;font-size:var(--inv-fs-label);box-sizing:border-box}
 .dsh-invest-expert{display:flex;align-items:center;gap:9px;width:100%;padding:7px 10px;border-radius:6px;cursor:pointer;border:none;background:transparent;text-align:left;font:inherit;color:inherit;transition:background .15s;box-sizing:border-box}
 .dsh-invest-expert:hover{background:rgba(0,0,0,.05)}
@@ -417,10 +475,52 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 .dsh-invest-summary{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:11.5px;line-height:1.65;white-space:pre-wrap;word-break:break-word;max-height:130px;overflow-y:auto}
 .dsh-invest-card.light .dsh-invest-summary{background:#f5f5f7;color:#3a3a3c}
 .dsh-invest-card.dark .dsh-invest-summary{background:#22222a;color:#a0a0a8}
+
+/* ===== 系统浮层（更新提示 / 使用数据告知 / 关于）===== */
+.jf-sys-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.42)}
+.jf-sys-card{position:relative;width:min(430px,calc(100vw - 48px));box-sizing:border-box;padding:22px 22px 18px;border-radius:14px;background:#fff;color:#1d1d1f;box-shadow:0 18px 48px rgba(0,0,0,.28);font-size:13.5px;line-height:1.65}
+body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
+.jf-sys-close{position:absolute;top:10px;right:12px;border:none;background:transparent;color:inherit;opacity:.45;font-size:15px;cursor:pointer;padding:4px;line-height:1}
+.jf-sys-close:hover{opacity:.9}
+.jf-sys-title{font-size:16px;font-weight:600;margin-bottom:12px;padding-right:22px}
+.jf-sys-lead{margin:0 0 8px}
+.jf-sys-sub{font-weight:600;margin:10px 0 6px}
+.jf-sys-meta{font-size:12px;opacity:.6;margin-bottom:10px}
+.jf-sys-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.jf-sys-list li{font-size:12.5px}
+.jf-sys-note{margin:12px 0 0;font-size:11.5px;opacity:.6;line-height:1.6}
+.jf-sys-note.warn{color:#c77700;opacity:1}
+.jf-sys-check{display:flex;align-items:center;gap:7px;margin-top:14px;font-size:12px;cursor:pointer;opacity:.85}
+.jf-sys-check input{margin:0;cursor:pointer}
+.jf-sys-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.jf-sys-btn{border:none;border-radius:9px;padding:9px 18px;font:inherit;font-size:13px;cursor:pointer}
+.jf-sys-btn.primary{background:#0071e3;color:#fff}
+.jf-sys-btn.primary:hover{background:#0077ed}
+.jf-sys-btn.ghost{background:rgba(128,128,128,.16);color:inherit}
+.jf-sys-btn.ghost:hover{background:rgba(128,128,128,.26)}
+.jf-sys-rows{display:flex;flex-direction:column;gap:2px}
+.jf-sys-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(128,128,128,.16)}
+.jf-sys-row:last-child{border-bottom:none}
+.jf-sys-rowv{font-size:12px;opacity:.75;display:flex;align-items:center;gap:8px}
+.jf-sys-rowv.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.jf-sys-link{border:none;background:transparent;color:#0071e3;font:inherit;font-size:12px;cursor:pointer;padding:0}
+.jf-sys-link:hover{text-decoration:underline}
+.jf-sys-toggle{border:1px solid rgba(128,128,128,.3);background:transparent;color:inherit;border-radius:7px;padding:4px 10px;font:inherit;font-size:11.5px;cursor:pointer}
+.jf-sys-toggle.on{border-color:#0071e3;background:rgba(0,113,227,.1);color:#0071e3}
+.jf-sys-err{margin-top:10px;font-size:11.5px;color:#e5484d;word-break:break-all}
+.jf-sys-foot{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:6px 12px 8px;border-top:1px solid rgba(128,128,128,.14)}
+.jf-sys-gear{border:none;background:transparent;color:inherit;opacity:.5;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;border-radius:4px}
+.jf-sys-gear:hover{opacity:1;background:rgba(128,128,128,.14)}
+.jf-sys-footv{font-size:11px;opacity:.4;margin-left:auto}
+
 \`;
 
 	// #region ============ 侧栏组件 ============
-	function InvestSidebar({ useSessions, open, archive }) {
+	// wide / expandSidebar 由官方 SidebarRoot 通过 renderSlot("sidebar.workspaces", { wide, expandSidebar }) 传入，
+	// 再经 ui-renderer 的 { ...kit, ...injected, ...slotInjected.props, ...contextual, ...ownerProps } 合并到 props。
+	// 窗口宽度 < 1024px 或用户点「收起侧边栏」时 wide === false，此时 regionArea 只有约 36px 宽且 overflow:hidden。
+	// wide 缺省（未来宿主不传）时按宽态渲染，避免整块消失。
+	function InvestSidebar({ useSessions, open, archive, wide, expandSidebar }) {
 		const [active, setActive] = useState(() => investStore.getSnapshot());
 		const [historyExpanded, setHistoryExpanded] = useState(false);
 		useEffect(() => investStore.subscribe(() => setActive(investStore.getSnapshot())), []);
@@ -471,6 +571,53 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 			if (days < 7) return days + "天前";
 			return new Date(ts).toLocaleDateString("zh-CN", { month: "short", day: "numeric" });
 		};
+
+		// ——— 窄条态（官方把侧边栏收成 56px 轨道时）———
+		// 只渲染 36px 图标列：展开按钮 + 投研工作流 + 专业工具分类。
+		// 点任一条目 = 恢复宽态，避免用户被困在轨道的单列里。
+		const isRail = wide === false;
+		if (isRail) {
+			const askWide = () => { try { expandSidebar?.(); } catch (e) {} };
+			return h("div", { className: "dsh-invest-root rail" },
+				h("div", { className: "dsh-invest-rail" },
+					h("button", {
+						className: "dsh-invest-railbtn expand",
+						title: "展开玖峰投研侧边栏",
+						onClick: askWide,
+					}, "»"),
+
+					h("div", { className: "dsh-invest-railsep" }),
+
+					EXPERTS.map(expert => h("button", {
+						key: "r-exp-" + expert.id,
+						className: "dsh-invest-railbtn" + (active.activeExpert === expert.id ? " active" : ""),
+						title: expert.name + "｜" + expert.desc,
+						onClick: () => { pickExpert(expert); askWide(); },
+					}, expert.icon)),
+
+					h("div", { className: "dsh-invest-railsep" }),
+
+					SKILL_CATEGORIES.map(cat => {
+						const n = skillsOfCategory(cat.id).length;
+						if (n === 0) return null;
+						return h("button", {
+							key: "r-cat-" + cat.id,
+							className: "dsh-invest-railbtn",
+							title: cat.name + "（" + n + " 个工具）",
+							onClick: () => { toggleCategory(cat.id); askWide(); },
+						}, cat.icon);
+					}),
+
+					h("div", { className: "dsh-invest-railsep" }),
+
+					h("button", {
+						className: "dsh-invest-railbtn expand",
+						title: "关于与更新 · v" + JF_CONFIG.version,
+						onClick: () => { try { JF.open("about"); } catch (e) {} },
+					}, "⚙")
+				)
+			);
+		}
 
 		return h("div", { className: "dsh-invest-root" },
 			h("div", { className: "dsh-invest-scroll" },
@@ -558,6 +705,15 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 							title: historyExpanded ? "只显示最近 " + HISTORY_PREVIEW + " 个" : "显示全部 " + history.length + " 个对话",
 						}, historyExpanded ? "收起" : "展开全部 (" + history.length + ")")
 					),
+			),
+			// —— 底部：关于与更新入口 ——
+			h("div", { className: "jf-sys-foot" },
+				h("button", {
+					className: "jf-sys-gear",
+					title: "关于与更新",
+					onClick: () => JF.open("about"),
+				}, "⚙"),
+				h("span", { className: "jf-sys-footv" }, "v" + JF_CONFIG.version)
 			)
 		);
 	}
@@ -1191,6 +1347,9 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 		installTextOverrides(ctx);
 		installTitleBrand();
 
+		// 系统模块：每日使用/异常上报 + 启动检查更新（失败一律静默，不能影响可用性）
+		try { JF.attach(ctx); } catch (e) { /* 埋点与更新都不该拖垮插件 */ }
+
 		ctx.slots.inject("sidebar.workspaces", () => ctx.slots.register({
 			name: "sidebar.workspaces",
 			id: "ai-invest-workspaces",
@@ -1225,6 +1384,11 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 		ctx.slots.inject("shell.overlay", () => ctx.slots.register({
 			name: "shell.overlay", id: "ai-invest-card", priority: -1, label: () => BRAND.name,
 		}, OverlayCard));
+
+		// 系统浮层：更新提示 / 使用数据告知 / 关于（与上面的技能卡片互不干扰）
+		ctx.slots.inject("shell.overlay", () => ctx.slots.register({
+			name: "shell.overlay", id: "jf-sys-card", priority: -2, label: () => BRAND.name,
+		}, JF.SystemCard));
 	}
 
 	exports.name = name;

@@ -17,6 +17,634 @@ window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", factory: (require) =
 	const EXPERT_PROMPTS = {"financial-analysis":"你是一位资深财务分析师（CFA/CPA），专精于企业财务报表深度解读和估值建模。\n【数据纪律 - 必须严格遵守】\n1. 禁止编造任何数字：所有财务数据、股价、指标必须来自提供的API数据，未提供的数据一律禁止输出\n2. 缺失数据处理：当API数据中某字段为空(null/undefined/空字符串)时，必须标注\"数据暂缺\"，不得用模型补全或猜测\n3. 数据来源标注：引用数据时必须注明来源（如\"根据API数据\"），禁止引用训练数据中的旧数字\n4. 时效性要求：新闻、公告、财报必须带时间标签，超过7天的新闻标注\"旧闻\"，超过6个月的财报标注\"过期数据\"\n5. 异常值处理：PE>500或<0、ROE>100%、单日涨跌>10%等异常值需特别标注\"异常，需核实\"\n6. 禁止使用null/undefined原样输出：上下文中的null/undefined表示数据缺失，必须转换为\"数据暂缺\"表述\n【核心能力】\n- DCF 现金流折现估值模型：自由现金流预测、WACC 加权平均资本成本计算、终值估计\n- LBO 杠杆收购模型：债务结构设计、IRR 内部收益率测算、退出策略评估\n- 三表联动预测：利润表→资产负债表→现金流量表的勾稽关系自动校验\n- 财务比率分析：杜邦分析体系、盈利能力/偿债能力/营运能力/成长能力四维诊断\n- 可比公司分析（Comps）：选取合理可比公司、计算 EV/EBITDA、P/E、P/B 乘数\n\n【分析规范】\n1. 所有数字必须来自提供的 API 数据，禁止编造\n2. 估值区间必须给出合理假设说明\n3. 敏感性分析需覆盖 ±20% 的核心参数变动\n4. 输出格式：先用表格展示核心指标，再逐项解读，最后给出估值结论\n\n【输出风格】\n专业严谨，用表格呈现关键数据，用文字解读背后的商业逻辑。回复末尾给出明确的\"财务健康度评级\"（A+/A/B/C/D）。","equity-research":"你是一位买方权益研究分析师（Buy-side Equity Research），对标国际顶级对冲基金的研究标准。\n【数据纪律 - 必须严格遵守】\n1. 禁止编造任何数字：所有财务数据、股价、指标必须来自提供的API数据，未提供的数据一律禁止输出\n2. 缺失数据处理：当API数据中某字段为空(null/undefined/空字符串)时，必须标注\"数据暂缺\"，不得用模型补全或猜测\n3. 数据来源标注：引用数据时必须注明来源（如\"根据API数据\"），禁止引用训练数据中的旧数字\n4. 时效性要求：新闻、公告、财报必须带时间标签，超过7天的新闻标注\"旧闻\"，超过6个月的财报标注\"过期数据\"\n5. 异常值处理：PE>500或<0、ROE>100%、单日涨跌>10%等异常值需特别标注\"异常，需核实\"\n6. 禁止使用null/undefined原样输出：上下文中的null/undefined表示数据缺失，必须转换为\"数据暂缺\"表述\n【核心能力】\n- 财报深度解读：收入拆解（量×价×结构）、利润质量判断（非经常性损益剔除）、现金流健康度\n- 行业格局分析：波特五力框架、产业链价值分布、竞争壁垒（品牌/技术/规模/网络效应）\n- 护城河评估：转换成本、无形资产、网络效应、成本优势、有效规模\n- 管理层评价：资本配置能力、战略执行力、治理结构\n- 晨会纪要：隔夜动态摘要、当日关注事项、风险预警\n\n【研究方法论】\n1. 先用 API 数据验证基本面，再用行业知识做定性判断\n2. 每只股票必须给出 3 个看多理由 + 3 个看空风险\n3. 估值区间统一使用未来 12 个月前瞻 PE + EV/EBITDA\n4. 对比同行业至少 3 家可比公司\n\n【输出风格】\n尖锐、敢下判断。不写模棱两可的废话。给出明确的 OVERWEIGHT / EQUAL-WEIGHT / UNDERWEIGHT 评级。","investment-banking":"你是一位资深投资银行家（Managing Director 级别），具备跨境并购、IPO、债务融资全品类交易经验。\n【数据纪律 - 必须严格遵守】\n1. 禁止编造任何数字：所有财务数据、股价、指标必须来自提供的API数据，未提供的数据一律禁止输出\n2. 缺失数据处理：当API数据中某字段为空(null/undefined/空字符串)时，必须标注\"数据暂缺\"，不得用模型补全或猜测\n3. 数据来源标注：引用数据时必须注明来源（如\"根据API数据\"），禁止引用训练数据中的旧数字\n4. 时效性要求：新闻、公告、财报必须带时间标签，超过7天的新闻标注\"旧闻\"，超过6个月的财报标注\"过期数据\"\n5. 异常值处理：PE>500或<0、ROE>100%、单日涨跌>10%等异常值需特别标注\"异常，需核实\"\n6. 禁止使用null/undefined原样输出：上下文中的null/undefined表示数据缺失，必须转换为\"数据暂缺\"表述\n【核心能力】\n- 并购模型：增厚/稀释分析（Accretion/Dilution）、协同效应量化、交易结构设计（现金/换股/混合）\n- 路演材料：Pitch Deck 逻辑框架、估值工作簿（Football Field）、交易时间表\n- 资本结构优化：杠杆率分析、信用评级影响、再融资策略\n- 交易流程管理：NDA→Teaser→CIM→管理层演示→LOI→SPA 全周期\n\n【分析规范】\n1. 并购分析必须区分\"战略性\"和\"财务性\"两类逻辑\n2. 协同效应必须拆分收入协同和成本协同，分别给出量化估计\n3. 交易结构建议需考虑税务、监管、整合难度三个维度\n4. 输出包含：交易概览 → 估值范围 → 交易结构 → 风险矩阵 → 时间表\n\n【输出风格】\n专业、结构化、面向决策者。以 Executive Summary 开头，详细分析附后。","private-equity":"你是一位私募股权投资基金合伙人，管理百亿级别 AUM，投资阶段覆盖成长型到并购型。\n【数据纪律 - 必须严格遵守】\n1. 禁止编造任何数字：所有财务数据、股价、指标必须来自提供的API数据，未提供的数据一律禁止输出\n2. 缺失数据处理：当API数据中某字段为空(null/undefined/空字符串)时，必须标注\"数据暂缺\"，不得用模型补全或猜测\n3. 数据来源标注：引用数据时必须注明来源（如\"根据API数据\"），禁止引用训练数据中的旧数字\n4. 时效性要求：新闻、公告、财报必须带时间标签，超过7天的新闻标注\"旧闻\"，超过6个月的财报标注\"过期数据\"\n5. 异常值处理：PE>500或<0、ROE>100%、单日涨跌>10%等异常值需特别标注\"异常，需核实\"\n6. 禁止使用null/undefined原样输出：上下文中的null/undefined表示数据缺失，必须转换为\"数据暂缺\"表述\n【核心能力】\n- 项目筛选（Deal Sourcing）：行业扫描→长名单→短名单→深度尽调\n- 单位经济学（Unit Economics）：CAC/LTV 比率、边际贡献、盈亏平衡点、单位经济可复制性\n- 尽调框架：商业尽调（市场TAM/SAM/SOM）→ 财务尽调（Quality of Earnings）→ 法务尽调 → 税务尽调\n- 投后管理：百日计划、运营提升杠杆（采购/定价/渠道/组织）、退出路径规划\n\n【分析规范】\n1. 用\"50% 确定性\"做初步筛选（不追求完美信息）\n2. 单位经济学必须拆解到单客户/单订单粒度\n3. 退出分析必须覆盖 IPO、战略出售、SBO 三种路径\n4. IRR 测算分 Base / Bull / Bear 三情景\n\n【输出风格】\n务实、量化、追求 ROIC。数据驱动，不空谈\"赛道\"。给出明确的\"值得推进/观望/放弃\"建议。","wealth-management":"你是一位资深私人银行家/家族办公室顾问（CFP/CFA），服务超高净值客户。\n【数据纪律 - 必须严格遵守】\n1. 禁止编造任何数字：所有财务数据、股价、指标必须来自提供的API数据，未提供的数据一律禁止输出\n2. 缺失数据处理：当API数据中某字段为空(null/undefined/空字符串)时，必须标注\"数据暂缺\"，不得用模型补全或猜测\n3. 数据来源标注：引用数据时必须注明来源（如\"根据API数据\"），禁止引用训练数据中的旧数字\n4. 时效性要求：新闻、公告、财报必须带时间标签，超过7天的新闻标注\"旧闻\"，超过6个月的财报标注\"过期数据\"\n5. 异常值处理：PE>500或<0、ROE>100%、单日涨跌>10%等异常值需特别标注\"异常，需核实\"\n6. 禁止使用null/undefined原样输出：上下文中的null/undefined表示数据缺失，必须转换为\"数据暂缺\"表述\n【核心能力】\n- 资产配置：战略型 vs 战术型配置、跨资产类别（股票/债券/另类/现金）再平衡\n- 理财规划：退休规划、教育金规划、遗产规划、保险配置\n- 税务优化：税损收割（Tax-Loss Harvesting）、资产位置优化（Asset Location）、赠与策略\n- 风险管理：VaR 风险价值、压力测试、尾部风险对冲\n\n【分析规范】\n1. 资产配置必须先厘清客户风险承受能力和流动性需求\n2. 建议方案需区分\"短期（1年内）\"\"中期（1-5年）\"\"长期（5年+）\"\n3. 税务建议必须注明适用法规的时效性\n4. 不可给出具体的\"买入/卖出某产品\"的推荐（合规要求）\n\n【输出风格】\n温暖专业、客户导向。用通俗语言解释复杂概念。结论以\"建议行动\"清单呈现。","fund-admin":"你是一位资深基金行政管理专家（Fund Administrator），精通中后台运营全流程。\n【数据纪律 - 必须严格遵守】\n1. 禁止编造任何数字：所有财务数据、股价、指标必须来自提供的API数据，未提供的数据一律禁止输出\n2. 缺失数据处理：当API数据中某字段为空(null/undefined/空字符串)时，必须标注\"数据暂缺\"，不得用模型补全或猜测\n3. 数据来源标注：引用数据时必须注明来源（如\"根据API数据\"），禁止引用训练数据中的旧数字\n4. 时效性要求：新闻、公告、财报必须带时间标签，超过7天的新闻标注\"旧闻\"，超过6个月的财报标注\"过期数据\"\n5. 异常值处理：PE>500或<0、ROE>100%、单日涨跌>10%等异常值需特别标注\"异常，需核实\"\n6. 禁止使用null/undefined原样输出：上下文中的null/undefined表示数据缺失，必须转换为\"数据暂缺\"表述\n【核心能力】\n- 总账对账（GL Reconciliation）：银行账 vs 总账 vs 交易系统的三方比对、差异根因分析\n- 净资产值计算（NAV）：持仓估值、费用计提、业绩报酬（Hurdle Rate/High Water Mark 计算）\n- KYC/AML 筛查：客户尽职调查、制裁名单匹配、可疑交易识别\n- 投资者报告：资本账户对账单、分配通知（Distribution Notice）、资本催缴（Capital Call）\n- 监管合规：AIFMD、Form PF、FATCA/CRS 申报要求\n\n【分析规范】\n1. 对账差异必须按金额和原因分类（计时差异/计量差异/遗漏）\n2. NAV 计算误差必须控制在 0.01% 以内\n3. KYC 筛查必须注明数据来源和更新时间\n4. 合规建议必须基于最新的监管规则\n\n【输出风格】\n精准、零差错、可追溯。每项输出附带\"核查清单\"。"};
 	const DELIVERY_SPEC = "## 交付件格式（强制）\n\n分析结论必须产出**一份 HTML 文件**，不要产出 Markdown 文件：\n\n- **文件名**：`{分析主题}_{标的代码或名称}_{YYYYMMDD}.html`（例 `DCF估值模型_长鑫科技_688825_20261008.html`）\n- 保存后，回答正文只给 3–5 行要点摘要 + 文件名，**不要**把 HTML 全文贴进回答\n\n硬性要求：\n\n0. **本节优先级最高**：若上文（技能说明、能力定位、输出格式等）出现「使用 Markdown 表格」「Markdown 格式」「.md 文件」等表述，一律以本节为准 —— 最终产物是 `.html` 文件，所谓「表格」即在 HTML 内用 `<table class=\"t\">` 呈现，**不得**产出 `.md`。\n1. **单文件零依赖**：样式全部写在 `<style>` 内联；不引外链 CSS/JS、不用 CDN、不写 `<script>`。\n2. **照抄骨架、只填空**：把下方骨架中 `<!-- 填 … -->` 替换为实际内容；`<style>` 与标签结构不得改动、不得增删标签。\n3. 表格一律 `<table class=\"t\">`（外层套 `<div class=\"tw\">` 以便窄屏横向滚动）；数值单元格加 `class=\"n\"` 右对齐；涨用 `<span class=\"up\">`（红）、跌用 `<span class=\"dn\">`（绿）。\n4. 核心结论放 `<div class=\"key\">`；关键数字放 `.kpis` 里的 `.kpi` 卡（每卡一个 `.k` 标签 + 一个 `.v` 数值）。\n5. 需要横向对比时用纯 CSS `.bars` 条形图（下方骨架已含样式），**不要**手写 `<svg>`（易画坏）。\n6. 正文**不得出现**：`.md` 文件路径、`$$` 或 `\\frac` 等 LaTeX 残留、\"报告已生成\"之类过程说明。\n\n```html\n<!DOCTYPE html>\n<html lang=\"zh-CN\"><head><meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title><!-- 填 报告标题 --></title>\n<style>\n:root{--paper:#F3EFE6;--panel:#FBF8F1;--ink:#23211D;--muted:#6E6759;--rule:#D9D2C3;--up:#B23A2E;--dn:#2F6B4F;--gold:#C8A67C}\n*{box-sizing:border-box}\nbody{margin:0;background:var(--paper);color:var(--ink);font:16px/1.75 -apple-system,\"PingFang SC\",\"Microsoft YaHei\",sans-serif}\n.wrap{max-width:860px;margin:0 auto;padding:32px 22px 60px}\nh1{font-size:26px;line-height:1.35;margin:0 0 8px}\n.meta{color:var(--muted);font-size:14px;border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:26px}\nh2{font-size:19px;margin:36px 0 12px;padding-left:10px;border-left:4px solid var(--up)}\nh3{font-size:16px;margin:22px 0 8px}\np{margin:12px 0}\n.tw{overflow-x:auto}\ntable.t{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:var(--panel)}\ntable.t th,table.t td{border:1px solid var(--rule);padding:8px 10px;text-align:left}\ntable.t th{background:#EAE3D5;font-weight:600;white-space:nowrap}\ntable.t td.n{text-align:right;font-variant-numeric:tabular-nums}\n.up{color:var(--up);font-weight:600}.dn{color:var(--dn);font-weight:600}\n.key{background:var(--panel);border-left:4px solid var(--gold);padding:14px 16px;margin:16px 0;border-radius:0 6px 6px 0}\n.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}\n.kpi{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px 14px}\n.kpi .k{font-size:13px;color:var(--muted)}\n.kpi .v{font-size:20px;font-weight:700;margin-top:4px}\n.bars{margin:14px 0}\n.bar{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:14px}\n.bar .bl{width:110px;flex:none;color:var(--muted)}\n.bar .bt{flex:1;height:14px;background:#EAE3D5;border-radius:7px;overflow:hidden}\n.bar .bt i{display:block;height:100%;background:var(--up);border-radius:7px}\n.bar.neg .bt i{background:var(--dn)}\n.bar .bv{width:74px;flex:none;text-align:right;font-variant-numeric:tabular-nums}\n.risk{margin-top:40px;padding:14px 16px;background:#F7F1E6;border:1px dashed var(--rule);border-radius:8px;font-size:14px;color:var(--muted)}\n@media(max-width:640px){body{font-size:15px}.wrap{padding:20px 14px 40px}h1{font-size:21px}h2{font-size:17px}table.t{font-size:13px}}\n</style></head>\n<body><div class=\"wrap\">\n<h1><!-- 填 报告标题 --></h1>\n<div class=\"meta\"><!-- 填 标的名称(代码) · 报告日期 · 数据来源 --></div>\n\n<h2><!-- 填 章节标题 --></h2>\n<p><!-- 填 正文 --></p>\n<div class=\"kpis\">\n<div class=\"kpi\"><div class=\"k\"><!-- 指标名 --></div><div class=\"v\"><!-- 数值 --></div></div>\n</div>\n<div class=\"tw\"><table class=\"t\">\n<thead><tr><th><!-- 表头 --></th><th><!-- 表头 --></th></tr></thead>\n<tbody><tr><td><!-- 内容 --></td><td class=\"n\"><!-- 数值 --></td></tr></tbody>\n</table></div>\n<div class=\"bars\">\n<div class=\"bar\"><span class=\"bl\">悲观</span><span class=\"bt\"><i style=\"width:62%\"></i></span><span class=\"bv\">62.0</span></div>\n</div>\n<div class=\"key\"><!-- 填 核心结论 --></div>\n\n<div class=\"risk\"><b>⚠️ 风险提示</b><br>以上为 AI 生成内容，不构成投资建议，市场有风险，投资须谨慎。</div>\n</div></body></html>\n```";
 
+	// #region ============ 系统模块源码（由 runtime/jf-sys.js 注入）============
+	/**
+ * 玖峰投研工作台 · 客户端系统模块（jf-sys）
+ * ==========================================================================
+ * 只做两件事，不贪多：
+ *   ① 基础使用上报 —— 每日使用情况（时长 / 功能点击次数）与操作异常
+ *   ② 版本更新提示 —— 启动时向自有服务端询问最新版本，弹窗让用户选「更新 / 不更新」
+ *
+ * 设计约束
+ *   - 纯逻辑 + 纯展示组件；storage / fetch / document / 定时器 / 日志全部由调用方注入，
+ *     因此在 node 里可直接单测（见 test-jf-sys.mjs），无需起浏览器。
+ *   - 不依赖 Electron 主进程能力；渲染进程直连自有服务端（服务端需返回 CORS 头）。
+ *   - ★ 隐私红线：只上报「行为标签 + 计数」，绝不上报标的、持仓、文件路径、输入原文。
+ *     错误栈里的用户目录路径会被归一化为 %USERPROFILE%。
+ *
+ * 本文件由 gen-client.mjs 读入并注入 client bundle；注入时剥离所有 `export ` 前缀。
+ */
+
+const JF_SCHEMA = 1;
+
+/* ==================== 纯工具 ==================== */
+
+/** "1.10.2" -> [1, 10, 2]；非法段按 0 */
+function parseVersion(v) {
+	const parts = String(v == null ? "" : v).trim().split(".");
+	const out = [];
+	for (let i = 0; i < 3; i++) out.push(parseInt(parts[i], 10) || 0);
+	return out;
+}
+
+/** 语义化比较：a>b 返回 1，a<b 返回 -1，相等 0。按数字比，不按字符串比。 */
+function cmpVersion(a, b) {
+	const A = parseVersion(a), B = parseVersion(b);
+	for (let i = 0; i < 3; i++) {
+		if (A[i] > B[i]) return 1;
+		if (A[i] < B[i]) return -1;
+	}
+	return 0;
+}
+
+function isNewer(latest, current) {
+	return cmpVersion(latest, current) > 0;
+}
+
+function randomHex(n) {
+	const chars = "0123456789abcdef";
+	let s = "";
+	try {
+		const c = globalThis.crypto || globalThis.msCrypto;
+		if (c && typeof c.getRandomValues === "function") {
+			const buf = new Uint8Array(Math.ceil(n / 2));
+			c.getRandomValues(buf);
+			for (let i = 0; i < buf.length; i++) s += chars[buf[i] >> 4] + chars[buf[i] & 15];
+		}
+	} catch (e) { /* 退回 Math.random */ }
+	while (s.length < n) s += chars[Math.floor(Math.random() * 16)];
+	return s.slice(0, n);
+}
+
+/** 本地日期 YYYY-MM-DD（按用户所在时区，不用 UTC） */
+function todayKey(ts) {
+	const d = (ts === undefined || ts === null) ? new Date() : new Date(ts);
+	const p = function (x) { return (x < 10 ? "0" : "") + x; };
+	return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+
+function blankDay(date) {
+	return { date: date, active_seconds: 0, sessions: 0, skills: {}, experts: {}, errors: 0 };
+}
+
+function bumpCounter(map, key) {
+	if (!key) return map;
+	map[key] = (map[key] || 0) + 1;
+	return map;
+}
+
+/**
+ * 敏感信息清洗。错误栈里经常夹着用户目录（含 Windows 用户名），必须归一化。
+ */
+function scrubText(input, max) {
+	let t = String(input == null ? "" : input);
+	t = t.replace(/[A-Za-z]:[\\/]+Users[\\/]+[^\\/\s"']+/g, "%USERPROFILE%");
+	t = t.replace(/[A-Za-z]:[\\/]+Documents and Settings[\\/]+[^\\/\s"']+/g, "%USERPROFILE%");
+	t = t.replace(/\/Users\/[^/\s"']+/g, "%USERPROFILE%");
+	t = t.replace(/\/home\/[^/\s"']+/g, "%HOME%");
+	t = t.replace(/\s+/g, " ").trim();
+	const limit = max || 240;
+	return t.length > limit ? t.slice(0, limit) + "…" : t;
+}
+
+/** 只留错误栈的前几帧 —— 定位够用，且不会把整段代码发出去 */
+function scrubStack(stack, frames) {
+	const lines = String(stack == null ? "" : stack).split("\n")
+		.map(function (l) { return l.trim(); }).filter(Boolean);
+	return scrubText(lines.slice(0, frames || 3).join(" | "), 300);
+}
+
+function safeStorage(raw) {
+	try {
+		if (raw && typeof raw.getItem === "function" && typeof raw.setItem === "function") {
+			raw.setItem("__jf_probe", "1");
+			raw.removeItem("__jf_probe");
+			return raw;
+		}
+	} catch (e) { /* 隐私模式 / 配额满 → 退回内存实现 */ }
+	const mem = Object.create(null);
+	return {
+		getItem: function (k) { return (k in mem) ? mem[k] : null; },
+		setItem: function (k, v) { mem[k] = String(v); },
+		removeItem: function (k) { delete mem[k]; },
+	};
+}
+
+/** 匿名设备标识：本地随机生成，不做任何机器指纹 */
+function ensureDeviceId(storage, key) {
+	const k = key || "jf.device_id";
+	try {
+		const v = storage.getItem(k);
+		if (v && /^[0-9a-f]{16,64}$/.test(v)) return v;
+	} catch (e) { /* ignore */ }
+	const id = randomHex(32);
+	try { storage.setItem(k, id); } catch (e) { /* ignore */ }
+	return id;
+}
+
+/* ==================== 每日使用台账 ==================== */
+
+/**
+ * 本地累计，随时可上报。
+ * 服务端按 (device_id, date) 覆盖写 → 重复上报幂等，断电也不丢。
+ */
+function createJournal(storage, key, opts) {
+	const options = opts || {};
+	const keepDays = options.keepDays || 7;
+	const maxErrors = options.maxErrors || 30;
+
+	let data = { days: {}, errors: [] };
+	try {
+		const raw = storage.getItem(key);
+		if (raw) {
+			const parsed = JSON.parse(raw);
+			if (parsed && typeof parsed === "object") {
+				if (parsed.days && typeof parsed.days === "object") data.days = parsed.days;
+				if (Array.isArray(parsed.errors)) data.errors = parsed.errors;
+			}
+		}
+	} catch (e) { /* 数据损坏就重建，不能影响使用 */ }
+
+	function save() {
+		try {
+			const dates = Object.keys(data.days).sort();
+			if (dates.length > keepDays) {
+				dates.slice(0, dates.length - keepDays).forEach(function (d) { delete data.days[d]; });
+			}
+			storage.setItem(key, JSON.stringify(data));
+		} catch (e) { /* 写失败无所谓 */ }
+	}
+
+	function day(date) {
+		if (!data.days[date]) data.days[date] = blankDay(date);
+		return data.days[date];
+	}
+
+	function incDay(date, field, by) {
+		const d = day(date);
+		d[field] = (d[field] || 0) + (by || 1);
+		return d;
+	}
+
+	return {
+		day: day,
+		days: function () { return data.days; },
+		errors: function () { return data.errors; },
+		addSeconds: function (date, seconds) {
+			if (!(seconds > 0)) return;
+			const d = day(date);
+			d.active_seconds = Math.round(d.active_seconds + seconds);
+			save();
+		},
+		inc: function (date, field, by) {
+			incDay(date, field, by);
+			save();
+		},
+		bumpSkill: function (date, id) { if (id) { bumpCounter(day(date).skills, id); save(); } },
+		bumpExpert: function (date, id) { if (id) { bumpCounter(day(date).experts, id); save(); } },
+		pushError: function (event, date) {
+			data.errors.push(event);
+			if (data.errors.length > maxErrors) data.errors = data.errors.slice(-maxErrors);
+			// 异常同时计入当天计数（调用方不必再手动 inc，避免双计或漏计）
+			let d = date;
+			if (!d) {
+				const t = (event && event.ts) ? Date.parse(event.ts) : NaN;
+				d = isNaN(t) ? todayKey() : todayKey(t);
+			}
+			incDay(d, "errors");
+			save();
+		},
+		dropErrors: function (count) {
+			data.errors = data.errors.slice(count);
+			save();
+		},
+		save: save,
+	};
+}
+
+/** 组装上报载荷：最近 3 天台账 + 全部待发异常，一次批量发走 */
+function buildBatch(journal, cfg, deviceId, env) {
+	const e = env || {};
+	const batch = [];
+	Object.keys(journal.days()).sort().slice(-3).forEach(function (d) {
+		const x = journal.days()[d];
+		batch.push({
+			t: "day_usage",
+			date: x.date,
+			active_seconds: Math.round(x.active_seconds || 0),
+			sessions: x.sessions || 0,
+			skills: x.skills || {},
+			experts: x.experts || {},
+			errors: x.errors || 0,
+		});
+	});
+	journal.errors().forEach(function (item) {
+		batch.push(Object.assign({ t: "error" }, item));
+	});
+	return {
+		schema: JF_SCHEMA,
+		app: cfg.app,
+		app_version: cfg.version,
+		channel: cfg.channel || "stable",
+		device_id: deviceId,
+		os: e.os || "",
+		os_version: e.osVersion || "",
+		arch: e.arch || "",
+		tz: e.tz || "",
+		lang: e.lang || "",
+		sent_at: e.at || new Date().toISOString(),
+		batch: batch,
+	};
+}
+
+/* ==================== 系统主体 ==================== */
+
+/**
+ * @param cfg  见 gen-client.mjs 顶部的 JF_CONFIG
+ * @param deps { React, storage, document, fetch, now, setInterval, clearInterval, on, env, openExternal, log }
+ */
+function createSystem(cfg, deps) {
+	const React = deps.React;
+	const h = React.createElement;
+	const storage = safeStorage(deps.storage);
+	const doc = deps.document;
+	const nowFn = deps.now || function () { return Date.now(); };
+	const fetchFn = deps.fetch;
+	const env = deps.env || {};
+	const log = deps.log || function () {};
+	const setTimer = deps.setInterval || function (fn, ms) { return globalThis.setInterval(fn, ms); };
+	const clearTimer = deps.clearInterval || function (id) { globalThis.clearInterval(id); };
+	const on = deps.on || function (target, type, fn, opt) {
+		if (target && typeof target.addEventListener === "function") target.addEventListener(type, fn, opt);
+	};
+
+	const K_DEVICE = "jf.device_id";
+	const K_CONSENT = "jf.consent";
+	const K_JOURNAL = "jf.journal";
+	const K_SKIP = "jf.skip_version";
+	const K_SNOOZE = "jf.snooze";
+
+	const journal = createJournal(storage, K_JOURNAL, { keepDays: 7, maxErrors: 30 });
+	const deviceId = ensureDeviceId(storage, K_DEVICE);
+
+	let ctx = null;
+	let lastTick = nowFn();
+	let lastReport = 0;
+	let timer = null;
+	let uiListeners = new Set();
+	let uiState = { open: false, mode: "about", update: null, checking: false, checkedAt: 0, lastError: "" };
+
+	function emitUi(patch) {
+		uiState = Object.assign({}, uiState, patch);
+		uiListeners.forEach(function (fn) { try { fn(); } catch (e) { /* ignore */ } });
+	}
+
+	function consent() { return storage.getItem(K_CONSENT); }
+	function telemetryOn() { return consent() === "on"; }
+	function today() { return todayKey(nowFn()); }
+
+	/* ---------- 埋点接口（模板在用户操作处调用） ---------- */
+
+	function trackSession() {
+		try { if (telemetryOn()) journal.inc(today(), "sessions"); } catch (e) { /* ignore */ }
+	}
+	function trackSkill(id) {
+		try { if (telemetryOn()) journal.bumpSkill(today(), id); } catch (e) { /* ignore */ }
+	}
+	function trackExpert(id) {
+		try { if (telemetryOn()) journal.bumpExpert(today(), id); } catch (e) { /* ignore */ }
+	}
+	function trackError(kind, where, err) {
+		try {
+			if (!telemetryOn()) return;
+			const msg = scrubText((err && (err.message || err.msg)) || err, 240);
+			const stack = scrubStack(err && err.stack, 3);
+			if (!msg && !stack) return;
+			journal.pushError({ ts: new Date(nowFn()).toISOString(), kind: kind, where: where, msg: msg, stack: stack }, today());
+		} catch (e) { /* ignore */ }
+	}
+
+	/* ---------- 时长累计 ---------- */
+
+	/** 结算自上次 tick 以来的前台时长；睡眠/挂起的时间会被截断，不虚增 */
+	function tickSeconds(force) {
+		const t = nowFn();
+		const delta = (t - lastTick) / 1000;
+		lastTick = t;
+		if (!(delta > 0)) return;
+		if (!force && doc && doc.visibilityState && doc.visibilityState !== "visible") return;
+		if (telemetryOn()) journal.addSeconds(today(), Math.min(delta, 180));
+	}
+
+	/* ---------- 上报 ---------- */
+
+	async function flush(reason) {
+		try {
+			if (!telemetryOn()) return { ok: false, reason: "off" };
+			if (!fetchFn || !cfg.apiBase) return { ok: false, reason: "no-endpoint" };
+			const payload = buildBatch(journal, cfg, deviceId, Object.assign({ at: new Date(nowFn()).toISOString() }, env));
+			if (!payload.batch.length) return { ok: true, reason: "empty" };
+			const res = await fetchFn(cfg.apiBase + "/api/report", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload),
+				cache: "no-store",
+				keepalive: true,
+			});
+			if (res && res.ok) {
+				journal.dropErrors(journal.errors().length);
+				lastReport = nowFn();
+				return { ok: true, reason: reason || "sent" };
+			}
+			return { ok: false, reason: "http-" + (res ? res.status : "?") };
+		} catch (e) {
+			log("report failed", e);
+			return { ok: false, reason: "network" };
+		}
+	}
+
+	function maybeFlush() {
+		if (nowFn() - lastReport >= (cfg.reportIntervalMs || 180000)) flush("interval");
+	}
+
+	/* ---------- 更新检查 ---------- */
+
+	function updateUrl() {
+		return cfg.apiBase + "/api/update?app=" + encodeURIComponent(cfg.app)
+			+ "&channel=" + encodeURIComponent(cfg.channel || "stable")
+			+ "&version=" + encodeURIComponent(cfg.version);
+	}
+
+	/** 拉取远端版本信息；网络异常一律静默（不能打扰用户） */
+	async function fetchUpdate() {
+		if (!fetchFn || !cfg.apiBase) return { ok: false, error: "未配置服务端地址" };
+		try {
+			const res = await fetchFn(updateUrl(), { cache: "no-store" });
+			if (!res || !res.ok) return { ok: false, error: "服务端返回 " + (res ? res.status : "网络错误") };
+			const info = await res.json();
+			if (!info || !info.latest) return { ok: false, error: "返回内容无版本号" };
+			return { ok: true, info: info };
+		} catch (e) {
+			return { ok: false, error: "无法连接更新服务" };
+		}
+	}
+
+	async function checkUpdate() {
+		emitUi({ checking: true, lastError: "" });
+		const r = await fetchUpdate();
+		if (!r.ok) { emitUi({ checking: false, lastError: r.error }); return null; }
+		emitUi({ checking: false, checkedAt: nowFn(), lastError: "" });
+		return isNewer(r.info.latest, cfg.version) ? r.info : null;
+	}
+
+	/** 启动路径：有新版就弹窗；用户「稍后」当天不再弹，「跳过此版本」永久不再弹 */
+	async function checkAndPrompt() {
+		const info = await checkUpdate();
+		if (!info) return;
+		if (!info.force) {
+			if (storage.getItem(K_SKIP) === String(info.latest)) return;
+			if (storage.getItem(K_SNOOZE) === String(info.latest) + "@" + today()) return;
+		}
+		emitUi({ open: true, mode: "update", update: info });
+	}
+
+	/* ---------- 外部动作 ---------- */
+
+	function openExternal(url) {
+		if (!url) return false;
+		try {
+			if (typeof deps.openExternal === "function" && deps.openExternal(url)) return true;
+		} catch (e) { /* 继续兜底 */ }
+		try {
+			const a = doc.createElement("a");
+			a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
+			doc.body.appendChild(a); a.click(); a.remove();
+			return true;
+		} catch (e) { /* 再兜底 */ }
+		try { globalThis.open(url, "_blank", "noopener"); return true; } catch (e) { /* give up */ }
+		return false;
+	}
+
+	function copyText(text) {
+		try {
+			if (globalThis.navigator && navigator.clipboard) { navigator.clipboard.writeText(text); return true; }
+		} catch (e) { /* ignore */ }
+		return false;
+	}
+
+	/* ---------- UI ---------- */
+
+	function SystemCard() {
+		const [s, setS] = React.useState(uiState);
+		React.useEffect(function () {
+			const fn = function () { setS(Object.assign({}, uiState)); };
+			uiListeners.add(fn);
+			return function () { uiListeners.delete(fn); };
+		}, []);
+
+		if (!s.open) return null;
+		const close = function () { emitUi({ open: false }); };
+		const stop = function (e) { e.stopPropagation(); };
+
+		let title = "关于";
+		let body = null;
+
+		if (s.mode === "privacy") {
+			title = "关于使用数据";
+			body = h("div", { className: "jf-sys-body" },
+				h("p", { className: "jf-sys-lead" }, "为了把产品做得更好，我们会匿名记录三项基本信息："),
+				h("ul", { className: "jf-sys-list" },
+					h("li", null, h("b", null, "使用时长"), "，以及每天打开软件的次数"),
+					h("li", null, h("b", null, "用到了哪些功能"), "（只记功能名与次数）"),
+					h("li", null, h("b", null, "程序报错信息"), "，用于定位故障")
+				),
+				h("p", { className: "jf-sys-note" }, "不会记录：你查询的股票、自选股、持仓、文档内容，以及任何输入的文字。样本以匿名设备号区分，不含任何账号信息。"),
+				h("div", { className: "jf-sys-actions" },
+					h("button", {
+						className: "jf-sys-btn ghost",
+						onClick: function () { storage.setItem(K_CONSENT, "off"); close(); },
+					}, "不开启"),
+					h("button", {
+						className: "jf-sys-btn primary",
+						onClick: function () {
+							storage.setItem(K_CONSENT, "on");
+							close();
+							checkAndPrompt();
+						},
+					}, "开启并继续")
+				)
+			);
+		} else if (s.mode === "update") {
+			const info = s.update || {};
+			const notes = Array.isArray(info.notes) ? info.notes : (info.notes ? [String(info.notes)] : []);
+			title = "发现新版本 v" + info.latest;
+			body = h("div", { className: "jf-sys-body" },
+				h("div", { className: "jf-sys-meta" },
+					"当前 v" + cfg.version,
+					info.released_at ? " · 发布于 " + info.released_at : "",
+					info.size_mb ? " · " + info.size_mb + " MB" : ""
+				),
+				info.title ? h("div", { className: "jf-sys-sub" }, info.title) : null,
+				notes.length ? h("ul", { className: "jf-sys-list" }, notes.map(function (n, i) { return h("li", { key: i }, n); })) : null,
+				info.force ? h("p", { className: "jf-sys-note warn" }, "本次为必要更新，建议尽快升级。") : null,
+				!info.force ? h("label", { className: "jf-sys-check" },
+					h("input", {
+						type: "checkbox",
+						checked: !!s.skipNext,
+						onChange: function (e) { emitUi({ skipNext: e.target.checked }); },
+					}),
+					"跳过此版本，不再提示"
+				) : null,
+				h("div", { className: "jf-sys-actions" },
+					!info.force ? h("button", {
+						className: "jf-sys-btn ghost",
+						onClick: function () {
+							if (s.skipNext) storage.setItem(K_SKIP, String(info.latest));
+							else storage.setItem(K_SNOOZE, String(info.latest) + "@" + today());
+							close();
+						},
+					}, "稍后再说") : null,
+					h("button", {
+						className: "jf-sys-btn primary",
+						onClick: function () {
+							const ok = openExternal(info.download_url);
+							if (!ok) emitUi({ mode: "update", lastError: "无法自动打开浏览器，请手动访问：" + (info.download_url || "（未配置下载地址）") });
+							else close();
+						},
+					}, "立即更新")
+				),
+				s.lastError ? h("div", { className: "jf-sys-err" }, s.lastError) : null
+			);
+		} else {
+			title = "玖峰投研工作台";
+			const up = s.update;
+			body = h("div", { className: "jf-sys-body" },
+				h("div", { className: "jf-sys-meta" }, "版本 v" + cfg.version + " · " + (cfg.channel || "stable")),
+				h("div", { className: "jf-sys-rows" },
+					h("div", { className: "jf-sys-row" },
+						h("span", null, "软件更新"),
+						h("span", { className: "jf-sys-rowv" },
+							s.checking ? "检查中…"
+								: up ? "发现 v" + up.latest
+								: (s.checkedAt ? "已是最新版本" : "尚未检查"),
+							" ",
+							h("button", {
+								className: "jf-sys-link",
+								onClick: function () { up ? emitUi({ mode: "update", update: up }) : checkUpdate().then(function (info) { if (info) emitUi({ mode: "update", update: info }); }); },
+							}, up ? "去更新" : "检查更新")
+						)
+					),
+					h("div", { className: "jf-sys-row" },
+						h("span", null, "使用数据上报"),
+						h("span", { className: "jf-sys-rowv" },
+							// 首启不再弹告知卡片，所以把告知文本的入口放在这里，随时可复查
+							h("button", {
+								className: "jf-sys-link",
+								onClick: function () { emitUi({ mode: "privacy" }); },
+							}, "查看告知"),
+							" ",
+							h("button", {
+								className: "jf-sys-toggle " + (telemetryOn() ? "on" : "off"),
+								onClick: function () {
+									storage.setItem(K_CONSENT, telemetryOn() ? "off" : "on");
+									emitUi({});
+									if (telemetryOn()) flush("manual");
+								},
+							}, telemetryOn() ? "已开启" : "已关闭")
+						)
+					),
+					h("div", { className: "jf-sys-row" },
+						h("span", null, "匿名设备号"),
+						h("span", { className: "jf-sys-rowv mono" }, deviceId.slice(0, 8) + "…")
+					)
+				),
+				h("p", { className: "jf-sys-note" }, "数据仅用于产品改进，不含股票、持仓或任何输入内容。"),
+				s.lastError ? h("div", { className: "jf-sys-err" }, s.lastError) : null,
+				h("div", { className: "jf-sys-actions" },
+					h("button", { className: "jf-sys-btn ghost", onClick: close }, "关闭")
+				)
+			);
+		}
+
+		return h("div", { className: "jf-sys-overlay", onClick: close },
+			h("div", { className: "jf-sys-card", onClick: stop },
+				h("button", { className: "jf-sys-close", onClick: close }, "✕"),
+				h("div", { className: "jf-sys-title" }, title),
+				body
+			)
+		);
+	}
+
+	/* ---------- 生命周期 ---------- */
+
+	function attach(context) {
+		ctx = context || ctx;
+		// 重复挂载（插件热重载）时先清掉旧心跳，避免定时器堆积
+		if (timer) { clearTimer(timer); timer = null; }
+		trackSession();
+
+		try {
+			on(globalThis, "error", function (ev) {
+				const where = "window";
+				trackError("js_error", where, (ev && ev.error) || (ev && ev.message));
+			});
+			on(globalThis, "unhandledrejection", function (ev) {
+				trackError("unhandled_rejection", "promise", ev && ev.reason);
+			});
+		} catch (e) { /* ignore */ }
+
+		timer = setTimer(function () { tickSeconds(false); maybeFlush(); }, cfg.heartbeatMs || 60000);
+
+		try {
+			on(doc, "visibilitychange", function () {
+				if (doc.visibilityState === "hidden") { tickSeconds(true); flush("hidden"); }
+				else { lastTick = nowFn(); }
+			});
+			on(globalThis, "beforeunload", function () { tickSeconds(true); flush("unload"); });
+		} catch (e) { /* ignore */ }
+
+		// ★ 2026-10-15：首启不再弹「关于使用数据」卡片。
+		//   安装程序在安装阶段已做使用数据告知（控制台会打印一行，见 install.ps1 第 4 步），
+		//   这里直接把同意记为「已开启」——否则用户一进软件就要先点掉一个全屏卡片，
+		//   与「装完只需配 API Key，进去就是玖峰投研正式版窗口」冲突。
+		//   告知文本没有删：它仍在「关于」面板的「查看告知」里可随时读到，
+		//   开关也仍在同一行，用户想关随时能关。
+		if (consent() === null) { storage.setItem(K_CONSENT, "on"); }
+		setTimeout(function () {
+			if (telemetryOn()) { checkAndPrompt(); flush("start"); }
+		}, cfg.checkDelayMs || 4000);
+
+		return function detach() {
+			if (timer) clearTimer(timer);
+			timer = null;
+		};
+	}
+
+	return {
+		attach: attach,
+		SystemCard: SystemCard,
+		state: function () { return uiState; },
+		subscribe: function (fn) {
+			uiListeners.add(fn);
+			return function () { uiListeners.delete(fn); };
+		},
+		open: function (mode) { emitUi({ open: true, mode: mode || "about" }); },
+		close: function () { emitUi({ open: false }); },
+		trackSession: trackSession,
+		trackSkill: trackSkill,
+		trackExpert: trackExpert,
+		trackError: trackError,
+		flush: flush,
+		checkUpdate: checkUpdate,
+		checkAndPrompt: checkAndPrompt,
+		openExternal: openExternal,
+		journal: journal,
+		deviceId: deviceId,
+		telemetryOn: telemetryOn,
+	};
+}
+	// #endregion
+
 	function findExpert(id) { return EXPERTS.find(e => e.id === id); }
 	function findSkill(id) { return ALL_SKILLS.find(s => s.id === id); }
 	function skillsOfCategory(catId) { return ALL_SKILLS.filter(s => s.category === catId); }
@@ -48,6 +676,25 @@ window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", factory: (require) =
 		set(patch) { storeState = { ...storeState, ...patch }; storeListeners.forEach(fn => fn()); },
 	};
 	let runtimeCtx = null;
+
+	// #region ============ 系统模块实例（每日使用上报 + 更新提示）============
+	const JF_CONFIG = {"apiBase":"https://report365.com.cn/jiufeng","app":"jiufeng-workbench","channel":"stable","version":"1.1.6","checkDelayMs":4000,"privacyDelayMs":1500,"heartbeatMs":60000,"reportIntervalMs":180000};
+	const JF = createSystem(JF_CONFIG, {
+		React: React,
+		storage: (function () { try { return window.localStorage; } catch (e) { return null; } })(),
+		document: typeof document !== "undefined" ? document : null,
+		fetch: (typeof fetch === "function") ? fetch.bind(window) : null,
+		setInterval: function (fn, ms) { return window.setInterval(fn, ms); },
+		clearInterval: function (id) { window.clearInterval(id); },
+		env: {
+			os: (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "",
+			arch: (navigator.userAgent || "").indexOf("x64") >= 0 ? "x64" : "",
+			tz: (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { return ""; } })(),
+			lang: navigator.language || "",
+		},
+		log: function () {},
+	});
+	// #endregion
 
 	// #region ============ Harness 世代兼容层 ============
 	// DSH 基座 2.0.10 将 Harness 由 0.1.1-rc.2 升至 0.1.5-rc.2，客户端接口有 3 处破坏性变更：
@@ -88,6 +735,8 @@ window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", factory: (require) =
 	// #region ============ 发消息 ============
 	async function sendConsultation(expert, skill, content) {
 		const ctx = runtimeCtx;
+		// 使用埋点：只记功能 id 与次数，不记用户输入的任何内容
+		if (skill) JF.trackSkill(skill.id); else if (expert) JF.trackExpert(expert.id);
 		if (!ctx) return { ok: false, error: "runtime not ready" };
 		try {
 			const workspaces = ctx.workspaces;
@@ -121,6 +770,8 @@ window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", factory: (require) =
 			await session.prompt([{ type: "text", text: parts.join("\n") }], "queue");
 			return { ok: true };
 		} catch (e) {
+			// 操作异常上报：位置标签 + 错误摘要（路径会被归一化，不含输入内容）
+			JF.trackError("op_fail", skill ? "sendConsultation/skill" : "sendConsultation/expert", e);
 			return { ok: false, error: String(e?.message || e) };
 		}
 	}
@@ -237,6 +888,16 @@ window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", factory: (require) =
 	const CSS = `
 .dsh-invest-root{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;font-size:16px;--inv-fs:16px;--inv-fs-sm:15px;--inv-fs-label:14px;--inv-fs-meta:12.5px;box-sizing:border-box}
 .dsh-invest-scroll{flex:1 1 0;min-height:0;overflow-y:auto;overflow-x:hidden;padding:6px 8px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box}
+/* ——— 窄条态：官方 SidebarRoot 收起时 regionArea 只剩约 36px ——— */
+.dsh-invest-root.rail{font-size:16px}
+.dsh-invest-rail{flex:1 1 0;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 0 8px;box-sizing:border-box;scrollbar-width:none}
+.dsh-invest-rail::-webkit-scrollbar{width:0;height:0}
+.dsh-invest-railbtn{width:34px;height:34px;flex:none;border-radius:8px;border:none;background:transparent;color:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1;padding:0;transition:background .15s}
+.dsh-invest-railbtn:hover{background:rgba(128,128,128,.16)}
+.dsh-invest-railbtn.active{background:rgba(0,113,227,.16)}
+.dsh-invest-railbtn.expand{font-size:15px;opacity:.55}
+.dsh-invest-railbtn.expand:hover{opacity:.9}
+.dsh-invest-railsep{width:20px;height:1px;flex:none;background:rgba(128,128,128,.2);margin:3px 0}
 .dsh-invest-group-label{display:flex;align-items:center;gap:4px;padding:5px 8px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.55;cursor:pointer;border:none;background:none;width:100%;text-align:left;font:inherit;color:inherit;font-size:var(--inv-fs-label);box-sizing:border-box}
 .dsh-invest-expert{display:flex;align-items:center;gap:9px;width:100%;padding:7px 10px;border-radius:6px;cursor:pointer;border:none;background:transparent;text-align:left;font:inherit;color:inherit;transition:background .15s;box-sizing:border-box}
 .dsh-invest-expert:hover{background:rgba(0,0,0,.05)}
@@ -361,10 +1022,52 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 .dsh-invest-summary{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:11.5px;line-height:1.65;white-space:pre-wrap;word-break:break-word;max-height:130px;overflow-y:auto}
 .dsh-invest-card.light .dsh-invest-summary{background:#f5f5f7;color:#3a3a3c}
 .dsh-invest-card.dark .dsh-invest-summary{background:#22222a;color:#a0a0a8}
+
+/* ===== 系统浮层（更新提示 / 使用数据告知 / 关于）===== */
+.jf-sys-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.42)}
+.jf-sys-card{position:relative;width:min(430px,calc(100vw - 48px));box-sizing:border-box;padding:22px 22px 18px;border-radius:14px;background:#fff;color:#1d1d1f;box-shadow:0 18px 48px rgba(0,0,0,.28);font-size:13.5px;line-height:1.65}
+body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
+.jf-sys-close{position:absolute;top:10px;right:12px;border:none;background:transparent;color:inherit;opacity:.45;font-size:15px;cursor:pointer;padding:4px;line-height:1}
+.jf-sys-close:hover{opacity:.9}
+.jf-sys-title{font-size:16px;font-weight:600;margin-bottom:12px;padding-right:22px}
+.jf-sys-lead{margin:0 0 8px}
+.jf-sys-sub{font-weight:600;margin:10px 0 6px}
+.jf-sys-meta{font-size:12px;opacity:.6;margin-bottom:10px}
+.jf-sys-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.jf-sys-list li{font-size:12.5px}
+.jf-sys-note{margin:12px 0 0;font-size:11.5px;opacity:.6;line-height:1.6}
+.jf-sys-note.warn{color:#c77700;opacity:1}
+.jf-sys-check{display:flex;align-items:center;gap:7px;margin-top:14px;font-size:12px;cursor:pointer;opacity:.85}
+.jf-sys-check input{margin:0;cursor:pointer}
+.jf-sys-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.jf-sys-btn{border:none;border-radius:9px;padding:9px 18px;font:inherit;font-size:13px;cursor:pointer}
+.jf-sys-btn.primary{background:#0071e3;color:#fff}
+.jf-sys-btn.primary:hover{background:#0077ed}
+.jf-sys-btn.ghost{background:rgba(128,128,128,.16);color:inherit}
+.jf-sys-btn.ghost:hover{background:rgba(128,128,128,.26)}
+.jf-sys-rows{display:flex;flex-direction:column;gap:2px}
+.jf-sys-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(128,128,128,.16)}
+.jf-sys-row:last-child{border-bottom:none}
+.jf-sys-rowv{font-size:12px;opacity:.75;display:flex;align-items:center;gap:8px}
+.jf-sys-rowv.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.jf-sys-link{border:none;background:transparent;color:#0071e3;font:inherit;font-size:12px;cursor:pointer;padding:0}
+.jf-sys-link:hover{text-decoration:underline}
+.jf-sys-toggle{border:1px solid rgba(128,128,128,.3);background:transparent;color:inherit;border-radius:7px;padding:4px 10px;font:inherit;font-size:11.5px;cursor:pointer}
+.jf-sys-toggle.on{border-color:#0071e3;background:rgba(0,113,227,.1);color:#0071e3}
+.jf-sys-err{margin-top:10px;font-size:11.5px;color:#e5484d;word-break:break-all}
+.jf-sys-foot{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:6px 12px 8px;border-top:1px solid rgba(128,128,128,.14)}
+.jf-sys-gear{border:none;background:transparent;color:inherit;opacity:.5;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;border-radius:4px}
+.jf-sys-gear:hover{opacity:1;background:rgba(128,128,128,.14)}
+.jf-sys-footv{font-size:11px;opacity:.4;margin-left:auto}
+
 `;
 
 	// #region ============ 侧栏组件 ============
-	function InvestSidebar({ useSessions, open, archive }) {
+	// wide / expandSidebar 由官方 SidebarRoot 通过 renderSlot("sidebar.workspaces", { wide, expandSidebar }) 传入，
+	// 再经 ui-renderer 的 { ...kit, ...injected, ...slotInjected.props, ...contextual, ...ownerProps } 合并到 props。
+	// 窗口宽度 < 1024px 或用户点「收起侧边栏」时 wide === false，此时 regionArea 只有约 36px 宽且 overflow:hidden。
+	// wide 缺省（未来宿主不传）时按宽态渲染，避免整块消失。
+	function InvestSidebar({ useSessions, open, archive, wide, expandSidebar }) {
 		const [active, setActive] = useState(() => investStore.getSnapshot());
 		const [historyExpanded, setHistoryExpanded] = useState(false);
 		useEffect(() => investStore.subscribe(() => setActive(investStore.getSnapshot())), []);
@@ -415,6 +1118,53 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 			if (days < 7) return days + "天前";
 			return new Date(ts).toLocaleDateString("zh-CN", { month: "short", day: "numeric" });
 		};
+
+		// ——— 窄条态（官方把侧边栏收成 56px 轨道时）———
+		// 只渲染 36px 图标列：展开按钮 + 投研工作流 + 专业工具分类。
+		// 点任一条目 = 恢复宽态，避免用户被困在轨道的单列里。
+		const isRail = wide === false;
+		if (isRail) {
+			const askWide = () => { try { expandSidebar?.(); } catch (e) {} };
+			return h("div", { className: "dsh-invest-root rail" },
+				h("div", { className: "dsh-invest-rail" },
+					h("button", {
+						className: "dsh-invest-railbtn expand",
+						title: "展开玖峰投研侧边栏",
+						onClick: askWide,
+					}, "»"),
+
+					h("div", { className: "dsh-invest-railsep" }),
+
+					EXPERTS.map(expert => h("button", {
+						key: "r-exp-" + expert.id,
+						className: "dsh-invest-railbtn" + (active.activeExpert === expert.id ? " active" : ""),
+						title: expert.name + "｜" + expert.desc,
+						onClick: () => { pickExpert(expert); askWide(); },
+					}, expert.icon)),
+
+					h("div", { className: "dsh-invest-railsep" }),
+
+					SKILL_CATEGORIES.map(cat => {
+						const n = skillsOfCategory(cat.id).length;
+						if (n === 0) return null;
+						return h("button", {
+							key: "r-cat-" + cat.id,
+							className: "dsh-invest-railbtn",
+							title: cat.name + "（" + n + " 个工具）",
+							onClick: () => { toggleCategory(cat.id); askWide(); },
+						}, cat.icon);
+					}),
+
+					h("div", { className: "dsh-invest-railsep" }),
+
+					h("button", {
+						className: "dsh-invest-railbtn expand",
+						title: "关于与更新 · v" + JF_CONFIG.version,
+						onClick: () => { try { JF.open("about"); } catch (e) {} },
+					}, "⚙")
+				)
+			);
+		}
 
 		return h("div", { className: "dsh-invest-root" },
 			h("div", { className: "dsh-invest-scroll" },
@@ -502,6 +1252,15 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 							title: historyExpanded ? "只显示最近 " + HISTORY_PREVIEW + " 个" : "显示全部 " + history.length + " 个对话",
 						}, historyExpanded ? "收起" : "展开全部 (" + history.length + ")")
 					),
+			),
+			// —— 底部：关于与更新入口 ——
+			h("div", { className: "jf-sys-foot" },
+				h("button", {
+					className: "jf-sys-gear",
+					title: "关于与更新",
+					onClick: () => JF.open("about"),
+				}, "⚙"),
+				h("span", { className: "jf-sys-footv" }, "v" + JF_CONFIG.version)
 			)
 		);
 	}
@@ -1135,6 +1894,9 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 		installTextOverrides(ctx);
 		installTitleBrand();
 
+		// 系统模块：每日使用/异常上报 + 启动检查更新（失败一律静默，不能影响可用性）
+		try { JF.attach(ctx); } catch (e) { /* 埋点与更新都不该拖垮插件 */ }
+
 		ctx.slots.inject("sidebar.workspaces", () => ctx.slots.register({
 			name: "sidebar.workspaces",
 			id: "ai-invest-workspaces",
@@ -1169,6 +1931,11 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 		ctx.slots.inject("shell.overlay", () => ctx.slots.register({
 			name: "shell.overlay", id: "ai-invest-card", priority: -1, label: () => BRAND.name,
 		}, OverlayCard));
+
+		// 系统浮层：更新提示 / 使用数据告知 / 关于（与上面的技能卡片互不干扰）
+		ctx.slots.inject("shell.overlay", () => ctx.slots.register({
+			name: "shell.overlay", id: "jf-sys-card", priority: -2, label: () => BRAND.name,
+		}, JF.SystemCard));
 	}
 
 	exports.name = name;
