@@ -54,7 +54,7 @@ const JF_CONFIG = {
   apiBase: 'https://report365.com.cn/jiufeng',
   app: 'jiufeng-workbench',
   channel: 'stable',
-  version: '1.1.6',         // ★ 发版时改这里；服务端 update.json 的 latest 与它比较
+  version: '1.1.8',         // ★ 发版时改这里；服务端 update.json 的 latest 与它比较
   checkDelayMs: 4000,       // 启动后多久检查更新（避开启动 IO 高峰）
   privacyDelayMs: 1500,     // 已废弃：1.1.6 起首启不再弹告知卡片（改在安装阶段告知 +「关于」里可复查）
   heartbeatMs: 60000,       // 时长结算心跳

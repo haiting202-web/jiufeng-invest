@@ -4,8 +4,9 @@
 //   1. WEB 端 skills(index.ts) ⊃ DSH 旧清单(data/skills.ts)：缺失的 13 个(china-* 10个 +
 //      merger-accretion-model + tear-sheet + us-dcf-model)以 WEB 为准合并；DSH 独有 30 个美方 skill 保留。
 //   2. 合并后 101 个 skill，两边都有者以 WEB 端定义刷新 name/description/prompt/category（单一事实源）。
-//   3. client.js 重建时保留线上新版特性（历史对话 archive 删除按钮 + inject 注入）——
-//      ⚠️ 不要直接跑 gen-client.mjs，其模板滞后于线上版（缺 archive），会把新特性覆盖掉。
+//   3. client.js 重建统一走 gen-client.mjs（模板 + JSON.stringify 注入）——
+//      模板已含线上全部特性（archive 删除按钮 / JSONP 搜索 / 卡片体系 / 系统浮层），可安全全量重生成。
+//      ⚠️ 改 UI 请改 gen-client.mjs 模板后重生成；直接改 client.js 会被覆盖。
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
