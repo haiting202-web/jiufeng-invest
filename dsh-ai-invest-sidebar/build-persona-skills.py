@@ -18,7 +18,12 @@ import sys
 from datetime import datetime
 
 BASE = r'dsh-ai-invest-sidebar'
-SRC = r'D:\project\client-software\ai-butler-desktop\src'
+# ★ 源目录：本文件会进公开仓库，不能写死本机路径。
+#   本机跑时可用环境变量 AI_BUTLER_SRC 指定；未指定则按「仓库根的同级目录」推断
+#   （<project>\client-software\ai-butler-desktop\src）。
+SRC = os.environ.get('AI_BUTLER_SRC') or os.path.normpath(
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                 '..', 'client-software', 'ai-butler-desktop', 'src'))
 
 TARGETS = [
     r'%USERPROFILE%\.dsh\.agent-presets\ai-finance\skills',

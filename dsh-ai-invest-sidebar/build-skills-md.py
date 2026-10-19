@@ -24,7 +24,10 @@ from datetime import datetime
 
 BASE = r'dsh-ai-invest-sidebar'
 JSON_PATH = os.path.join(BASE, 'skills-data.json')
-WEB_TS = r'D:\project\client-software\ai-butler-desktop\src\skills\index.ts'
+# ★ WEB 真源：同上，不写死本机路径。环境变量 AI_BUTLER_WEB_TS 可覆盖。
+WEB_TS = os.environ.get('AI_BUTLER_WEB_TS') or os.path.normpath(
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                 '..', 'client-software', 'ai-butler-desktop', 'src', 'skills', 'index.ts'))
 
 TARGETS = [
     r'%USERPROFILE%\.dsh\.agent-presets\ai-finance\skills',
