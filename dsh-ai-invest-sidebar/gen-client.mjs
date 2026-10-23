@@ -54,7 +54,7 @@ const JF_CONFIG = {
   apiBase: 'https://report365.com.cn/jiufeng',
   app: 'jiufeng-workbench',
   channel: 'stable',
-  version: '1.1.8',         // ★ 发版时改这里；服务端 update.json 的 latest 与它比较
+  version: '1.1.10',         // ★ 发版时改这里；服务端 update.json 的 latest 与它比较
   checkDelayMs: 4000,       // 启动后多久检查更新（避开启动 IO 高峰）
   privacyDelayMs: 1500,     // 已废弃：1.1.6 起首启不再弹告知卡片（改在安装阶段告知 +「关于」里可复查）
   heartbeatMs: 60000,       // 时长结算心跳
@@ -230,9 +230,7 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 	}
 
 	// #region ============ 股票搜索（东方财富 suggest 接口，与 dsh-finance-tools 同源）============
-	// 东方财富搜索接口 token：开源版不硬编码。
-	// 宿主可用 globalThis.EM_SEARCH_TOKEN 注入；未注入时 emSearch 返回 null，调用方降级为手工输入。
-	const EM_SEARCH_TOKEN = (typeof globalThis !== "undefined" && globalThis.EM_SEARCH_TOKEN) || "";
+	const EM_SEARCH_TOKEN = "D43BF722C8E33BDC906FB84D85E326E8";
 	const EM_SEARCH_API = "https://searchapi.eastmoney.com/api/suggest/get";
 
 	/**
@@ -273,7 +271,6 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 
 	/** type=14 → A股/港股；type=4 → 美股。返回 null 表示两条通道都失败（调用方降级为手工输入）*/
 	async function emSearch(keyword, type) {
-		if (!EM_SEARCH_TOKEN) return null;
 		const url = EM_SEARCH_API + "?input=" + encodeURIComponent(keyword) + "&type=" + type + "&token=" + EM_SEARCH_TOKEN + "&count=8";
 		// 通道 1：直连 fetch —— 宿主若放开 webSecurity 可直接用（无 CORS 头时被拦，属预期）
 		try {
@@ -322,7 +319,7 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 		if (field.type === "multi-select") return (value || []).map(v => optionLabel(field, v)).join("、");
 		if (field.type === "stock-picker") return formatStockLabel(value);
 		if (field.type === "stock-multi") return (value || []).map(formatStockLabel).join("、");
-		if (field.type === "file") return value ? value.name : "";
+		if (field.type === "file") return value ? (value.path || value.name) : "";
 		return String(value);
 	}
 
@@ -472,6 +469,13 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 .dsh-invest-toggle.on .dsh-invest-tbox{background:#0071e3;border-color:#0071e3;color:#fff}
 .dsh-invest-file{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-radius:8px;border:1.5px dashed rgba(128,128,128,.35);background:transparent;color:inherit;font:inherit;font-size:12.5px;cursor:pointer;opacity:.75}
 .dsh-invest-file:hover{border-color:#0071e3;opacity:1}
+/* ——— 专业工具卡片：上传资料（可选，多文件） ——— */
+.dsh-invest-attach{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.dsh-invest-attach-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dsh-invest-attach .dsh-invest-file{width:auto;padding:8px 14px;justify-content:flex-start;font-size:12.5px;border-style:solid;border-width:1px;opacity:.85;border-radius:7px}
+.dsh-invest-attach-tip{font-size:11.5px;opacity:.5}
+.dsh-invest-attach-list{display:flex;flex-wrap:wrap;gap:6px}
+.dsh-invest-attach-item{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:5px 9px;border-radius:7px;font-size:12px;border:1px solid rgba(0,113,227,.35);background:rgba(0,113,227,.08);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dsh-invest-summary{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:11.5px;line-height:1.65;white-space:pre-wrap;word-break:break-word;max-height:130px;overflow-y:auto}
 .dsh-invest-card.light .dsh-invest-summary{background:#f5f5f7;color:#3a3a3c}
 .dsh-invest-card.dark .dsh-invest-summary{background:#22222a;color:#a0a0a8}
@@ -498,6 +502,19 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 .jf-sys-btn.primary:hover{background:#0077ed}
 .jf-sys-btn.ghost{background:rgba(128,128,128,.16);color:inherit}
 .jf-sys-btn.ghost:hover{background:rgba(128,128,128,.26)}
+/* ——— 强制更新：遮挡到不能用，但保留「立即更新 / 退出软件」 ——— */
+.jf-sys-overlay.force{background:rgba(0,0,0,.62);backdrop-filter:blur(2px);cursor:default}
+.jf-sys-card.force{width:min(460px,calc(100vw - 48px))}
+.jf-sys-btn.danger{background:rgba(128,128,128,.16);color:inherit}
+.jf-sys-btn.danger:hover{background:rgba(220,60,60,.16);color:#d13b3b}
+/* ——— 轻提示小窗：右下角，自动消失，不抢焦点 ——— */
+.jf-sys-toast{position:fixed;right:20px;bottom:20px;z-index:10001;max-width:320px;box-sizing:border-box;padding:12px 15px 13px;border-radius:11px;background:#fff;color:#1d1d1f;box-shadow:0 12px 32px rgba(0,0,0,.22);font-size:13px;line-height:1.55;cursor:pointer;overflow:hidden;animation:jf-toast-in .28s ease-out}
+body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
+.jf-sys-toast.updated{border-left:3px solid #34c759}
+.jf-sys-toast-txt{padding-right:4px}
+.jf-sys-toast-bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:#34c759;opacity:.55;transform-origin:left;animation:jf-toast-bar 6s linear forwards}
+@keyframes jf-toast-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes jf-toast-bar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 .jf-sys-rows{display:flex;flex-direction:column;gap:2px}
 .jf-sys-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(128,128,128,.16)}
 .jf-sys-row:last-child{border-bottom:none}
@@ -907,23 +924,75 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 	}
 
 	/** file：DSH 无 Electron 文件对话框，降级为原生 file input（仅取文件名，内容由用户粘贴）*/
+	/**
+	 * 取真实磁盘路径。DSH 桌面端在 preload 里挂了窄口桥梁
+	 * window.__DSH_DESKTOP_FILE_PATH__.getPathForFile(file)（底层是 Electron webUtils），
+	 * 拿到的绝对路径可以直接写进提示词，Agent 用文件工具就能读。
+	 * 浏览器环境（无桥梁）退回文件名 —— 此时只当"用户提到了这个文件"。
+	 */
+	function resolveFilePath(file) {
+		if (!file) return "";
+		try {
+			const bridge = globalThis.__DSH_DESKTOP_FILE_PATH__;
+			if (bridge && typeof bridge.getPathForFile === "function") {
+				const p = bridge.getPathForFile(file);
+				if (p) return String(p);
+			}
+		} catch (e) { /* 拿不到就走兜底 */ }
+		return String(file.path || file.name || "");
+	}
+
+	/** 把 File 对象转成卡片用的附件记录 */
+	function toAttachment(file) {
+		if (!file) return null;
+		const p = resolveFilePath(file);
+		return { name: file.name || p, path: p, size: file.size || 0 };
+	}
+
 	function FileField({ field, value, onChange }) {
 		const inputRef = useRef(null);
 		if (value) {
 			return h("div", { style: { display: "flex", alignItems: "center", gap: 8, padding: "9px 11px", borderRadius: 8, border: "1px solid rgba(0,113,227,.4)", background: "rgba(0,113,227,.08)" } },
-				h("span", { style: { flex: 1, fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, "📎 " + value.name),
+				h("span", { style: { flex: 1, fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, title: value.path || value.name }, "📎 " + value.name),
 				h("button", { className: "dsh-invest-tagx", onClick: () => onChange(null) }, "✕")
 			);
 		}
 		return h("div", null,
 			h("input", {
 				type: "file", ref: inputRef, style: { display: "none" },
-				onChange: (e) => { const f = e.target.files && e.target.files[0]; if (f) onChange({ name: f.name, path: f.name }); },
+				onChange: (e) => { const f = e.target.files && e.target.files[0]; if (f) onChange(toAttachment(f)); },
 			}),
 			h("button", { className: "dsh-invest-file", onClick: () => inputRef.current && inputRef.current.click() },
 				"📁 " + (field.placeholder || "点击选择文件"))
 		);
 	}
+
+	/** 多文件上传（专业工具卡片通用：路演材料、报表、合同、清单等都需要） */
+	function AttachField({ files, onAdd, onRemove }) {
+		const inputRef = useRef(null);
+		return h("div", { className: "dsh-invest-attach" },
+			h("input", {
+				type: "file", multiple: true, ref: inputRef, style: { display: "none" },
+				onChange: (e) => {
+					const list = Array.from(e.target.files || []).map(toAttachment).filter(Boolean);
+					if (list.length) onAdd(list);
+					e.target.value = "";
+				},
+			}),
+			h("div", { className: "dsh-invest-attach-head" },
+				h("button", { className: "dsh-invest-file", onClick: () => inputRef.current && inputRef.current.click() },
+					"📎 上传资料（可选）"),
+				h("span", { className: "dsh-invest-attach-tip" }, "PPT / Excel / Word / PDF / 图片，可多选")
+			),
+			files.length > 0 && h("div", { className: "dsh-invest-attach-list" },
+				files.map((f, i) => h("span", { key: (f.path || f.name) + i, className: "dsh-invest-attach-item", title: f.path || f.name },
+					"📄 " + f.name,
+					h("button", { className: "dsh-invest-tagx", onClick: () => onRemove(i) }, "✕")
+				))
+			)
+		);
+	}
+
 
 	/** 字段分发器 */
 	function FieldRenderer({ field, value, onChange }) {
@@ -990,6 +1059,7 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 		const [active, setActive] = useState(() => investStore.getSnapshot());
 		const [query, setQuery] = useState("");
 		const [form, setForm] = useState({});
+		const [files, setFiles] = useState([]);
 		const [busy, setBusy] = useState(false);
 		const [err, setErr] = useState("");
 		const [dark, setDark] = useState(false);
@@ -1017,6 +1087,7 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 			const init = {};
 			if (fields) fields.forEach(f => { if (f.defaultValue !== undefined) init[f.key] = f.defaultValue; });
 			setForm(init);
+			setFiles([]);
 			setQuery(""); setErr("");
 		}, [cardKey, loadedKey]);
 
@@ -1051,7 +1122,14 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 				content = preview;
 			} else {
 				content = query.trim();
-				if (!content) return;
+				if (!content && files.length === 0) return;
+			}
+			// 附件只对专业工具开放：把磁盘绝对路径交给 Agent，让它用文件工具读原件
+			if (skill && files.length) {
+				const lines = ["", "【资料文件】"];
+				files.forEach((f, i) => lines.push((i + 1) + ". " + (f.path || f.name)));
+				lines.push("（以上为本地文件绝对路径，请先读取原件再处理；属于「修改/更新」类任务时，必须保留原文件格式与版式。）");
+				content = (content ? content + "\\n" : "") + lines.join("\\n");
 			}
 			setBusy(true); setErr("");
 			const result = await sendConsultation(expert, skill, content);
@@ -1063,13 +1141,15 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 		const icon = skill ? skill.icon : expert.icon;
 		const title = skill ? skill.name : expert.name;
 		const desc = skill ? skill.description : expert.desc;
-		const tags = skill ? [] : expert.tags;
+		// 专业工具卡片的身份标签：明确它是「专业工具」，不套「投研工作流 / 会诊」那套
+		const catName = skill ? ((SKILL_CATEGORIES.find(c => c.id === skill.category) || {}).name || "") : "";
+		const tags = skill ? ["专业工具" + (catName ? " · " + catName : "")] : expert.tags;
 		// 输入框示例：第 0 条作 placeholder，其余作快捷按钮；专家沿用其 suggestions
 		const examples = examplesFor(skill, expert);
 		const suggestions = expert ? (expert.suggestions || []) : examples.slice(1);
 		const sugTitle = skill ? "试试这样问" : "常见问题";
 		const hint = skill
-			? (fields ? \`填写参数，「\${skill.name}」将按结构化参数执行\` : \`将使用「\${skill.name}」能力引导分析，请描述具体需求\`)
+			? (fields ? \`填写参数，「\${skill.name}」将按结构化参数执行\` : \`说清要做的事；有现成资料直接上传，工具会读原件处理，不改变原格式\`)
 			: \`描述您的需求，「\${expert.name}」将协调专业工具综合研判\`;
 
 		return h("div", { className: "dsh-invest-overlay", onClick: close },
@@ -1104,13 +1184,23 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 							autoFocus: true,
 						}),
 
+					// —— 专业工具：上传资料（专家卡不出现）——
+					skill && h(AttachField, {
+						files,
+						onAdd: (list) => setFiles(prev => {
+							const seen = new Set(prev.map(f => f.path || f.name));
+							return prev.concat(list.filter(f => !seen.has(f.path || f.name)));
+						}),
+						onRemove: (i) => setFiles(prev => prev.filter((_, k) => k !== i)),
+					}),
+
 					// —— 卡片内容预览（结构化提示词） ——
 					fields && h("div", { className: "dsh-invest-summary" }, preview),
 
 					h("button", {
 						className: "dsh-invest-card-submit", onClick: submit,
-						disabled: busy || (fields ? !allRequiredFilled : !query.trim()),
-					}, busy ? "发送中…" : (fields ? "🚀 开始生成" : "开始会诊分析")),
+						disabled: busy || (fields ? !allRequiredFilled : (!query.trim() && files.length === 0)),
+					}, busy ? "发送中…" : (expert ? "开始会诊分析" : (fields ? "🚀 开始生成" : "开始"))),
 
 					fields && !allRequiredFilled && h("div", { className: "dsh-invest-fhelp", style: { textAlign: "center", marginTop: 6 } },
 						"还有 " + missingRequired.length + " 项必填未完成：" + missingRequired.map(f => f.label).join("、")),

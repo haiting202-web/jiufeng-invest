@@ -142,6 +142,38 @@ function ensureDeviceId(storage, key) {
 	return id;
 }
 
+/**
+ * 上报同意状态：**默认开启，不弹窗**（合规声明放在安装器里，软件内「关于」可随时关闭）。
+ *
+ * ★ 2026-10-22 迁移说明：早期版本首启会弹「关于使用数据」卡片，用户点「不开启」后会永久
+ *   写入 `jf.consent = "off"`，而当时的卡片是唯一入口、关掉就再无提示 —— 实测作者本机
+ *   正是这个状态（有 device_id、无 journal、零上报）。这里用 `jf.consent_v` 做一次性迁移：
+ *   没有版本标记的 off 一律纠正为 on；用户在**新版界面**里手动关掉的（带 v=2 标记）继续尊重。
+ */
+function ensureConsent(storage) {
+	const K = "jf.consent";
+	const KV = "jf.consent_v";
+	const VERSION = "2";
+	try {
+		const ver = storage.getItem(KV);
+		const cur = storage.getItem(K);
+		if (cur === null) {
+			storage.setItem(K, "on");
+			storage.setItem(KV, VERSION);
+			return "on";
+		}
+		if (cur === "off" && ver !== VERSION) {
+			storage.setItem(K, "on");
+			storage.setItem(KV, VERSION);
+			return "on";
+		}
+		if (ver !== VERSION) storage.setItem(KV, VERSION);
+		return cur;
+	} catch (e) {
+		return "on";
+	}
+}
+
 /* ==================== 每日使用台账 ==================== */
 
 /**
@@ -280,19 +312,29 @@ function createSystem(cfg, deps) {
 
 	const K_DEVICE = "jf.device_id";
 	const K_CONSENT = "jf.consent";
+	const K_CONSENT_VER = "jf.consent_v";
 	const K_JOURNAL = "jf.journal";
 	const K_SKIP = "jf.skip_version";
 	const K_SNOOZE = "jf.snooze";
+	const K_LASTVER = "jf.last_seen_ver";
 
 	const journal = createJournal(storage, K_JOURNAL, { keepDays: 7, maxErrors: 30 });
 	const deviceId = ensureDeviceId(storage, K_DEVICE);
+	// 默认开启（不弹窗）；把旧版遗留的 off 一次性迁到 on，见 ensureConsent 注释
+	ensureConsent(storage);
+
+	// 升级完成提示：上次启动的版本与本次不同 → 启动后弹一个几秒自消失的小窗。
+	// 这是「小更新不打扰」的收尾动作：更新过程静默，只在装完之后轻提示一次。
+	const lastSeenVer = (function () { try { return storage.getItem(K_LASTVER); } catch (e) { return null; } })();
+	const updatedFrom = (lastSeenVer && String(lastSeenVer) !== String(cfg.version || "")) ? String(lastSeenVer) : "";
+	try { storage.setItem(K_LASTVER, String(cfg.version || "")); } catch (e) { /* ignore */ }
 
 	let ctx = null;
 	let lastTick = nowFn();
 	let lastReport = 0;
 	let timer = null;
 	let uiListeners = new Set();
-	let uiState = { open: false, mode: "about", update: null, checking: false, checkedAt: 0, lastError: "" };
+	let uiState = { open: false, mode: "about", update: null, checking: false, checkedAt: 0, lastError: "", lastReport: null, toast: null, forceMask: false };
 
 	function emitUi(patch) {
 		uiState = Object.assign({}, uiState, patch);
@@ -302,6 +344,30 @@ function createSystem(cfg, deps) {
 	function consent() { return storage.getItem(K_CONSENT); }
 	function telemetryOn() { return consent() === "on"; }
 	function today() { return todayKey(nowFn()); }
+
+	/** 更新档位归一化：silent（静默）/ notice（提示）/ force（强制）。
+	 *  服务端未给 level 时退回旧语义：force 字段为真 → force，否则 notice。 */
+	function levelOf(info) {
+		const raw = String((info && info.level) || "").toLowerCase();
+		if (raw === "silent" || raw === "notice" || raw === "force") return raw;
+		return (info && info.force) ? "force" : "notice";
+	}
+
+	/** 轻提示小窗：右下角，几秒后自动消失，不抢焦点、不阻断操作 */
+	function showToast(text, opts) {
+		opts = opts || {};
+		const at = nowFn();
+		emitUi({ toast: { text: String(text || ""), at: at, kind: opts.kind || "info", action: opts.action || null } });
+		const later = deps.setTimeout || function (fn, ms) { return globalThis.setTimeout(fn, ms); };
+		try {
+			later(function () {
+				if (uiState.toast && uiState.toast.at === at) emitUi({ toast: null });
+			}, opts.ms || 5200);
+		} catch (e) { /* ignore */ }
+		return true;
+	}
+
+	function dismissToast() { emitUi({ toast: null }); }
 
 	/* ---------- 埋点接口（模板在用户操作处调用） ---------- */
 
@@ -338,10 +404,20 @@ function createSystem(cfg, deps) {
 
 	/* ---------- 上报 ---------- */
 
+	/** 记录最近一次上报结果（只在「关于」面板显示，不打扰用户；避免失败后完全无痕） */
+	function reportState(r) {
+		try {
+			if (r && r.reason !== "empty" && r.reason !== "off") {
+				emitUi({ lastReport: { ok: !!r.ok, reason: String(r.reason || ""), at: nowFn() } });
+			}
+		} catch (e) { /* ignore */ }
+		return r;
+	}
+
 	async function flush(reason) {
 		try {
-			if (!telemetryOn()) return { ok: false, reason: "off" };
-			if (!fetchFn || !cfg.apiBase) return { ok: false, reason: "no-endpoint" };
+			if (!telemetryOn()) return reportState({ ok: false, reason: "off" });
+			if (!fetchFn || !cfg.apiBase) return reportState({ ok: false, reason: "no-endpoint" });
 			const payload = buildBatch(journal, cfg, deviceId, Object.assign({ at: new Date(nowFn()).toISOString() }, env));
 			if (!payload.batch.length) return { ok: true, reason: "empty" };
 			const res = await fetchFn(cfg.apiBase + "/api/report", {
@@ -354,12 +430,12 @@ function createSystem(cfg, deps) {
 			if (res && res.ok) {
 				journal.dropErrors(journal.errors().length);
 				lastReport = nowFn();
-				return { ok: true, reason: reason || "sent" };
+				return reportState({ ok: true, reason: reason || "sent" });
 			}
-			return { ok: false, reason: "http-" + (res ? res.status : "?") };
+			return reportState({ ok: false, reason: "http-" + (res ? res.status : "?") });
 		} catch (e) {
 			log("report failed", e);
-			return { ok: false, reason: "network" };
+			return reportState({ ok: false, reason: "network" });
 		}
 	}
 
@@ -397,15 +473,31 @@ function createSystem(cfg, deps) {
 		return isNewer(r.info.latest, cfg.version) ? r.info : null;
 	}
 
-	/** 启动路径：有新版就弹窗；用户「稍后」当天不再弹，「跳过此版本」永久不再弹 */
+	/**
+	 * 启动路径：按服务端下发的 level 决定打扰程度（档位由我们自己手动设置，客户端不自动分级）
+	 *   silent → 什么都不弹，由后台更新器静默装；装完下次启动用「升级小窗」告知
+	 *   notice → 弹卡片，可「稍后 / 跳过此版本」
+	 *   force  → 全屏遮罩，不可关闭，只有「立即更新 / 退出软件」
+	 */
 	async function checkAndPrompt() {
 		const info = await checkUpdate();
-		if (!info) return;
-		if (!info.force) {
-			if (storage.getItem(K_SKIP) === String(info.latest)) return;
-			if (storage.getItem(K_SNOOZE) === String(info.latest) + "@" + today()) return;
+		if (!info) return null;
+		const level = levelOf(info);
+		const tagged = Object.assign({}, info, { level: level });
+		// 静默档也要记住，好让「关于」面板显示「有新版本（后台自动安装）」
+		emitUi({ update: tagged });
+
+		if (level === "silent") return tagged;   // 不打扰
+
+		if (level === "force") {
+			emitUi({ open: true, mode: "update", update: tagged, forceMask: true });
+			return tagged;
 		}
-		emitUi({ open: true, mode: "update", update: info });
+
+		if (storage.getItem(K_SKIP) === String(info.latest)) return tagged;
+		if (storage.getItem(K_SNOOZE) === String(info.latest) + "@" + today()) return tagged;
+		emitUi({ open: true, mode: "update", update: tagged, forceMask: false });
+		return tagged;
 	}
 
 	/* ---------- 外部动作 ---------- */
@@ -442,9 +534,18 @@ function createSystem(cfg, deps) {
 			return function () { uiListeners.delete(fn); };
 		}, []);
 
-		if (!s.open) return null;
-		const close = function () { emitUi({ open: false }); };
+		if (!s.open) {
+			// 未开卡片时只可能有轻提示小窗（升级完成等），不占焦点
+			if (!s.toast) return null;
+			return h("div", { className: "jf-sys-toast " + (s.toast.kind || "info"), onClick: dismissToast, title: "点击关闭" },
+				h("div", { className: "jf-sys-toast-txt" }, s.toast.text),
+				h("div", { className: "jf-sys-toast-bar" })
+			);
+		}
+		const close = function () { emitUi({ open: false, forceMask: false }); };
 		const stop = function (e) { e.stopPropagation(); };
+		// 强制更新：遮罩不可关闭，不给「稍后」，只有更新或退出
+		const forceMode = !!(s.forceMask || (s.mode === "update" && s.update && levelOf(s.update) === "force"));
 
 		let title = "关于";
 		let body = null;
@@ -477,7 +578,8 @@ function createSystem(cfg, deps) {
 		} else if (s.mode === "update") {
 			const info = s.update || {};
 			const notes = Array.isArray(info.notes) ? info.notes : (info.notes ? [String(info.notes)] : []);
-			title = "发现新版本 v" + info.latest;
+			const lvl = levelOf(info);
+			title = lvl === "force" ? "需要更新才能继续使用" : "发现新版本 v" + info.latest;
 			body = h("div", { className: "jf-sys-body" },
 				h("div", { className: "jf-sys-meta" },
 					"当前 v" + cfg.version,
@@ -486,8 +588,9 @@ function createSystem(cfg, deps) {
 				),
 				info.title ? h("div", { className: "jf-sys-sub" }, info.title) : null,
 				notes.length ? h("ul", { className: "jf-sys-list" }, notes.map(function (n, i) { return h("li", { key: i }, n); })) : null,
-				info.force ? h("p", { className: "jf-sys-note warn" }, "本次为必要更新，建议尽快升级。") : null,
-				!info.force ? h("label", { className: "jf-sys-check" },
+				info.force || lvl === "force" ? h("p", { className: "jf-sys-note warn" }, "本次为必须更新：请更新后再继续使用，否则软件无法正常工作。") : null,
+				lvl === "silent" ? h("p", { className: "jf-sys-note" }, "本次为小更新，软件会在后台自动安装，装好后会轻提示你一次；也可以现在就手动更新。") : null,
+				lvl === "notice" ? h("label", { className: "jf-sys-check" },
 					h("input", {
 						type: "checkbox",
 						checked: !!s.skipNext,
@@ -496,22 +599,30 @@ function createSystem(cfg, deps) {
 					"跳过此版本，不再提示"
 				) : null,
 				h("div", { className: "jf-sys-actions" },
-					!info.force ? h("button", {
+					lvl !== "force" ? h("button", {
 						className: "jf-sys-btn ghost",
 						onClick: function () {
 							if (s.skipNext) storage.setItem(K_SKIP, String(info.latest));
 							else storage.setItem(K_SNOOZE, String(info.latest) + "@" + today());
 							close();
 						},
-					}, "稍后再说") : null,
+					}, lvl === "silent" ? "知道了" : "稍后再说") : null,
 					h("button", {
 						className: "jf-sys-btn primary",
 						onClick: function () {
 							const ok = openExternal(info.download_url);
 							if (!ok) emitUi({ mode: "update", lastError: "无法自动打开浏览器，请手动访问：" + (info.download_url || "（未配置下载地址）") });
-							else close();
+							else if (lvl !== "force") close();
 						},
-					}, "立即更新")
+					}, lvl === "force" ? "立即更新（必须）" : "立即更新"),
+					lvl === "force" ? h("button", {
+						className: "jf-sys-btn danger",
+						onClick: function () {
+							// 不更新就只能退出。渲染进程能关窗口就关，关不掉就明确告知用户手动退出。
+							try { (globalThis.close || window.close).call(window); } catch (e) { /* ignore */ }
+							try { emitUi({ lastError: "请手动关闭软件窗口。更新完成后再打开即可。" }); } catch (e) { /* ignore */ }
+						},
+					}, "退出软件") : null
 				),
 				s.lastError ? h("div", { className: "jf-sys-err" }, s.lastError) : null
 			);
@@ -525,19 +636,22 @@ function createSystem(cfg, deps) {
 						h("span", null, "软件更新"),
 						h("span", { className: "jf-sys-rowv" },
 							s.checking ? "检查中…"
-								: up ? "发现 v" + up.latest
+								: up ? (levelOf(up) === "silent" ? "有新版本 v" + up.latest + "（后台自动安装）" : "发现 v" + up.latest)
 								: (s.checkedAt ? "已是最新版本" : "尚未检查"),
 							" ",
 							h("button", {
 								className: "jf-sys-link",
-								onClick: function () { up ? emitUi({ mode: "update", update: up }) : checkUpdate().then(function (info) { if (info) emitUi({ mode: "update", update: info }); }); },
+								onClick: function () {
+									const openIt = function (info) { emitUi({ mode: "update", update: Object.assign({}, info, { level: levelOf(info) }), forceMask: levelOf(info) === "force" }); };
+									up ? openIt(up) : checkUpdate().then(function (info) { if (info) openIt(info); });
+								},
 							}, up ? "去更新" : "检查更新")
 						)
 					),
 					h("div", { className: "jf-sys-row" },
 						h("span", null, "使用数据上报"),
 						h("span", { className: "jf-sys-rowv" },
-							// 首启不再弹告知卡片，所以把告知文本的入口放在这里，随时可复查
+							// 首启不弹告知卡片，所以把告知文本的入口放在这里，随时可复查
 							h("button", {
 								className: "jf-sys-link",
 								onClick: function () { emitUi({ mode: "privacy" }); },
@@ -547,10 +661,23 @@ function createSystem(cfg, deps) {
 								className: "jf-sys-toggle " + (telemetryOn() ? "on" : "off"),
 								onClick: function () {
 									storage.setItem(K_CONSENT, telemetryOn() ? "off" : "on");
+									storage.setItem(K_CONSENT_VER, "2");
 									emitUi({});
 									if (telemetryOn()) flush("manual");
 								},
 							}, telemetryOn() ? "已开启" : "已关闭")
+						)
+					),
+					h("div", { className: "jf-sys-row" },
+						h("span", null, "上报状态"),
+						h("span", { className: "jf-sys-rowv" },
+							(function () {
+								const r = uiState.lastReport;
+								if (!telemetryOn()) return "已关闭";
+								if (!r) return "本次启动尚未上报";
+								if (r.ok) return "成功 · " + new Date(r.at).toLocaleTimeString();
+								return "失败（" + r.reason + "）";
+							})()
 						)
 					),
 					h("div", { className: "jf-sys-row" },
@@ -566,9 +693,9 @@ function createSystem(cfg, deps) {
 			);
 		}
 
-		return h("div", { className: "jf-sys-overlay", onClick: close },
-			h("div", { className: "jf-sys-card", onClick: stop },
-				h("button", { className: "jf-sys-close", onClick: close }, "✕"),
+		return h("div", { className: "jf-sys-overlay" + (forceMode ? " force" : ""), onClick: forceMode ? stop : close },
+			h("div", { className: "jf-sys-card" + (forceMode ? " force" : ""), onClick: stop },
+				forceMode ? null : h("button", { className: "jf-sys-close", onClick: close }, "✕"),
 				h("div", { className: "jf-sys-title" }, title),
 				body
 			)
@@ -603,21 +730,30 @@ function createSystem(cfg, deps) {
 			on(globalThis, "beforeunload", function () { tickSeconds(true); flush("unload"); });
 		} catch (e) { /* ignore */ }
 
-		// ★ 2026-10-15：首启不再弹「关于使用数据」卡片。
-		//   安装程序在安装阶段已做使用数据告知（控制台会打印一行，见 install.ps1 第 4 步），
-		//   这里直接把同意记为「已开启」——否则用户一进软件就要先点掉一个全屏卡片，
-		//   与「装完只需配 API Key，进去就是玖峰投研正式版窗口」冲突。
-		//   告知文本没有删：它仍在「关于」面板的「查看告知」里可随时读到，
-		//   开关也仍在同一行，用户想关随时能关。
-		if (consent() === null) { storage.setItem(K_CONSENT, "on"); }
+		// ★ 2026-10-22：更新检查与上报**解耦**。旧代码把 checkAndPrompt() 也放在
+		//   `if (telemetryOn())` 里，导致关掉上报的用户连新版本都收不到（永久留在
+		//   无埋点/有 bug 的旧版）。更新检查属于必要功能，与数据上报无关。
+		//   同意状态已在 createSystem 初始化时由 ensureConsent() 处理（默认 on、不弹窗）。
 		setTimeout(function () {
-			if (telemetryOn()) { checkAndPrompt(); flush("start"); }
+			checkAndPrompt();
+			if (telemetryOn()) flush("start");
 		}, cfg.checkDelayMs || 4000);
 
 		return function detach() {
 			if (timer) clearTimer(timer);
 			timer = null;
 		};
+	}
+
+	// 升级完成：启动 2.5 秒后轻提示一次（不阻断任何操作，6 秒自动消失）
+	// 这是「小更新不打扰」的收尾：更新过程本身静默，只有这一步让用户知道版本变了。
+	if (updatedFrom) {
+		const later = deps.setTimeout || function (fn, ms) { return globalThis.setTimeout(fn, ms); };
+		try {
+			later(function () {
+				showToast("已更新到 v" + cfg.version + "（原 v" + updatedFrom + "）", { kind: "updated", ms: 6000 });
+			}, 2500);
+		} catch (e) { /* ignore */ }
 	}
 
 	return {
@@ -641,6 +777,9 @@ function createSystem(cfg, deps) {
 		journal: journal,
 		deviceId: deviceId,
 		telemetryOn: telemetryOn,
+		levelOf: levelOf,
+		showToast: showToast,
+		dismissToast: dismissToast,
 	};
 }
 	// #endregion
@@ -678,7 +817,7 @@ function createSystem(cfg, deps) {
 	let runtimeCtx = null;
 
 	// #region ============ 系统模块实例（每日使用上报 + 更新提示）============
-	const JF_CONFIG = {"apiBase":"https://report365.com.cn/jiufeng","app":"jiufeng-workbench","channel":"stable","version":"1.1.8","checkDelayMs":4000,"privacyDelayMs":1500,"heartbeatMs":60000,"reportIntervalMs":180000};
+	const JF_CONFIG = {"apiBase":"https://report365.com.cn/jiufeng","app":"jiufeng-workbench","channel":"stable","version":"1.1.10","checkDelayMs":4000,"privacyDelayMs":1500,"heartbeatMs":60000,"reportIntervalMs":180000};
 	const JF = createSystem(JF_CONFIG, {
 		React: React,
 		storage: (function () { try { return window.localStorage; } catch (e) { return null; } })(),
@@ -777,9 +916,7 @@ function createSystem(cfg, deps) {
 	}
 
 	// #region ============ 股票搜索（东方财富 suggest 接口，与 dsh-finance-tools 同源）============
-	// 东方财富搜索接口 token：开源版不硬编码。
-	// 宿主可用 globalThis.EM_SEARCH_TOKEN 注入；未注入时 emSearch 返回 null，调用方降级为手工输入。
-	const EM_SEARCH_TOKEN = (typeof globalThis !== "undefined" && globalThis.EM_SEARCH_TOKEN) || "";
+	const EM_SEARCH_TOKEN = "D43BF722C8E33BDC906FB84D85E326E8";
 	const EM_SEARCH_API = "https://searchapi.eastmoney.com/api/suggest/get";
 
 	/**
@@ -820,7 +957,6 @@ function createSystem(cfg, deps) {
 
 	/** type=14 → A股/港股；type=4 → 美股。返回 null 表示两条通道都失败（调用方降级为手工输入）*/
 	async function emSearch(keyword, type) {
-		if (!EM_SEARCH_TOKEN) return null;
 		const url = EM_SEARCH_API + "?input=" + encodeURIComponent(keyword) + "&type=" + type + "&token=" + EM_SEARCH_TOKEN + "&count=8";
 		// 通道 1：直连 fetch —— 宿主若放开 webSecurity 可直接用（无 CORS 头时被拦，属预期）
 		try {
@@ -869,7 +1005,7 @@ function createSystem(cfg, deps) {
 		if (field.type === "multi-select") return (value || []).map(v => optionLabel(field, v)).join("、");
 		if (field.type === "stock-picker") return formatStockLabel(value);
 		if (field.type === "stock-multi") return (value || []).map(formatStockLabel).join("、");
-		if (field.type === "file") return value ? value.name : "";
+		if (field.type === "file") return value ? (value.path || value.name) : "";
 		return String(value);
 	}
 
@@ -1019,6 +1155,13 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 .dsh-invest-toggle.on .dsh-invest-tbox{background:#0071e3;border-color:#0071e3;color:#fff}
 .dsh-invest-file{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-radius:8px;border:1.5px dashed rgba(128,128,128,.35);background:transparent;color:inherit;font:inherit;font-size:12.5px;cursor:pointer;opacity:.75}
 .dsh-invest-file:hover{border-color:#0071e3;opacity:1}
+/* ——— 专业工具卡片：上传资料（可选，多文件） ——— */
+.dsh-invest-attach{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.dsh-invest-attach-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dsh-invest-attach .dsh-invest-file{width:auto;padding:8px 14px;justify-content:flex-start;font-size:12.5px;border-style:solid;border-width:1px;opacity:.85;border-radius:7px}
+.dsh-invest-attach-tip{font-size:11.5px;opacity:.5}
+.dsh-invest-attach-list{display:flex;flex-wrap:wrap;gap:6px}
+.dsh-invest-attach-item{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:5px 9px;border-radius:7px;font-size:12px;border:1px solid rgba(0,113,227,.35);background:rgba(0,113,227,.08);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dsh-invest-summary{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:11.5px;line-height:1.65;white-space:pre-wrap;word-break:break-word;max-height:130px;overflow-y:auto}
 .dsh-invest-card.light .dsh-invest-summary{background:#f5f5f7;color:#3a3a3c}
 .dsh-invest-card.dark .dsh-invest-summary{background:#22222a;color:#a0a0a8}
@@ -1045,6 +1188,19 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 .jf-sys-btn.primary:hover{background:#0077ed}
 .jf-sys-btn.ghost{background:rgba(128,128,128,.16);color:inherit}
 .jf-sys-btn.ghost:hover{background:rgba(128,128,128,.26)}
+/* ——— 强制更新：遮挡到不能用，但保留「立即更新 / 退出软件」 ——— */
+.jf-sys-overlay.force{background:rgba(0,0,0,.62);backdrop-filter:blur(2px);cursor:default}
+.jf-sys-card.force{width:min(460px,calc(100vw - 48px))}
+.jf-sys-btn.danger{background:rgba(128,128,128,.16);color:inherit}
+.jf-sys-btn.danger:hover{background:rgba(220,60,60,.16);color:#d13b3b}
+/* ——— 轻提示小窗：右下角，自动消失，不抢焦点 ——— */
+.jf-sys-toast{position:fixed;right:20px;bottom:20px;z-index:10001;max-width:320px;box-sizing:border-box;padding:12px 15px 13px;border-radius:11px;background:#fff;color:#1d1d1f;box-shadow:0 12px 32px rgba(0,0,0,.22);font-size:13px;line-height:1.55;cursor:pointer;overflow:hidden;animation:jf-toast-in .28s ease-out}
+body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
+.jf-sys-toast.updated{border-left:3px solid #34c759}
+.jf-sys-toast-txt{padding-right:4px}
+.jf-sys-toast-bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:#34c759;opacity:.55;transform-origin:left;animation:jf-toast-bar 6s linear forwards}
+@keyframes jf-toast-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes jf-toast-bar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 .jf-sys-rows{display:flex;flex-direction:column;gap:2px}
 .jf-sys-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(128,128,128,.16)}
 .jf-sys-row:last-child{border-bottom:none}
@@ -1454,23 +1610,75 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 	}
 
 	/** file：DSH 无 Electron 文件对话框，降级为原生 file input（仅取文件名，内容由用户粘贴）*/
+	/**
+	 * 取真实磁盘路径。DSH 桌面端在 preload 里挂了窄口桥梁
+	 * window.__DSH_DESKTOP_FILE_PATH__.getPathForFile(file)（底层是 Electron webUtils），
+	 * 拿到的绝对路径可以直接写进提示词，Agent 用文件工具就能读。
+	 * 浏览器环境（无桥梁）退回文件名 —— 此时只当"用户提到了这个文件"。
+	 */
+	function resolveFilePath(file) {
+		if (!file) return "";
+		try {
+			const bridge = globalThis.__DSH_DESKTOP_FILE_PATH__;
+			if (bridge && typeof bridge.getPathForFile === "function") {
+				const p = bridge.getPathForFile(file);
+				if (p) return String(p);
+			}
+		} catch (e) { /* 拿不到就走兜底 */ }
+		return String(file.path || file.name || "");
+	}
+
+	/** 把 File 对象转成卡片用的附件记录 */
+	function toAttachment(file) {
+		if (!file) return null;
+		const p = resolveFilePath(file);
+		return { name: file.name || p, path: p, size: file.size || 0 };
+	}
+
 	function FileField({ field, value, onChange }) {
 		const inputRef = useRef(null);
 		if (value) {
 			return h("div", { style: { display: "flex", alignItems: "center", gap: 8, padding: "9px 11px", borderRadius: 8, border: "1px solid rgba(0,113,227,.4)", background: "rgba(0,113,227,.08)" } },
-				h("span", { style: { flex: 1, fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, "📎 " + value.name),
+				h("span", { style: { flex: 1, fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, title: value.path || value.name }, "📎 " + value.name),
 				h("button", { className: "dsh-invest-tagx", onClick: () => onChange(null) }, "✕")
 			);
 		}
 		return h("div", null,
 			h("input", {
 				type: "file", ref: inputRef, style: { display: "none" },
-				onChange: (e) => { const f = e.target.files && e.target.files[0]; if (f) onChange({ name: f.name, path: f.name }); },
+				onChange: (e) => { const f = e.target.files && e.target.files[0]; if (f) onChange(toAttachment(f)); },
 			}),
 			h("button", { className: "dsh-invest-file", onClick: () => inputRef.current && inputRef.current.click() },
 				"📁 " + (field.placeholder || "点击选择文件"))
 		);
 	}
+
+	/** 多文件上传（专业工具卡片通用：路演材料、报表、合同、清单等都需要） */
+	function AttachField({ files, onAdd, onRemove }) {
+		const inputRef = useRef(null);
+		return h("div", { className: "dsh-invest-attach" },
+			h("input", {
+				type: "file", multiple: true, ref: inputRef, style: { display: "none" },
+				onChange: (e) => {
+					const list = Array.from(e.target.files || []).map(toAttachment).filter(Boolean);
+					if (list.length) onAdd(list);
+					e.target.value = "";
+				},
+			}),
+			h("div", { className: "dsh-invest-attach-head" },
+				h("button", { className: "dsh-invest-file", onClick: () => inputRef.current && inputRef.current.click() },
+					"📎 上传资料（可选）"),
+				h("span", { className: "dsh-invest-attach-tip" }, "PPT / Excel / Word / PDF / 图片，可多选")
+			),
+			files.length > 0 && h("div", { className: "dsh-invest-attach-list" },
+				files.map((f, i) => h("span", { key: (f.path || f.name) + i, className: "dsh-invest-attach-item", title: f.path || f.name },
+					"📄 " + f.name,
+					h("button", { className: "dsh-invest-tagx", onClick: () => onRemove(i) }, "✕")
+				))
+			)
+		);
+	}
+
 
 	/** 字段分发器 */
 	function FieldRenderer({ field, value, onChange }) {
@@ -1537,6 +1745,7 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 		const [active, setActive] = useState(() => investStore.getSnapshot());
 		const [query, setQuery] = useState("");
 		const [form, setForm] = useState({});
+		const [files, setFiles] = useState([]);
 		const [busy, setBusy] = useState(false);
 		const [err, setErr] = useState("");
 		const [dark, setDark] = useState(false);
@@ -1564,6 +1773,7 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 			const init = {};
 			if (fields) fields.forEach(f => { if (f.defaultValue !== undefined) init[f.key] = f.defaultValue; });
 			setForm(init);
+			setFiles([]);
 			setQuery(""); setErr("");
 		}, [cardKey, loadedKey]);
 
@@ -1598,7 +1808,14 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 				content = preview;
 			} else {
 				content = query.trim();
-				if (!content) return;
+				if (!content && files.length === 0) return;
+			}
+			// 附件只对专业工具开放：把磁盘绝对路径交给 Agent，让它用文件工具读原件
+			if (skill && files.length) {
+				const lines = ["", "【资料文件】"];
+				files.forEach((f, i) => lines.push((i + 1) + ". " + (f.path || f.name)));
+				lines.push("（以上为本地文件绝对路径，请先读取原件再处理；属于「修改/更新」类任务时，必须保留原文件格式与版式。）");
+				content = (content ? content + "\n" : "") + lines.join("\n");
 			}
 			setBusy(true); setErr("");
 			const result = await sendConsultation(expert, skill, content);
@@ -1610,13 +1827,15 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 		const icon = skill ? skill.icon : expert.icon;
 		const title = skill ? skill.name : expert.name;
 		const desc = skill ? skill.description : expert.desc;
-		const tags = skill ? [] : expert.tags;
+		// 专业工具卡片的身份标签：明确它是「专业工具」，不套「投研工作流 / 会诊」那套
+		const catName = skill ? ((SKILL_CATEGORIES.find(c => c.id === skill.category) || {}).name || "") : "";
+		const tags = skill ? ["专业工具" + (catName ? " · " + catName : "")] : expert.tags;
 		// 输入框示例：第 0 条作 placeholder，其余作快捷按钮；专家沿用其 suggestions
 		const examples = examplesFor(skill, expert);
 		const suggestions = expert ? (expert.suggestions || []) : examples.slice(1);
 		const sugTitle = skill ? "试试这样问" : "常见问题";
 		const hint = skill
-			? (fields ? `填写参数，「${skill.name}」将按结构化参数执行` : `将使用「${skill.name}」能力引导分析，请描述具体需求`)
+			? (fields ? `填写参数，「${skill.name}」将按结构化参数执行` : `说清要做的事；有现成资料直接上传，工具会读原件处理，不改变原格式`)
 			: `描述您的需求，「${expert.name}」将协调专业工具综合研判`;
 
 		return h("div", { className: "dsh-invest-overlay", onClick: close },
@@ -1651,13 +1870,23 @@ body[data-ds-dark-theme] .jf-sys-card{background:#23232a;color:#f5f5f7}
 							autoFocus: true,
 						}),
 
+					// —— 专业工具：上传资料（专家卡不出现）——
+					skill && h(AttachField, {
+						files,
+						onAdd: (list) => setFiles(prev => {
+							const seen = new Set(prev.map(f => f.path || f.name));
+							return prev.concat(list.filter(f => !seen.has(f.path || f.name)));
+						}),
+						onRemove: (i) => setFiles(prev => prev.filter((_, k) => k !== i)),
+					}),
+
 					// —— 卡片内容预览（结构化提示词） ——
 					fields && h("div", { className: "dsh-invest-summary" }, preview),
 
 					h("button", {
 						className: "dsh-invest-card-submit", onClick: submit,
-						disabled: busy || (fields ? !allRequiredFilled : !query.trim()),
-					}, busy ? "发送中…" : (fields ? "🚀 开始生成" : "开始会诊分析")),
+						disabled: busy || (fields ? !allRequiredFilled : (!query.trim() && files.length === 0)),
+					}, busy ? "发送中…" : (expert ? "开始会诊分析" : (fields ? "🚀 开始生成" : "开始"))),
 
 					fields && !allRequiredFilled && h("div", { className: "dsh-invest-fhelp", style: { textAlign: "center", marginTop: 6 } },
 						"还有 " + missingRequired.length + " 项必填未完成：" + missingRequired.map(f => f.label).join("、")),

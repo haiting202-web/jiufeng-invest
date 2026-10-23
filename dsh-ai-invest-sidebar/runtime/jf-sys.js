@@ -122,6 +122,38 @@ export function ensureDeviceId(storage, key) {
 	return id;
 }
 
+/**
+ * 上报同意状态：**默认开启，不弹窗**（合规声明放在安装器里，软件内「关于」可随时关闭）。
+ *
+ * ★ 2026-10-22 迁移说明：早期版本首启会弹「关于使用数据」卡片，用户点「不开启」后会永久
+ *   写入 `jf.consent = "off"`，而当时的卡片是唯一入口、关掉就再无提示 —— 实测作者本机
+ *   正是这个状态（有 device_id、无 journal、零上报）。这里用 `jf.consent_v` 做一次性迁移：
+ *   没有版本标记的 off 一律纠正为 on；用户在**新版界面**里手动关掉的（带 v=2 标记）继续尊重。
+ */
+export function ensureConsent(storage) {
+	const K = "jf.consent";
+	const KV = "jf.consent_v";
+	const VERSION = "2";
+	try {
+		const ver = storage.getItem(KV);
+		const cur = storage.getItem(K);
+		if (cur === null) {
+			storage.setItem(K, "on");
+			storage.setItem(KV, VERSION);
+			return "on";
+		}
+		if (cur === "off" && ver !== VERSION) {
+			storage.setItem(K, "on");
+			storage.setItem(KV, VERSION);
+			return "on";
+		}
+		if (ver !== VERSION) storage.setItem(KV, VERSION);
+		return cur;
+	} catch (e) {
+		return "on";
+	}
+}
+
 /* ==================== 每日使用台账 ==================== */
 
 /**
@@ -260,19 +292,29 @@ export function createSystem(cfg, deps) {
 
 	const K_DEVICE = "jf.device_id";
 	const K_CONSENT = "jf.consent";
+	const K_CONSENT_VER = "jf.consent_v";
 	const K_JOURNAL = "jf.journal";
 	const K_SKIP = "jf.skip_version";
 	const K_SNOOZE = "jf.snooze";
+	const K_LASTVER = "jf.last_seen_ver";
 
 	const journal = createJournal(storage, K_JOURNAL, { keepDays: 7, maxErrors: 30 });
 	const deviceId = ensureDeviceId(storage, K_DEVICE);
+	// 默认开启（不弹窗）；把旧版遗留的 off 一次性迁到 on，见 ensureConsent 注释
+	ensureConsent(storage);
+
+	// 升级完成提示：上次启动的版本与本次不同 → 启动后弹一个几秒自消失的小窗。
+	// 这是「小更新不打扰」的收尾动作：更新过程静默，只在装完之后轻提示一次。
+	const lastSeenVer = (function () { try { return storage.getItem(K_LASTVER); } catch (e) { return null; } })();
+	const updatedFrom = (lastSeenVer && String(lastSeenVer) !== String(cfg.version || "")) ? String(lastSeenVer) : "";
+	try { storage.setItem(K_LASTVER, String(cfg.version || "")); } catch (e) { /* ignore */ }
 
 	let ctx = null;
 	let lastTick = nowFn();
 	let lastReport = 0;
 	let timer = null;
 	let uiListeners = new Set();
-	let uiState = { open: false, mode: "about", update: null, checking: false, checkedAt: 0, lastError: "" };
+	let uiState = { open: false, mode: "about", update: null, checking: false, checkedAt: 0, lastError: "", lastReport: null, toast: null, forceMask: false };
 
 	function emitUi(patch) {
 		uiState = Object.assign({}, uiState, patch);
@@ -282,6 +324,30 @@ export function createSystem(cfg, deps) {
 	function consent() { return storage.getItem(K_CONSENT); }
 	function telemetryOn() { return consent() === "on"; }
 	function today() { return todayKey(nowFn()); }
+
+	/** 更新档位归一化：silent（静默）/ notice（提示）/ force（强制）。
+	 *  服务端未给 level 时退回旧语义：force 字段为真 → force，否则 notice。 */
+	function levelOf(info) {
+		const raw = String((info && info.level) || "").toLowerCase();
+		if (raw === "silent" || raw === "notice" || raw === "force") return raw;
+		return (info && info.force) ? "force" : "notice";
+	}
+
+	/** 轻提示小窗：右下角，几秒后自动消失，不抢焦点、不阻断操作 */
+	function showToast(text, opts) {
+		opts = opts || {};
+		const at = nowFn();
+		emitUi({ toast: { text: String(text || ""), at: at, kind: opts.kind || "info", action: opts.action || null } });
+		const later = deps.setTimeout || function (fn, ms) { return globalThis.setTimeout(fn, ms); };
+		try {
+			later(function () {
+				if (uiState.toast && uiState.toast.at === at) emitUi({ toast: null });
+			}, opts.ms || 5200);
+		} catch (e) { /* ignore */ }
+		return true;
+	}
+
+	function dismissToast() { emitUi({ toast: null }); }
 
 	/* ---------- 埋点接口（模板在用户操作处调用） ---------- */
 
@@ -318,10 +384,20 @@ export function createSystem(cfg, deps) {
 
 	/* ---------- 上报 ---------- */
 
+	/** 记录最近一次上报结果（只在「关于」面板显示，不打扰用户；避免失败后完全无痕） */
+	function reportState(r) {
+		try {
+			if (r && r.reason !== "empty" && r.reason !== "off") {
+				emitUi({ lastReport: { ok: !!r.ok, reason: String(r.reason || ""), at: nowFn() } });
+			}
+		} catch (e) { /* ignore */ }
+		return r;
+	}
+
 	async function flush(reason) {
 		try {
-			if (!telemetryOn()) return { ok: false, reason: "off" };
-			if (!fetchFn || !cfg.apiBase) return { ok: false, reason: "no-endpoint" };
+			if (!telemetryOn()) return reportState({ ok: false, reason: "off" });
+			if (!fetchFn || !cfg.apiBase) return reportState({ ok: false, reason: "no-endpoint" });
 			const payload = buildBatch(journal, cfg, deviceId, Object.assign({ at: new Date(nowFn()).toISOString() }, env));
 			if (!payload.batch.length) return { ok: true, reason: "empty" };
 			const res = await fetchFn(cfg.apiBase + "/api/report", {
@@ -334,12 +410,12 @@ export function createSystem(cfg, deps) {
 			if (res && res.ok) {
 				journal.dropErrors(journal.errors().length);
 				lastReport = nowFn();
-				return { ok: true, reason: reason || "sent" };
+				return reportState({ ok: true, reason: reason || "sent" });
 			}
-			return { ok: false, reason: "http-" + (res ? res.status : "?") };
+			return reportState({ ok: false, reason: "http-" + (res ? res.status : "?") });
 		} catch (e) {
 			log("report failed", e);
-			return { ok: false, reason: "network" };
+			return reportState({ ok: false, reason: "network" });
 		}
 	}
 
@@ -377,15 +453,31 @@ export function createSystem(cfg, deps) {
 		return isNewer(r.info.latest, cfg.version) ? r.info : null;
 	}
 
-	/** 启动路径：有新版就弹窗；用户「稍后」当天不再弹，「跳过此版本」永久不再弹 */
+	/**
+	 * 启动路径：按服务端下发的 level 决定打扰程度（档位由我们自己手动设置，客户端不自动分级）
+	 *   silent → 什么都不弹，由后台更新器静默装；装完下次启动用「升级小窗」告知
+	 *   notice → 弹卡片，可「稍后 / 跳过此版本」
+	 *   force  → 全屏遮罩，不可关闭，只有「立即更新 / 退出软件」
+	 */
 	async function checkAndPrompt() {
 		const info = await checkUpdate();
-		if (!info) return;
-		if (!info.force) {
-			if (storage.getItem(K_SKIP) === String(info.latest)) return;
-			if (storage.getItem(K_SNOOZE) === String(info.latest) + "@" + today()) return;
+		if (!info) return null;
+		const level = levelOf(info);
+		const tagged = Object.assign({}, info, { level: level });
+		// 静默档也要记住，好让「关于」面板显示「有新版本（后台自动安装）」
+		emitUi({ update: tagged });
+
+		if (level === "silent") return tagged;   // 不打扰
+
+		if (level === "force") {
+			emitUi({ open: true, mode: "update", update: tagged, forceMask: true });
+			return tagged;
 		}
-		emitUi({ open: true, mode: "update", update: info });
+
+		if (storage.getItem(K_SKIP) === String(info.latest)) return tagged;
+		if (storage.getItem(K_SNOOZE) === String(info.latest) + "@" + today()) return tagged;
+		emitUi({ open: true, mode: "update", update: tagged, forceMask: false });
+		return tagged;
 	}
 
 	/* ---------- 外部动作 ---------- */
@@ -422,9 +514,18 @@ export function createSystem(cfg, deps) {
 			return function () { uiListeners.delete(fn); };
 		}, []);
 
-		if (!s.open) return null;
-		const close = function () { emitUi({ open: false }); };
+		if (!s.open) {
+			// 未开卡片时只可能有轻提示小窗（升级完成等），不占焦点
+			if (!s.toast) return null;
+			return h("div", { className: "jf-sys-toast " + (s.toast.kind || "info"), onClick: dismissToast, title: "点击关闭" },
+				h("div", { className: "jf-sys-toast-txt" }, s.toast.text),
+				h("div", { className: "jf-sys-toast-bar" })
+			);
+		}
+		const close = function () { emitUi({ open: false, forceMask: false }); };
 		const stop = function (e) { e.stopPropagation(); };
+		// 强制更新：遮罩不可关闭，不给「稍后」，只有更新或退出
+		const forceMode = !!(s.forceMask || (s.mode === "update" && s.update && levelOf(s.update) === "force"));
 
 		let title = "关于";
 		let body = null;
@@ -457,7 +558,8 @@ export function createSystem(cfg, deps) {
 		} else if (s.mode === "update") {
 			const info = s.update || {};
 			const notes = Array.isArray(info.notes) ? info.notes : (info.notes ? [String(info.notes)] : []);
-			title = "发现新版本 v" + info.latest;
+			const lvl = levelOf(info);
+			title = lvl === "force" ? "需要更新才能继续使用" : "发现新版本 v" + info.latest;
 			body = h("div", { className: "jf-sys-body" },
 				h("div", { className: "jf-sys-meta" },
 					"当前 v" + cfg.version,
@@ -466,8 +568,9 @@ export function createSystem(cfg, deps) {
 				),
 				info.title ? h("div", { className: "jf-sys-sub" }, info.title) : null,
 				notes.length ? h("ul", { className: "jf-sys-list" }, notes.map(function (n, i) { return h("li", { key: i }, n); })) : null,
-				info.force ? h("p", { className: "jf-sys-note warn" }, "本次为必要更新，建议尽快升级。") : null,
-				!info.force ? h("label", { className: "jf-sys-check" },
+				info.force || lvl === "force" ? h("p", { className: "jf-sys-note warn" }, "本次为必须更新：请更新后再继续使用，否则软件无法正常工作。") : null,
+				lvl === "silent" ? h("p", { className: "jf-sys-note" }, "本次为小更新，软件会在后台自动安装，装好后会轻提示你一次；也可以现在就手动更新。") : null,
+				lvl === "notice" ? h("label", { className: "jf-sys-check" },
 					h("input", {
 						type: "checkbox",
 						checked: !!s.skipNext,
@@ -476,22 +579,30 @@ export function createSystem(cfg, deps) {
 					"跳过此版本，不再提示"
 				) : null,
 				h("div", { className: "jf-sys-actions" },
-					!info.force ? h("button", {
+					lvl !== "force" ? h("button", {
 						className: "jf-sys-btn ghost",
 						onClick: function () {
 							if (s.skipNext) storage.setItem(K_SKIP, String(info.latest));
 							else storage.setItem(K_SNOOZE, String(info.latest) + "@" + today());
 							close();
 						},
-					}, "稍后再说") : null,
+					}, lvl === "silent" ? "知道了" : "稍后再说") : null,
 					h("button", {
 						className: "jf-sys-btn primary",
 						onClick: function () {
 							const ok = openExternal(info.download_url);
 							if (!ok) emitUi({ mode: "update", lastError: "无法自动打开浏览器，请手动访问：" + (info.download_url || "（未配置下载地址）") });
-							else close();
+							else if (lvl !== "force") close();
 						},
-					}, "立即更新")
+					}, lvl === "force" ? "立即更新（必须）" : "立即更新"),
+					lvl === "force" ? h("button", {
+						className: "jf-sys-btn danger",
+						onClick: function () {
+							// 不更新就只能退出。渲染进程能关窗口就关，关不掉就明确告知用户手动退出。
+							try { (globalThis.close || window.close).call(window); } catch (e) { /* ignore */ }
+							try { emitUi({ lastError: "请手动关闭软件窗口。更新完成后再打开即可。" }); } catch (e) { /* ignore */ }
+						},
+					}, "退出软件") : null
 				),
 				s.lastError ? h("div", { className: "jf-sys-err" }, s.lastError) : null
 			);
@@ -505,19 +616,22 @@ export function createSystem(cfg, deps) {
 						h("span", null, "软件更新"),
 						h("span", { className: "jf-sys-rowv" },
 							s.checking ? "检查中…"
-								: up ? "发现 v" + up.latest
+								: up ? (levelOf(up) === "silent" ? "有新版本 v" + up.latest + "（后台自动安装）" : "发现 v" + up.latest)
 								: (s.checkedAt ? "已是最新版本" : "尚未检查"),
 							" ",
 							h("button", {
 								className: "jf-sys-link",
-								onClick: function () { up ? emitUi({ mode: "update", update: up }) : checkUpdate().then(function (info) { if (info) emitUi({ mode: "update", update: info }); }); },
+								onClick: function () {
+									const openIt = function (info) { emitUi({ mode: "update", update: Object.assign({}, info, { level: levelOf(info) }), forceMask: levelOf(info) === "force" }); };
+									up ? openIt(up) : checkUpdate().then(function (info) { if (info) openIt(info); });
+								},
 							}, up ? "去更新" : "检查更新")
 						)
 					),
 					h("div", { className: "jf-sys-row" },
 						h("span", null, "使用数据上报"),
 						h("span", { className: "jf-sys-rowv" },
-							// 首启不再弹告知卡片，所以把告知文本的入口放在这里，随时可复查
+							// 首启不弹告知卡片，所以把告知文本的入口放在这里，随时可复查
 							h("button", {
 								className: "jf-sys-link",
 								onClick: function () { emitUi({ mode: "privacy" }); },
@@ -527,10 +641,23 @@ export function createSystem(cfg, deps) {
 								className: "jf-sys-toggle " + (telemetryOn() ? "on" : "off"),
 								onClick: function () {
 									storage.setItem(K_CONSENT, telemetryOn() ? "off" : "on");
+									storage.setItem(K_CONSENT_VER, "2");
 									emitUi({});
 									if (telemetryOn()) flush("manual");
 								},
 							}, telemetryOn() ? "已开启" : "已关闭")
+						)
+					),
+					h("div", { className: "jf-sys-row" },
+						h("span", null, "上报状态"),
+						h("span", { className: "jf-sys-rowv" },
+							(function () {
+								const r = uiState.lastReport;
+								if (!telemetryOn()) return "已关闭";
+								if (!r) return "本次启动尚未上报";
+								if (r.ok) return "成功 · " + new Date(r.at).toLocaleTimeString();
+								return "失败（" + r.reason + "）";
+							})()
 						)
 					),
 					h("div", { className: "jf-sys-row" },
@@ -546,9 +673,9 @@ export function createSystem(cfg, deps) {
 			);
 		}
 
-		return h("div", { className: "jf-sys-overlay", onClick: close },
-			h("div", { className: "jf-sys-card", onClick: stop },
-				h("button", { className: "jf-sys-close", onClick: close }, "✕"),
+		return h("div", { className: "jf-sys-overlay" + (forceMode ? " force" : ""), onClick: forceMode ? stop : close },
+			h("div", { className: "jf-sys-card" + (forceMode ? " force" : ""), onClick: stop },
+				forceMode ? null : h("button", { className: "jf-sys-close", onClick: close }, "✕"),
 				h("div", { className: "jf-sys-title" }, title),
 				body
 			)
@@ -583,21 +710,30 @@ export function createSystem(cfg, deps) {
 			on(globalThis, "beforeunload", function () { tickSeconds(true); flush("unload"); });
 		} catch (e) { /* ignore */ }
 
-		// ★ 2026-10-15：首启不再弹「关于使用数据」卡片。
-		//   安装程序在安装阶段已做使用数据告知（控制台会打印一行，见 install.ps1 第 4 步），
-		//   这里直接把同意记为「已开启」——否则用户一进软件就要先点掉一个全屏卡片，
-		//   与「装完只需配 API Key，进去就是玖峰投研正式版窗口」冲突。
-		//   告知文本没有删：它仍在「关于」面板的「查看告知」里可随时读到，
-		//   开关也仍在同一行，用户想关随时能关。
-		if (consent() === null) { storage.setItem(K_CONSENT, "on"); }
+		// ★ 2026-10-22：更新检查与上报**解耦**。旧代码把 checkAndPrompt() 也放在
+		//   `if (telemetryOn())` 里，导致关掉上报的用户连新版本都收不到（永久留在
+		//   无埋点/有 bug 的旧版）。更新检查属于必要功能，与数据上报无关。
+		//   同意状态已在 createSystem 初始化时由 ensureConsent() 处理（默认 on、不弹窗）。
 		setTimeout(function () {
-			if (telemetryOn()) { checkAndPrompt(); flush("start"); }
+			checkAndPrompt();
+			if (telemetryOn()) flush("start");
 		}, cfg.checkDelayMs || 4000);
 
 		return function detach() {
 			if (timer) clearTimer(timer);
 			timer = null;
 		};
+	}
+
+	// 升级完成：启动 2.5 秒后轻提示一次（不阻断任何操作，6 秒自动消失）
+	// 这是「小更新不打扰」的收尾：更新过程本身静默，只有这一步让用户知道版本变了。
+	if (updatedFrom) {
+		const later = deps.setTimeout || function (fn, ms) { return globalThis.setTimeout(fn, ms); };
+		try {
+			later(function () {
+				showToast("已更新到 v" + cfg.version + "（原 v" + updatedFrom + "）", { kind: "updated", ms: 6000 });
+			}, 2500);
+		} catch (e) { /* ignore */ }
 	}
 
 	return {
@@ -621,5 +757,8 @@ export function createSystem(cfg, deps) {
 		journal: journal,
 		deviceId: deviceId,
 		telemetryOn: telemetryOn,
+		levelOf: levelOf,
+		showToast: showToast,
+		dismissToast: dismissToast,
 	};
 }

@@ -128,7 +128,8 @@ console.log('\n── 系统模块运行时 ──');
 ok('attach 后注册了心跳定时器', timers.length >= 1, timers.length);
 ok('心跳周期 60s', timers.length >= 1 && timers[0].ms === 60000, timers.length ? timers[0].ms : null);
 ok('设备号已写入 localStorage', typeof mem['jf.device_id'] === 'string' && /^[0-9a-f]{32}$/.test(mem['jf.device_id']), mem['jf.device_id']);
-ok('首次运行未自动同意（等用户选择）', mem['jf.consent'] === undefined, mem['jf.consent']);
+ok('首次运行默认开启上报（不弹窗，1.1.9 起）', mem['jf.consent'] === 'on', mem['jf.consent']);
+ok('写入 consent 版本标记', mem['jf.consent_v'] === '2', mem['jf.consent_v']);
 
 console.log('\n── 浮层组件可渲染 ──');
 const sysCard = registered.find(r => r.opts.id === 'jf-sys-card').comp;
