@@ -54,7 +54,7 @@ const JF_CONFIG = {
   apiBase: 'https://report365.com.cn/jiufeng',
   app: 'jiufeng-workbench',
   channel: 'stable',
-  version: '1.1.10',         // ★ 发版时改这里；服务端 update.json 的 latest 与它比较
+  version: '1.1.11',         // ★ 发版时改这里；服务端 update.json 的 latest 与它比较
   checkDelayMs: 4000,       // 启动后多久检查更新（避开启动 IO 高峰）
   privacyDelayMs: 1500,     // 已废弃：1.1.6 起首启不再弹告知卡片（改在安装阶段告知 +「关于」里可复查）
   heartbeatMs: 60000,       // 时长结算心跳
@@ -529,6 +529,31 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 .jf-sys-gear{border:none;background:transparent;color:inherit;opacity:.5;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;border-radius:4px}
 .jf-sys-gear:hover{opacity:1;background:rgba(128,128,128,.14)}
 .jf-sys-footv{font-size:11px;opacity:.4;margin-left:auto}
+
+.jf-fb{padding:4px 0 8px;display:flex;flex-direction:column;gap:12px;max-width:720px}
+.jf-fb-title{font-size:15px;font-weight:600}
+.jf-fb-desc{font-size:12.5px;opacity:.62;line-height:1.6}
+.jf-fb-box{border:1px solid rgba(128,128,128,.28);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:transparent}
+.jf-fb-box:focus-within{border-color:#0071e3}
+.jf-fb-text{border:none;outline:none;background:transparent;color:inherit;font:inherit;font-size:13px;line-height:1.7;resize:vertical;min-height:150px;width:100%;box-sizing:border-box}
+.jf-fb-text::placeholder{opacity:.4}
+.jf-fb-bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.jf-fb-upload{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(128,128,128,.3);background:transparent;color:inherit;border-radius:8px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
+.jf-fb-upload:hover{border-color:#0071e3;color:#0071e3}
+.jf-fb-ico{font-size:12px;opacity:.75}
+.jf-fb-count{font-size:11.5px;opacity:.45;font-variant-numeric:tabular-nums}
+.jf-fb-thumbs{display:flex;flex-wrap:wrap;gap:8px}
+.jf-fb-thumb{position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid rgba(128,128,128,.24)}
+.jf-fb-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.jf-fb-x{position:absolute;top:2px;right:2px;width:18px;height:18px;border:none;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:12px;line-height:1;cursor:pointer;padding:0}
+.jf-fb-x:hover{background:rgba(0,0,0,.78)}
+.jf-fb-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.jf-fb-submit{border:none;border-radius:8px;background:#0071e3;color:#fff;font:inherit;font-size:13px;padding:7px 18px;cursor:pointer}
+.jf-fb-submit:disabled{background:rgba(128,128,128,.35);cursor:default}
+.jf-fb-status{font-size:12px;opacity:.8}
+.jf-fb-status.ok{color:#2e9e4f;opacity:1}
+.jf-fb-status.err{color:#e5484d;opacity:1}
+.jf-fb-status.info{opacity:.55}
 
 \`;
 
@@ -1425,6 +1450,159 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 		[120, 600, 2000].forEach(function (ms) { setTimeout(fix, ms); });
 	}
 
+	// ============ 设置 → 用户反馈 ============
+	// 为什么走 settings.section：DSH 的设置面板是插槽驱动的
+	// （dsh-client-ui-settings-general 里 renderSlot("settings.section")），
+	// 原生页签「通用设置 / 模型 / 插件 / Agent 预设 / 桌面设置」都是各插件注册进来的。
+	// 我们注册一个 id=feedback 的 section 就出现在同一个导航列表里；
+	// 图标由宿主按 id 决定，未识别的 id 自动回落到齿轮图标（见 navIcon）。
+	const FB_MAX_TEXT = 10000;
+	const FB_MAX_IMAGES = 6;
+	const FB_MAX_IMAGE_BYTES = 3 * 1024 * 1024;
+	const FB_ACCEPT = "image/png,image/jpeg,image/webp,image/gif";
+
+	function fbReadAsDataURL(file) {
+		return new Promise(function (resolve, reject) {
+			const fr = new FileReader();
+			fr.onload = function () { resolve(String(fr.result || "")); };
+			fr.onerror = function () { reject(new Error("读取图片失败")); };
+			fr.readAsDataURL(file);
+		});
+	}
+
+	function FeedbackSection() {
+		const [text, setText] = useState("");
+		const [images, setImages] = useState([]);
+		const [sending, setSending] = useState(false);
+		const [status, setStatus] = useState(null);
+		const fileRef = useRef(null);
+
+		// 设置面板可能在没有侧边栏的情况下先渲染：这里保证样式已挂载
+		useEffect(function () {
+			if (document.getElementById("dsh-ai-invest-sidebar-css")) return;
+			const tag = document.createElement("style");
+			tag.id = "dsh-ai-invest-sidebar-css";
+			tag.textContent = CSS;
+			document.head.appendChild(tag);
+		}, []);
+
+		const count = text.length;
+		const canSubmit = !sending && (text.trim().length >= 2 || images.length > 0);
+
+		function pickFiles() { if (fileRef.current) fileRef.current.click(); }
+
+		async function onFiles(e) {
+			const picked = Array.prototype.slice.call(e.target.files || []);
+			e.target.value = "";
+			if (!picked.length) return;
+			const next = images.slice();
+			for (let i = 0; i < picked.length; i++) {
+				if (next.length >= FB_MAX_IMAGES) { setStatus({ kind: "err", msg: "最多 " + FB_MAX_IMAGES + " 张图片" }); break; }
+				const f = picked[i];
+				if (String(f.type || "").indexOf("image/") !== 0) { setStatus({ kind: "err", msg: "只支持图片（png / jpg / webp / gif）" }); continue; }
+				if (f.size > FB_MAX_IMAGE_BYTES) { setStatus({ kind: "err", msg: "单张不能超过 3MB：" + f.name }); continue; }
+				try {
+					const dataUrl = await fbReadAsDataURL(f);
+					const comma = dataUrl.indexOf(",");
+					next.push({
+						name: f.name, type: f.type, size: f.size,
+						data: comma > 0 ? dataUrl.slice(comma + 1) : dataUrl,
+						preview: dataUrl,
+					});
+				} catch (err) {
+					setStatus({ kind: "err", msg: String((err && err.message) || err) });
+				}
+			}
+			setImages(next);
+		}
+
+		function removeImage(idx) {
+			setImages(images.filter(function (_, i) { return i !== idx; }));
+		}
+
+		async function submit() {
+			if (!canSubmit) return;
+			setSending(true);
+			setStatus({ kind: "info", msg: "正在提交…" });
+			try {
+				const payload = {
+					device_id: JF.deviceId || "",
+					app_version: JF_CONFIG.version,
+					os: (navigator && navigator.platform) || "",
+					tz: (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { return ""; } })(),
+					text: text,
+					images: images.map(function (im) { return { name: im.name, type: im.type, data: im.data }; }),
+				};
+				const res = await fetch(JF_CONFIG.apiBase + "/api/feedback", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(payload),
+				});
+				const out = await res.json().catch(function () { return {}; });
+				if (res.ok && out && out.ok) {
+					setStatus({ kind: "ok", msg: "已收到，谢谢！我们会尽快看。" });
+					setText("");
+					setImages([]);
+				} else {
+					setStatus({ kind: "err", msg: (out && out.error) || ("提交失败（HTTP " + res.status + "）") });
+				}
+			} catch (err) {
+				setStatus({ kind: "err", msg: "网络错误，稍后再试：" + String((err && err.message) || err) });
+			} finally {
+				setSending(false);
+			}
+		}
+
+		const bar = h("div", { className: "jf-fb-bar", key: "bar" }, [
+			h("button", { key: "up", type: "button", className: "jf-fb-upload", onClick: pickFiles }, [
+				h("span", { key: "i", className: "jf-fb-ico" }, "🖼"),
+				h("span", { key: "l" }, "上传图片 (" + images.length + "/" + FB_MAX_IMAGES + ")"),
+			]),
+			h("span", { key: "c", className: "jf-fb-count" }, count + "/" + FB_MAX_TEXT),
+		]);
+
+		return h("div", { className: "jf-fb" }, [
+			h("div", { className: "jf-fb-title", key: "t" }, "意见反馈"),
+			h("div", { className: "jf-fb-desc", key: "d" }, "遇到问题、或有想要的功能，直接写给我们。可以附截图，越具体越好。"),
+			h("div", { className: "jf-fb-box", key: "box" }, [
+				h("textarea", {
+					key: "ta",
+					className: "jf-fb-text",
+					placeholder: "描述你遇到的问题",
+					maxLength: FB_MAX_TEXT,
+					value: text,
+					onChange: function (e) { setText(e.target.value); },
+				}),
+				bar,
+				h("input", {
+					key: "file",
+					ref: fileRef,
+					type: "file",
+					accept: FB_ACCEPT,
+					multiple: true,
+					style: { display: "none" },
+					onChange: onFiles,
+				}),
+			]),
+			images.length ? h("div", { className: "jf-fb-thumbs", key: "th" }, images.map(function (im, i) {
+				return h("div", { className: "jf-fb-thumb", key: "thumb" + i }, [
+					h("img", { key: "img", src: im.preview || ("data:" + im.type + ";base64," + im.data), alt: im.name }),
+					h("button", { key: "x", type: "button", className: "jf-fb-x", title: "移除", onClick: function () { removeImage(i); } }, "×"),
+				]);
+			})) : null,
+			h("div", { className: "jf-fb-actions", key: "ac" }, [
+				h("button", {
+					key: "sub",
+					type: "button",
+					className: "jf-fb-submit",
+					disabled: !canSubmit,
+					onClick: submit,
+				}, sending ? "提交中…" : "提交反馈"),
+				status ? h("span", { key: "st", className: "jf-fb-status " + (status.kind || "") }, status.msg) : null,
+			]),
+		]);
+	}
+
 	// #region ============ 插件主体 ============
 	const name = "dsh-ai-invest-sidebar";
 	const inject = ["slots", "locale", "theme", "sessions", "workspaces", "connection"];
@@ -1479,6 +1657,17 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 		ctx.slots.inject("shell.overlay", () => ctx.slots.register({
 			name: "shell.overlay", id: "jf-sys-card", priority: -2, label: () => BRAND.name,
 		}, JF.SystemCard));
+
+		// 设置 → 用户反馈：DSH 设置面板的 settings.section 插槽（原生页签同源机制）。
+		// try/catch 兜底：万一宿主对 section 做 ledger 校验，只损失这一页，不能拖垮插件。
+		try {
+			ctx.slots.inject("settings.section", () => ctx.slots.register({
+				name: "settings.section",
+				id: "feedback",
+				order: 200,
+				label: () => "用户反馈",
+			}, FeedbackSection));
+		} catch (err) {}
 	}
 
 	exports.name = name;
