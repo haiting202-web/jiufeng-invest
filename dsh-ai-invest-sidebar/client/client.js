@@ -817,7 +817,7 @@ function createSystem(cfg, deps) {
 	let runtimeCtx = null;
 
 	// #region ============ 系统模块实例（每日使用上报 + 更新提示）============
-	const JF_CONFIG = {"apiBase":"https://report365.com.cn/jiufeng","app":"jiufeng-workbench","channel":"stable","version":"1.1.11","checkDelayMs":4000,"privacyDelayMs":1500,"heartbeatMs":60000,"reportIntervalMs":180000};
+	const JF_CONFIG = {"apiBase":"https://report365.com.cn/jiufeng","app":"jiufeng-workbench","channel":"stable","version":"1.1.12","checkDelayMs":4000,"privacyDelayMs":1500,"heartbeatMs":60000,"reportIntervalMs":180000};
 	const JF = createSystem(JF_CONFIG, {
 		React: React,
 		storage: (function () { try { return window.localStorage; } catch (e) { return null; } })(),
