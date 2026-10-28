@@ -21,7 +21,12 @@
 
 ### 从 GitHub Releases / 源码
 
-`jiufeng-invest-all-in-one.zip`（约 150 MB，内含 DSH Desktop 官方安装程序）解压后双击 `install.bat`；只需插件则用 `jiufeng-invest-plugin-only.zip`。
+每个 Release 附两个文件：
+
+- `Jiufeng-Invest-Setup-x.y.z.exe` —— 一键安装，已含运行基座（与官网同一个包，国内下载较慢）
+- `jiufeng-invest-plugin-only.zip` —— 只要插件与技能，解压后跑 `install.bat`（适用于已装 DSH Desktop 的老用户）
+
+想要源码直接 `git clone` 本仓库，各目录下有独立的构建脚本。
 
 > **提示**：官网 exe 是国内最快的下载方式；GitHub Releases 同步提供安装包与源码 zip，国内访问较慢但可用。两者内容一致，都已到 v1.1.12。
 
