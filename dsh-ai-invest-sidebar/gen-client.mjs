@@ -1641,10 +1641,6 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 			}, HeroBrandMark));
 		} catch (err) {}
 
-		ctx.slots.inject("conversation.hero.brand.mark", () => ctx.slots.register({
-			name: "conversation.hero.brand.mark", id: "ai-invest-hero-brand-mark", priority: -1,
-		}, HeroBrandMark));
-
 		ctx.slots.inject("sidebar.brand.name", () => ctx.slots.register({
 			name: "sidebar.brand.name", id: "ai-invest-brand-name", priority: -1,
 		}, () => h("span", { style: { fontWeight: 600, fontSize: 16 } }, BRAND.name)));
