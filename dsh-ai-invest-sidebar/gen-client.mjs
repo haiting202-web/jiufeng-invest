@@ -739,18 +739,6 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 
 				h("div", { className: "dsh-invest-divider" }),
 
-				// —— 资讯 ——
-				h("button", {
-					className: "dsh-invest-news-btn" + (active.activeNews ? " active" : ""),
-					onClick: toggleNews,
-					title: "玖峰投研资讯",
-				},
-					h("span", { className: "ico" }, "📰"),
-					h("span", { className: "nm" }, "资讯"),
-				),
-
-				h("div", { className: "dsh-invest-divider" }),
-
 				// —— 历史对话 ——
 				h("div", { className: "dsh-invest-group-label" },
 					"历史对话",
@@ -783,6 +771,18 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 							title: historyExpanded ? "只显示最近 " + HISTORY_PREVIEW + " 个" : "显示全部 " + history.length + " 个对话",
 						}, historyExpanded ? "收起" : "展开全部 (" + history.length + ")")
 					),
+
+				h("div", { className: "dsh-invest-divider" }),
+
+				// —— 资讯（设置正上方）——
+				h("button", {
+					className: "dsh-invest-news-btn" + (active.activeNews ? " active" : ""),
+					onClick: toggleNews,
+					title: "玖峰投研资讯",
+				},
+					h("span", { className: "ico" }, "📰"),
+					h("span", { className: "nm" }, "资讯"),
+				),
 			),
 			// —— 底部：关于与更新入口 ——
 			h("div", { className: "jf-sys-foot" },
@@ -1121,12 +1121,22 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 		const [error, setError] = useState(null);
 		const iframeRef = useRef(null);
 
-		// 配置项（可从 settings 读取，这里先写死默认值）
+		// 从配置读取，支持用户自定义（兜底默认值）
+		const getConfig = (key, defaultValue) => {
+			try {
+				if (runtimeCtx && runtimeCtx.settings) {
+					const val = runtimeCtx.settings.get("news." + key);
+					if (val !== undefined && val !== null) return val;
+				}
+			} catch (e) {}
+			return defaultValue;
+		};
+
 		const NEWS_CONFIG = {
-			baseUrl: "https://xiaoxi.report365.com.cn",
-			homePath: "/",
-			termsPath: "/terms",
-			openExternal: false,
+			baseUrl: getConfig("baseUrl", "https://xiaoxi.report365.com.cn"),
+			homePath: getConfig("homePath", "/"),
+			termsPath: getConfig("termsPath", "/terms"),
+			openExternal: getConfig("openExternal", false),
 		};
 
 		const fullUrl = NEWS_CONFIG.baseUrl + NEWS_CONFIG.homePath;
