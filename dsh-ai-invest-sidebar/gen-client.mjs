@@ -121,7 +121,7 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 	}
 
 	// #region ============ 共享 store ============
-	let storeState = { activeExpert: null, activeSkill: null, expandedCategories: {} };
+	let storeState = { activeExpert: null, activeSkill: null, activeNews: false, expandedCategories: {} };
 	const storeListeners = new Set();
 	const investStore = {
 		subscribe(fn) { storeListeners.add(fn); return () => storeListeners.delete(fn); },
@@ -373,6 +373,13 @@ body[data-ds-dark-theme] .dsh-invest-skill:hover{background:rgba(255,255,255,.08
 .dsh-invest-skill.active .dsh-invest-badge{opacity:.9}
 .dsh-invest-skill.active{background:rgba(0,113,227,.12);color:#0071e3}
 body[data-ds-dark-theme] .dsh-invest-skill.active{background:rgba(10,132,255,.18);color:#0a84ff}
+.dsh-invest-news-btn{display:flex;align-items:center;gap:9px;width:100%;padding:7px 10px;border-radius:6px;cursor:pointer;border:none;background:transparent;text-align:left;font:inherit;color:inherit;transition:background .15s;box-sizing:border-box}
+.dsh-invest-news-btn:hover{background:rgba(0,0,0,.05)}
+body[data-ds-dark-theme] .dsh-invest-news-btn:hover{background:rgba(255,255,255,.08)}
+.dsh-invest-news-btn .ico{font-size:17px;width:21px;text-align:center;flex-shrink:0}
+.dsh-invest-news-btn .nm{font-size:var(--inv-fs);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.dsh-invest-news-btn.active{background:rgba(0,113,227,.14);color:#0071e3}
+body[data-ds-dark-theme] .dsh-invest-news-btn.active{background:rgba(10,132,255,.22);color:#0a84ff}
 .dsh-invest-sess{display:flex;flex-direction:column;gap:2px;width:100%;padding:6px 10px;border-radius:6px;cursor:pointer;border:none;background:none;text-align:left;font:inherit;color:inherit;transition:background .15s;box-sizing:border-box}
 .dsh-invest-sess:hover{background:rgba(0,0,0,.05)}
 body[data-ds-dark-theme] .dsh-invest-sess:hover{background:rgba(255,255,255,.08)}
@@ -396,6 +403,14 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 .dsh-invest-more:hover{opacity:.9;background:rgba(128,128,128,.1)}
 .dsh-invest-empty{font-size:var(--inv-fs-label);opacity:.5;padding:2px 10px}
 .dsh-invest-divider{border-top:1px solid rgba(128,128,128,.16);margin:2px 0}
+.dsh-invest-news-view{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9998;display:flex;flex-direction:column;background:#fff}
+body[data-ds-dark-theme] .dsh-invest-news-view{background:#1e1e22}
+.dsh-invest-news-iframe{width:100%;height:100%;border:none;flex:1}
+.dsh-invest-news-loading{display:flex;align-items:center;justify-content:center;height:100%;font-size:14px;opacity:.6}
+.dsh-invest-news-error{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;height:100%;padding:20px}
+.dsh-invest-news-error-text{font-size:14px;opacity:.7}
+.dsh-invest-news-error-btn{padding:10px 20px;border-radius:8px;border:1px solid rgba(128,128,128,.3);background:rgba(0,113,227,.1);color:#0071e3;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.dsh-invest-news-error-btn:hover{background:rgba(0,113,227,.18);border-color:#0071e3}
 .dsh-invest-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35)}
 .dsh-invest-card{width:min(560px,92vw);max-height:88vh;overflow-y:auto;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);padding:28px 28px 20px;position:relative;animation:dsinvc .18s ease-out}
 @keyframes dsinvc{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
@@ -596,12 +611,13 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 			// 游资多专家研判：路由到带完整人格档案的 trader-consultation 技能（否则只发一行 desc，人格内容全丢）
 			if (expert.id === "trader") {
 				const sk = findSkill("trader-consultation");
-				if (sk) return investStore.set({ activeExpert: null, activeSkill: sk.id });
+				if (sk) return investStore.set({ activeExpert: null, activeSkill: sk.id, activeNews: false });
 			}
-			investStore.set({ activeExpert: expert.id, activeSkill: null });
+			investStore.set({ activeExpert: expert.id, activeSkill: null, activeNews: false });
 		};
 		const toggleCategory = (catId) => investStore.set({ expandedCategories: { ...active.expandedCategories, [catId]: !active.expandedCategories[catId] } });
-		const pickSkill = (skill) => investStore.set({ activeExpert: null, activeSkill: skill.id });
+		const pickSkill = (skill) => investStore.set({ activeExpert: null, activeSkill: skill.id, activeNews: false });
+		const toggleNews = () => investStore.set({ activeExpert: null, activeSkill: null, activeNews: !active.activeNews });
 
 		const fmt = (ts) => {
 			if (!ts) return "";
@@ -649,6 +665,14 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 							onClick: () => { toggleCategory(cat.id); askWide(); },
 						}, cat.icon);
 					}),
+
+					h("div", { className: "dsh-invest-railsep" }),
+
+					h("button", {
+						className: "dsh-invest-railbtn" + (active.activeNews ? " active" : ""),
+						title: "资讯",
+						onClick: () => { toggleNews(); askWide(); },
+					}, "📰"),
 
 					h("div", { className: "dsh-invest-railsep" }),
 
@@ -747,6 +771,18 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 							title: historyExpanded ? "只显示最近 " + HISTORY_PREVIEW + " 个" : "显示全部 " + history.length + " 个对话",
 						}, historyExpanded ? "收起" : "展开全部 (" + history.length + ")")
 					),
+
+				h("div", { className: "dsh-invest-divider" }),
+
+				// —— 资讯（设置正上方）——
+				h("button", {
+					className: "dsh-invest-news-btn" + (active.activeNews ? " active" : ""),
+					onClick: toggleNews,
+					title: "玖峰投研资讯",
+				},
+					h("span", { className: "ico" }, "📰"),
+					h("span", { className: "nm" }, "资讯"),
+				),
 			),
 			// —— 底部：关于与更新入口 ——
 			h("div", { className: "jf-sys-foot" },
@@ -1079,6 +1115,89 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 		);
 	}
 
+	// #region ============ 资讯视图组件 ============
+	function NewsView() {
+		const [loading, setLoading] = useState(true);
+		const [error, setError] = useState(null);
+		const iframeRef = useRef(null);
+
+		// 从配置读取，支持用户自定义（兜底默认值）
+		const getConfig = (key, defaultValue) => {
+			try {
+				if (runtimeCtx && runtimeCtx.settings) {
+					const val = runtimeCtx.settings.get("news." + key);
+					if (val !== undefined && val !== null) return val;
+				}
+			} catch (e) {}
+			return defaultValue;
+		};
+
+		const NEWS_CONFIG = {
+			baseUrl: getConfig("baseUrl", "https://xiaoxi.report365.com.cn"),
+			homePath: getConfig("homePath", "/"),
+			termsPath: getConfig("termsPath", "/terms"),
+			openExternal: getConfig("openExternal", false),
+		};
+
+		const fullUrl = NEWS_CONFIG.baseUrl + NEWS_CONFIG.homePath;
+
+		useEffect(() => {
+			const iframe = iframeRef.current;
+			if (!iframe) return;
+
+			const handleLoad = () => {
+				setLoading(false);
+				setError(null);
+			};
+
+			const handleError = () => {
+				setLoading(false);
+				setError("加载失败");
+			};
+
+			iframe.addEventListener("load", handleLoad);
+			iframe.addEventListener("error", handleError);
+
+			return () => {
+				iframe.removeEventListener("load", handleLoad);
+				iframe.removeEventListener("error", handleError);
+			};
+		}, []);
+
+		const openInBrowser = () => {
+			try {
+				const a = document.createElement("a");
+				a.href = fullUrl;
+				a.target = "_blank";
+				a.rel = "noopener noreferrer";
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+			} catch (e) {
+				console.error("Failed to open URL:", e);
+			}
+		};
+
+		return h("div", { className: "dsh-invest-news-view" },
+			loading && h("div", { className: "dsh-invest-news-loading" }, "加载中…"),
+			error && h("div", { className: "dsh-invest-news-error" },
+				h("div", { className: "dsh-invest-news-error-text" }, error),
+				h("button", {
+					className: "dsh-invest-news-error-btn",
+					onClick: openInBrowser,
+				}, "在浏览器中打开")
+			),
+			h("iframe", {
+				ref: iframeRef,
+				src: fullUrl,
+				className: "dsh-invest-news-iframe",
+				style: { display: loading || error ? "none" : "block" },
+				title: "玖峰投研资讯",
+				sandbox: "allow-same-origin allow-scripts allow-popups allow-forms",
+			})
+		);
+	}
+
 	// #region ============ 浮层卡片组件（支持 inputSchema 表单卡片）============
 	function OverlayCard() {
 		const [active, setActive] = useState(() => investStore.getSnapshot());
@@ -1097,6 +1216,11 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 			mo.observe(document.body, { attributes: true, attributeFilter: ["data-ds-dark-theme"] });
 			return () => mo.disconnect();
 		}, []);
+
+		// 如果激活了资讯，显示 NewsView
+		if (active.activeNews) {
+			return h(NewsView);
+		}
 
 		const expert = active.activeExpert ? findExpert(active.activeExpert) : null;
 		const skill = active.activeSkill ? findSkill(active.activeSkill) : null;
