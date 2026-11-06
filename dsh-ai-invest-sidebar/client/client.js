@@ -817,7 +817,7 @@ function createSystem(cfg, deps) {
 	let runtimeCtx = null;
 
 	// #region ============ 系统模块实例（每日使用上报 + 更新提示）============
-	const JF_CONFIG = {"apiBase":"https://report365.com.cn/jiufeng","app":"jiufeng-workbench","channel":"stable","version":"1.1.13","checkDelayMs":4000,"privacyDelayMs":1500,"heartbeatMs":60000,"reportIntervalMs":180000};
+	const JF_CONFIG = {"apiBase":"https://report365.com.cn/jiufeng","app":"jiufeng-workbench","channel":"stable","version":"1.1.14","checkDelayMs":4000,"privacyDelayMs":1500,"heartbeatMs":60000,"reportIntervalMs":180000};
 	const JF = createSystem(JF_CONFIG, {
 		React: React,
 		storage: (function () { try { return window.localStorage; } catch (e) { return null; } })(),
@@ -1066,6 +1066,16 @@ body[data-ds-dark-theme] .dsh-invest-news-btn:hover{background:rgba(255,255,255,
 .dsh-invest-news-btn .nm{font-size:var(--inv-fs);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
 .dsh-invest-news-btn.active{background:rgba(0,113,227,.14);color:#0071e3}
 body[data-ds-dark-theme] .dsh-invest-news-btn.active{background:rgba(10,132,255,.22);color:#0a84ff}
+/* 底部固定区：检查更新 / 资讯（整行放大、不随内容滚动） */
+.dsh-invest-bottom{flex-shrink:0;display:flex;flex-direction:column;gap:2px;padding:7px 8px 9px;border-top:1px solid rgba(128,128,128,.14);box-sizing:border-box}
+.dsh-invest-bottom-btn{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:7px;border:none;background:transparent;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:background .15s;box-sizing:border-box}
+.dsh-invest-bottom-btn:hover{background:rgba(0,0,0,.05)}
+body[data-ds-dark-theme] .dsh-invest-bottom-btn:hover{background:rgba(255,255,255,.08)}
+.dsh-invest-bottom-btn .ico{font-size:19px;width:23px;text-align:center;flex-shrink:0;line-height:1}
+.dsh-invest-bottom-btn .nm{font-size:var(--inv-fs);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.dsh-invest-bottom-btn .ver{font-size:12px;opacity:.45;flex-shrink:0;font-variant-numeric:tabular-nums}
+.dsh-invest-bottom-btn.active{background:rgba(0,113,227,.14);color:#0071e3}
+body[data-ds-dark-theme] .dsh-invest-bottom-btn.active{background:rgba(10,132,255,.22);color:#0a84ff}
 .dsh-invest-sess{display:flex;flex-direction:column;gap:2px;width:100%;padding:6px 10px;border-radius:6px;cursor:pointer;border:none;background:none;text-align:left;font:inherit;color:inherit;transition:background .15s;box-sizing:border-box}
 .dsh-invest-sess:hover{background:rgba(0,0,0,.05)}
 body[data-ds-dark-theme] .dsh-invest-sess:hover{background:rgba(255,255,255,.08)}
@@ -1089,10 +1099,25 @@ body[data-ds-dark-theme] .dsh-invest-box{background:rgba(255,255,255,.045);borde
 .dsh-invest-more:hover{opacity:.9;background:rgba(128,128,128,.1)}
 .dsh-invest-empty{font-size:var(--inv-fs-label);opacity:.5;padding:2px 10px}
 .dsh-invest-divider{border-top:1px solid rgba(128,128,128,.16);margin:2px 0}
+.dsh-invest-news-bar{display:flex;align-items:center;gap:10px;height:44px;padding:0 12px;flex:none;border-bottom:1px solid rgba(128,128,128,.15);background:#fff}
+body[data-ds-dark-theme] .dsh-invest-news-bar{background:#1e1e22;border-color:rgba(255,255,255,.08)}
+.dsh-invest-news-back{flex:none;border:1px solid rgba(128,128,128,.32);background:transparent;color:inherit;font-size:13px;padding:5px 12px;border-radius:7px;cursor:pointer}
+.dsh-invest-news-back:hover{background:rgba(0,113,227,.1);border-color:#0071e3;color:#0071e3}
+.dsh-invest-news-bar-title{flex:1;text-align:center;font-size:15px;font-weight:600;color:inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsh-invest-news-open{flex:none;border:none;background:transparent;color:inherit;font-size:17px;cursor:pointer;opacity:.65;padding:4px 8px;border-radius:6px}
+.dsh-invest-news-open:hover{opacity:1;background:rgba(128,128,128,.15)}
 .dsh-invest-news-view{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9998;display:flex;flex-direction:column;background:#fff}
 body[data-ds-dark-theme] .dsh-invest-news-view{background:#1e1e22}
-.dsh-invest-news-iframe{width:100%;height:100%;border:none;flex:1}
+.dsh-invest-news-body{position:relative;flex:1 1 auto;display:flex;min-height:0}
+.dsh-invest-news-iframe{width:100%;height:100%;border:none;flex:1;background:#fff}
+body[data-ds-dark-theme] .dsh-invest-news-iframe{background:#1e1e22}
 .dsh-invest-news-loading{display:flex;align-items:center;justify-content:center;height:100%;font-size:14px;opacity:.6}
+.dsh-invest-news-mask{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;z-index:2}
+body[data-ds-dark-theme] .dsh-invest-news-mask{background:#1e1e22}
+.dsh-invest-news-slow{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;flex-direction:column;gap:12px;align-items:center;padding:18px 20px 22px;background:linear-gradient(to top,rgba(255,255,255,.98),rgba(255,255,255,.86) 70%,rgba(255,255,255,0))}
+body[data-ds-dark-theme] .dsh-invest-news-slow{background:linear-gradient(to top,rgba(30,30,34,.98),rgba(30,30,34,.86) 70%,rgba(30,30,34,0))}
+.dsh-invest-news-slow-text{font-size:13px;opacity:.75;text-align:center}
+.dsh-invest-news-slow-actions{display:flex;gap:12px}
 .dsh-invest-news-error{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;height:100%;padding:20px}
 .dsh-invest-news-error-text{font-size:14px;opacity:.7}
 .dsh-invest-news-error-btn{padding:10px 20px;border-radius:8px;border:1px solid rgba(128,128,128,.3);background:rgba(0,113,227,.1);color:#0071e3;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
@@ -1355,18 +1380,21 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 					h("div", { className: "dsh-invest-railsep" }),
 
 					h("button", {
-						className: "dsh-invest-railbtn" + (active.activeNews ? " active" : ""),
-						title: "资讯",
-						onClick: () => { toggleNews(); askWide(); },
-					}, "📰"),
+						className: "dsh-invest-railbtn expand",
+						title: "检查更新 · v" + JF_CONFIG.version,
+						onClick: () => {
+							try { JF.open("about"); } catch (e) {}
+							try { if (JF.checkAndPrompt) JF.checkAndPrompt(); } catch (e) {}
+						},
+					}, "🔄"),
 
 					h("div", { className: "dsh-invest-railsep" }),
 
 					h("button", {
-						className: "dsh-invest-railbtn expand",
-						title: "关于与更新 · v" + JF_CONFIG.version,
-						onClick: () => { try { JF.open("about"); } catch (e) {} },
-					}, "⚙")
+						className: "dsh-invest-railbtn" + (active.activeNews ? " active" : ""),
+						title: "资讯",
+						onClick: () => { toggleNews(); askWide(); },
+					}, "📰")
 				)
 			);
 		}
@@ -1459,25 +1487,32 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 					),
 
 				h("div", { className: "dsh-invest-divider" }),
+			),
 
-				// —— 资讯（设置正上方）——
+			// —— 底部固定区（不随内容滚动）：检查更新 → 资讯 ——
+			h("div", { className: "dsh-invest-bottom" },
 				h("button", {
-					className: "dsh-invest-news-btn" + (active.activeNews ? " active" : ""),
-					onClick: toggleNews,
+					className: "dsh-invest-bottom-btn",
+					title: "检查更新 · 当前 v" + JF_CONFIG.version,
+					onClick: () => {
+						// 打开面板（含版本号/使用数据上报），同时主动发起一次检查：
+						// 有新版本会直接翻到更新卡片；没有则面板显示「已是最新版本」
+						try { JF.open("about"); } catch (e) {}
+						try { if (JF.checkAndPrompt) JF.checkAndPrompt(); } catch (e) {}
+					},
+				},
+					h("span", { className: "ico" }, "🔄"),
+					h("span", { className: "nm" }, "检查更新"),
+					h("span", { className: "ver" }, "v" + JF_CONFIG.version)
+				),
+				h("button", {
+					className: "dsh-invest-bottom-btn" + (active.activeNews ? " active" : ""),
 					title: "玖峰投研资讯",
+					onClick: toggleNews,
 				},
 					h("span", { className: "ico" }, "📰"),
-					h("span", { className: "nm" }, "资讯"),
-				),
-			),
-			// —— 底部：关于与更新入口 ——
-			h("div", { className: "jf-sys-foot" },
-				h("button", {
-					className: "jf-sys-gear",
-					title: "关于与更新",
-					onClick: () => JF.open("about"),
-				}, "⚙"),
-				h("span", { className: "jf-sys-footv" }, "v" + JF_CONFIG.version)
+					h("span", { className: "nm" }, "资讯")
+				)
 			)
 		);
 	}
@@ -1803,50 +1838,32 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 
 	// #region ============ 资讯视图组件 ============
 	function NewsView() {
-		const [loading, setLoading] = useState(true);
-		const [error, setError] = useState(null);
+		// loading → 遮罩；loaded → 撤遮罩；slow → 20 秒仍未 load，浮一条提示，但 iframe 继续加载
+		const [phase, setPhase] = useState("loading");
 		const iframeRef = useRef(null);
+		const close = () => investStore.set({ activeNews: false });
 
-		// 从配置读取，支持用户自定义（兜底默认值）
-		const getConfig = (key, defaultValue) => {
-			try {
-				if (runtimeCtx && runtimeCtx.settings) {
-					const val = runtimeCtx.settings.get("news." + key);
-					if (val !== undefined && val !== null) return val;
-				}
-			} catch (e) {}
-			return defaultValue;
-		};
-
-		const NEWS_CONFIG = {
-			baseUrl: getConfig("baseUrl", "https://xiaoxi.report365.com.cn"),
-			homePath: getConfig("homePath", "/"),
-			termsPath: getConfig("termsPath", "/terms"),
-			openExternal: getConfig("openExternal", false),
-		};
-
-		const fullUrl = NEWS_CONFIG.baseUrl + NEWS_CONFIG.homePath;
+		// 资讯站地址固定（玖峰自建，不开放用户自定义；DSH 插件系统无 settings 可注入服务）
+		const fullUrl = "https://xiaoxi.report365.com.cn";
 
 		useEffect(() => {
 			const iframe = iframeRef.current;
 			if (!iframe) return;
 
-			const handleLoad = () => {
-				setLoading(false);
-				setError(null);
+			let done = false;
+			const onLoad = () => {
+				if (done) return;
+				done = true;
+				setPhase("loaded");
 			};
+			// 实测首屏 5~6 秒。超时只做「提示」不判死：
+			// iframe 始终保持渲染并在后台继续加载，一旦 load 自动撤掉提示。
+			const slowTimer = setTimeout(() => { if (!done) setPhase("slow"); }, 20000);
 
-			const handleError = () => {
-				setLoading(false);
-				setError("加载失败");
-			};
-
-			iframe.addEventListener("load", handleLoad);
-			iframe.addEventListener("error", handleError);
-
+			iframe.addEventListener("load", onLoad);
 			return () => {
-				iframe.removeEventListener("load", handleLoad);
-				iframe.removeEventListener("error", handleError);
+				clearTimeout(slowTimer);
+				iframe.removeEventListener("load", onLoad);
 			};
 		}, []);
 
@@ -1865,22 +1882,30 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 		};
 
 		return h("div", { className: "dsh-invest-news-view" },
-			loading && h("div", { className: "dsh-invest-news-loading" }, "加载中…"),
-			error && h("div", { className: "dsh-invest-news-error" },
-				h("div", { className: "dsh-invest-news-error-text" }, error),
-				h("button", {
-					className: "dsh-invest-news-error-btn",
-					onClick: openInBrowser,
-				}, "在浏览器中打开")
+			h("div", { className: "dsh-invest-news-bar" },
+				h("button", { className: "dsh-invest-news-back", onClick: close, title: "返回工作台" }, "‹ 返回"),
+				h("span", { className: "dsh-invest-news-bar-title" }, "玖峰投研资讯"),
+				h("button", { className: "dsh-invest-news-open", onClick: openInBrowser, title: "在浏览器中打开" }, "↗")
 			),
-			h("iframe", {
-				ref: iframeRef,
-				src: fullUrl,
-				className: "dsh-invest-news-iframe",
-				style: { display: loading || error ? "none" : "block" },
-				title: "玖峰投研资讯",
-				sandbox: "allow-same-origin allow-scripts allow-popups allow-forms",
-			})
+			h("div", { className: "dsh-invest-news-body" },
+				// iframe 始终渲染：display:none 会推迟加载，之前「打开就白屏」正是它 + 8 秒硬超时叠加造成的
+				h("iframe", {
+					ref: iframeRef,
+					src: fullUrl,
+					className: "dsh-invest-news-iframe",
+					title: "玖峰投研资讯",
+				}),
+				phase === "loading" && h("div", { className: "dsh-invest-news-mask" },
+					h("div", { className: "dsh-invest-news-loading" }, "加载中…")
+				),
+				phase === "slow" && h("div", { className: "dsh-invest-news-slow" },
+					h("div", { className: "dsh-invest-news-slow-text" }, "加载较慢，仍在继续加载…也可以直接在浏览器打开"),
+					h("div", { className: "dsh-invest-news-slow-actions" },
+						h("button", { className: "dsh-invest-news-error-btn", onClick: openInBrowser }, "在浏览器中打开"),
+						h("button", { className: "dsh-invest-news-error-btn", onClick: close }, "返回工作台")
+					)
+				)
+			)
 		);
 	}
 
@@ -1902,11 +1927,6 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 			mo.observe(document.body, { attributes: true, attributeFilter: ["data-ds-dark-theme"] });
 			return () => mo.disconnect();
 		}, []);
-
-		// 如果激活了资讯，显示 NewsView
-		if (active.activeNews) {
-			return h(NewsView);
-		}
 
 		const expert = active.activeExpert ? findExpert(active.activeExpert) : null;
 		const skill = active.activeSkill ? findSkill(active.activeSkill) : null;
@@ -1941,6 +1961,11 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 		};
 		const missingRequired = useMemo(() => visibleFields.filter(f => f.required && isMissing(f)), [visibleFields, form]);
 		const allRequiredFilled = missingRequired.length === 0;
+
+		// 如果激活了资讯，显示 NewsView（必须在所有 hooks 之后 return，否则 hooks 数量不一致会崩）
+		if (active.activeNews) {
+			return h(NewsView);
+		}
 
 		if (!expert && !skill) return null;
 
@@ -2450,10 +2475,6 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 				name: "conversation.hero.brand.mark", id: "ai-invest-hero-brand-mark", priority: -1,
 			}, HeroBrandMark));
 		} catch (err) {}
-
-		ctx.slots.inject("conversation.hero.brand.mark", () => ctx.slots.register({
-			name: "conversation.hero.brand.mark", id: "ai-invest-hero-brand-mark", priority: -1,
-		}, HeroBrandMark));
 
 		ctx.slots.inject("sidebar.brand.name", () => ctx.slots.register({
 			name: "sidebar.brand.name", id: "ai-invest-brand-name", priority: -1,

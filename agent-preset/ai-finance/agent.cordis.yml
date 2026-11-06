@@ -194,7 +194,7 @@
 # not scope-aware — one copy per mounted preset means every child gets
 # `report` registered once per live session, which throws on the second.
 # ── 2026-09-18 投研收窄（A 步） ─────────────────────────────────────────────
-# 下面 6 个委派/编排类工具对本预设的 89 个投研 skill **零引用**：
+# 下面 6 个委派/编排类工具对本预设的 105 个投研 skill **零引用**：
 # 实测扫 SKILL.md 全文，对 subagent / subagent_fork / workflow / ralph /
 # list_agents / send_message / interrupt_agent / goal 三件套 **全部 0 命中**。
 # 它们是从 `standard` 编码 Agent 预设带过来的，与投研无关。
