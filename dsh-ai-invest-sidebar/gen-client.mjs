@@ -64,6 +64,9 @@ const JF_CONFIG = {
 const jfSysSrc = readFileSync(`${import.meta.dirname}/runtime/jf-sys.js`, 'utf8')
   .replace(/^export\s+/gm, '')
   .trim();
+const traderFactsSrc = readFileSync(`${import.meta.dirname}/runtime/trader-facts.js`, 'utf8')
+  .replace(/^export\s+/gm, '')
+  .trim();
 const jfConfigStr = JSON.stringify(JF_CONFIG);
 
 const hintsStr = JSON.stringify({
@@ -306,6 +309,25 @@ const clientJs = `window.__ModuleLoader__.load({ id: "dsh-ai-invest-sidebar", fa
 		if (!v) return "";
 		return (v.name && v.name !== v.code) ? v.name + " (" + v.code + ")" : String(v.code || v.name || "");
 	}
+
+	// #region ============ 游资研判：提交前注入已核证行情（非模型调用）============
+	${traderFactsSrc}
+
+	async function injectTraderFactsIfNeeded(skill, form, content) {
+		if (!skill || skill.id !== "trader-consultation") return content;
+		const code = extractStockCode(form && form.ticker) || extractStockCode(content);
+		let block;
+		try {
+			block = await collectTraderFactsBlock(code, {
+				fetch: typeof fetch === "function" ? fetch.bind(typeof window !== "undefined" ? window : globalThis) : null,
+				jsonp: typeof jsonpGet === "function" ? jsonpGet : null,
+			});
+		} catch (e) {
+			block = formatTraderFactsBlock(emptyFacts(code, String((e && e.message) || e)));
+		}
+		return (content ? content + "\\n\\n" : "") + block;
+	}
+	// #endregion
 
 	// #region ============ 卡片 → 提示词（复刻 WEB 端 ChatArea.handleCardSubmit）============
 	/** 取 option 的 label；查不到则回退到 value（比 WEB 端更稳：WEB 端 multi-select 只输出 value）*/
@@ -1306,6 +1328,8 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 				content = (content ? content + "\\n" : "") + lines.join("\\n");
 			}
 			setBusy(true); setErr("");
+			// 游资研判：先拉已核证行情再发（HTTP，仍是一次 session.prompt）
+			try { content = await injectTraderFactsIfNeeded(skill, form, content); } catch (e) {}
 			const result = await sendConsultation(expert, skill, content);
 			setBusy(false);
 			if (result.ok) close(); else setErr(result.error || "发送失败");
@@ -1325,6 +1349,9 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 		const hint = skill
 			? (fields ? \`填写参数，「\${skill.name}」将按结构化参数执行\` : \`说清要做的事；有现成资料直接上传，工具会读原件处理，不改变原格式\`)
 			: \`描述您的需求，「\${expert.name}」将协调专业工具综合研判\`;
+		const traderFactHint = skill && skill.id === "trader-consultation"
+			? "发送时会拉取已核证最新价/涨跌/量能/涨跌停/板块/K线/龙虎榜；拉不到会明确标缺失，模型不得编造。"
+			: "";
 
 		return h("div", { className: "dsh-invest-overlay", onClick: close },
 			h("div", { className: "dsh-invest-card " + theme, onClick: (e) => e.stopPropagation() },
@@ -1339,6 +1366,7 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 				),
 				h("div", { className: "dsh-invest-card-body" },
 					h("div", { className: "dsh-invest-card-hint" }, hint),
+					traderFactHint ? h("div", { className: "dsh-invest-card-hint" }, traderFactHint) : null,
 
 					// —— 表单卡片模式 ——
 					fields
@@ -1374,7 +1402,9 @@ body[data-ds-dark-theme] .jf-sys-toast{background:#2a2a31;color:#f5f5f7}
 					h("button", {
 						className: "dsh-invest-card-submit", onClick: submit,
 						disabled: busy || (fields ? !allRequiredFilled : (!query.trim() && files.length === 0)),
-					}, busy ? "发送中…" : (expert ? "开始会诊分析" : (fields ? "🚀 开始生成" : "开始"))),
+					}, busy
+						? (skill && skill.id === "trader-consultation" ? "拉取行情并发送…" : "发送中…")
+						: (expert ? "开始会诊分析" : (fields ? "🚀 开始生成" : "开始"))),
 
 					fields && !allRequiredFilled && h("div", { className: "dsh-invest-fhelp", style: { textAlign: "center", marginTop: 6 } },
 						"还有 " + missingRequired.length + " 项必填未完成：" + missingRequired.map(f => f.label).join("、")),
