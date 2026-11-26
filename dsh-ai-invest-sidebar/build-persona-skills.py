@@ -256,7 +256,9 @@ def build_trader_skill(traders, timings, rules):
     kw_rows = '\n'.join(f'| {pt} | {zh} | {kw} |' for pt, zh, kw in PROBLEM_KEYWORDS)
     kw_table = kw_rows
 
-    cap = f'''你是「游资多专家研判」调度引擎。当用户对某只股票提出短线、情绪、龙头、买卖点、择时或风控类问题时，你按以下六步流程执行：识别问题类型 → 生成调度计划 → 逐位扮演被调度专家独立研判 → 解析信号 → 加权汇总与冲突裁决 → 输出操作手册。
+    cap = f'''你是「游资多专家研判」调度引擎。本技能固定一次模型调用、一次回复完成：禁止为扮演专家而发起第二轮对话，禁止多 Agent 并行。当用户对某只股票提出短线、情绪、龙头、买卖点、择时或风控类问题时，在同一篇回复里对照各派并按输出契约写出买点/仓位/止损/证伪。
+
+硬性规则：价格/涨跌停/席位只能引用【已核证行情事实】；无核证行情或大盘背景缺失时不得推荐具体买入；禁止编造席位与涨停；未核证标「未核证」。
 
 ### 一、问题类型识别
 
@@ -320,21 +322,18 @@ def build_trader_skill(traders, timings, rules):
     # 数据获取规范 / 输出要求（与 102 个技能同构）
     data_norm = (
         '## 数据获取规范\n\n'
-        '- 涉及行情/财报/估值/新闻等数据时，**优先调用 dsh-finance-tools 提供的金融数据工具**：'
-        '`search_stock`（代码/名称搜索）、`get_stock_quote`（实时行情）、`get_kline`（K线）、'
-        '`get_stock_fund_flow`（资金流）、`get_market_sentiment`（市场情绪）、'
-        '`get_limit_up_pool`（涨停池）、`get_dragon_tiger`（龙虎榜）、`get_sector_fund_flow`（板块资金）、'
-        '`get_stock_news` / `get_company_announcements`（新闻公告）等。\n'
-        '- **禁止编造数字**：连板高度、涨停家数、封单、换手、量能等结构化数据必须来自上述工具；无法获取时标注"数据暂缺"或"假设"，并说明理由。\n'
-        '- `web_search`（豆包搜索）仅用于新闻、政策面、舆情等工具无法覆盖的信息，并注明来源。'
+        '- **本技能以工作台注入的【已核证行情事实】为准**，不要为补价格/K线/龙虎榜再开工具循环或第二轮模型调用。\n'
+        '- 【已核证行情事实】由侧栏提交路径拉取：至少尝试最新价、涨跌幅、成交量或成交额、可知的涨跌停、板块/题材；龙虎榜若接口可达则带日期窗口，不可达必须写明缺失、禁止编造席位。\n'
+        '- **禁止编造数字**：连板高度、涨停家数、封单、换手、量能、席位等必须来自该事实块；字段标「缺失」时写入「缺失信息」。\n'
+        '- 若用户消息没有【已核证行情事实】，视为行情全部缺失：可做方法论对照，不得给具体买点或推荐具体买入。'
     )
 
     output_norm = (
         '## 输出要求\n\n'
-        '- 使用中文，金融术语可保留英文缩写；关键结论加粗；多用表格呈现对比数据。\n'
-        '- 每位游资/择时的独立观点须先声明其人格立场，再给结论，避免观点同质化。\n'
-        '- 客观数据注明来源；无法获取的一律标注"假设"并给出取值理由。\n'
-        '- 投资类结论必须附风险提示："以上为AI生成内容，不构成投资建议，市场有风险，投资须谨慎。"'
+        '- 使用中文；先判断市场状态/情绪阶段，再判断个股。\n'
+        '- 完整回答必须包含买点、仓位、止损、证伪；另须包含依据、风险、缺失信息。给不出的写明原因。未核证标「未核证」。\n'
+        '- 每位游资/择时的独立观点须先声明其人格立场，再给结论；全部在一次回复内写完。\n'
+        '- 投资类结论必须附免责声明：以上研判基于公开社区资料构建的游资人格模型，仅供学习参考，不构成任何投资建议。股市有风险，投资需谨慎。'
     )
 
     fm = (
@@ -356,31 +355,35 @@ def build_trader_skill(traders, timings, rules):
 
 
 def build_trader_json_entry(traders, timings, rules):
-    """skills-data.json 的 trader-consultation 条目（prompt 用精简版，避免常驻上下文过大）。"""
-    # 侧边栏注入用精简 prompt：角色 + 调度 + 人格要点（完整档案在 SKILL.md 的 DSH 原生加载路径）
-    brief_trader = '；'.join(
-        f'{t["name"]}({t.get("style","")}·止损{t["stopLossPercent"]}%)' for t in traders)
-    brief_timing = '；'.join(f'{t["name"]}' for t in timings)
-    brief_rules = '；'.join(f'{r["problemType"]}={r["logic"]}' for r in rules)
+    """skills-data.json 的 trader-consultation 条目。
 
-    prompt = (
-        '# 游资多专家研判\n\n'
-        '你是游资多专家研判调度引擎。根据用户问题类型，调度 2-4 位游资 + 0-2 套择时框架，'
-        '逐位代入其人格独立研判，再按「保守×1.2/中性×1.0/激进×0.8」加权汇总，'
-        '分歧超过 25% 触发冲突预警并转保守，输出综合裁决操作手册。\n\n'
-        f'【游资人格】{brief_trader}\n'
-        f'【择时框架】{brief_timing}\n'
-        f'【调度规则】{brief_rules}\n\n'
-        '每位专家须给出信号方向（看多/看空/中性）、置信度、建议仓位；最终汇总方向信号、综合置信度、'
-        '建议仓位、风险等级，并附免责声明。'
-    )
+    侧边栏运行时读的是本 JSON 的 prompt，不读 SKILL.md。因此必须写入完整人格 +
+    输出契约 + 硬性规则（一次模型调用）。真源：trader-consultation-prompt.md。
+    """
+    prompt_path = os.path.join(BASE, 'trader-consultation-prompt.md')
+    if os.path.isfile(prompt_path):
+        prompt = open(prompt_path, encoding='utf-8').read().strip()
+    else:
+        brief_trader = '；'.join(
+            f'{t["name"]}({t.get("style","")}·止损{t["stopLossPercent"]}%)' for t in traders)
+        brief_timing = '；'.join(f'{t["name"]}' for t in timings)
+        brief_rules = '；'.join(f'{r["problemType"]}={r["logic"]}' for r in rules)
+        prompt = (
+            '# 游资多专家研判\n\n'
+            '你是游资多专家研判调度引擎。一次回复内对照各派，禁止额外模型轮次。\n\n'
+            f'【游资人格】{brief_trader}\n'
+            f'【择时框架】{brief_timing}\n'
+            f'【调度规则】{brief_rules}\n\n'
+            '先判断市场状态再判断个股。完整回答必须含买点、仓位、止损、证伪、依据、风险、缺失信息。'
+            '无核证行情不得给具体买入。禁止编造席位与涨停。未核证标「未核证」。附免责声明。'
+        )
 
     return {
         'id': 'trader-consultation',
         'name': '游资多专家研判',
         'icon': '🛸',
         'category': 'equity-research',
-        'description': '6大顶级游资方法论 + 2大择时框架的多专家聚合研判，自动调度、串行研判、加权汇总、冲突预警',
+        'description': '6大顶级游资方法论 + 2大择时框架的多专家对照研判；提交时注入核证行情，一次回复给出买点/仓位/止损/证伪',
         'prompt': prompt,
         'inputSchema': [
             {

@@ -48,6 +48,7 @@ const checks = [
   ['FileField 组件', 'function FileField('],
   ['FieldRenderer 分发器', 'function FieldRenderer('],
   ['buildCardPrompt 提示词拼装', 'function buildCardPrompt('],
+  ['游资事实注入', 'function injectTraderFactsIfNeeded('],
   ['emSearch 东方财富搜索', 'function emSearch('],
   ['searchStockSmart 智能搜索', 'function searchStockSmart('],
   ['coerceCode 离线降级', 'function coerceCode('],

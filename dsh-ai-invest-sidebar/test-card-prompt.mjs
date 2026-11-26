@@ -17,7 +17,7 @@ function grab(name) {
   throw new Error('括号未闭合 ' + name);
 }
 
-const code = grab('optionLabel') + '\n' + grab('displayValueOf') + '\n' + grab('buildCardPrompt');
+const code = grab('formatStockLabel') + '\n' + grab('optionLabel') + '\n' + grab('displayValueOf') + '\n' + grab('buildCardPrompt');
 const { buildCardPrompt } = new Function(code + '\nreturn { buildCardPrompt };')();
 
 // 取真实的 china-dcf-model / stock-comparison schema
